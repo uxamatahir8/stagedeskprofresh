@@ -13,17 +13,22 @@ return new class extends Migration
     {
         Schema::create('artist_requests', function (Blueprint $table) {
             $table->id();
+            // attach artist
             $table->unsignedBigInteger('artist_id');
             $table->foreign('artist_id')->references('id')->on('artists')->onDelete('cascade');
-            // attach booking id
+
+            // attach booking request
             $table->unsignedBigInteger('booking_requests_id');
             $table->foreign('booking_requests_id')->references('id')->on('booking_requests')->onDelete('cascade');
-            // Attach Company Id
+
+            // attach company
             $table->unsignedBigInteger('company_id');
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
 
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
-            $table->date('assigned_at')->nullable();
+
+
+            $table->datetime('assigned_at')->nullable();
             $table->timestamps();
         });
     }

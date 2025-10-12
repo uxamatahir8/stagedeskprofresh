@@ -13,18 +13,13 @@ return new class extends Migration
     {
         Schema::create('booked_services', function (Blueprint $table) {
             $table->id();
-            // attach booking id
+            // attach booking request id
             $table->unsignedBigInteger('booking_requests_id');
             $table->foreign('booking_requests_id')->references('id')->on('booking_requests')->onDelete('cascade');
 
-            $table->unsignedBigInteger('artist_services_id');
-            $table->foreign('artist_services_id')->references('id')->on('artist_services')->onDelete('cascade');
-
-            // attach company
-            $table->unsignedBigInteger('company_id');
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-
+            $table->string('service_requested');
             $table->string('total_price');
+
 
             $table->timestamps();
         });
