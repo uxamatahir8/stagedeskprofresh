@@ -99,6 +99,12 @@
                     <span class="menu-text" data-lang="dashboard">Dashboard</span>
                 </a>
             </li>
+            <li class="side-nav-item">
+                <a href="{{ route('packages') }}" class="side-nav-link">
+                    <span class="menu-icon"><i data-lucide="package-open"></i></span>
+                    <span class="menu-text" data-lang="packages">Packages</span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>

@@ -9,7 +9,11 @@
     <meta name="author" content="Coderthemes">
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}">
+
+    {{-- Datatables css --}}
+    <link href="{{ asset('plugins/datatables/responsive.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('plugins/datatables/buttons.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">
 
     <!-- Theme Config Js -->
     <script src="{{ asset('js/config.js') }}"></script>
