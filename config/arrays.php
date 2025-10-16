@@ -14,5 +14,11 @@ return [
         'instagram' => 'Enter Instagram Url',
         'linkedin' => 'Enter Linkedin Url',
         'pintrest' => 'Enter Pintrest Url',
+    ],
+    'status_colors' => [
+        'active' => 'primary',
+        'expired' => 'warning',
+        'canceled' => 'danger',
+        'paused' => 'info'
     ]
 ];
