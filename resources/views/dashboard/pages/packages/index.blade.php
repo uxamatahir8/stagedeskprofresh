@@ -54,7 +54,7 @@
                             <td class="text-center">{{ $package->max_responses_allowed }}</td>
                             <td>
                                 <span
-                                    class="badge badge-label badge-soft-{{ $package->status == 'active' ? 'primary' : 'danger' }}">
+                                    class="badge badge-label badge-soft-{{ config('arrays.status_colors')[$package->status]  }}">
                                     {{ ucfirst($package->status) }}
                                 </span>
                             </td>

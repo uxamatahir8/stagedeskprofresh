@@ -19,4 +19,10 @@ class Package extends Model
         'max_responses_allowed',
         'status',
     ];
+
+
+    public function companySubscription()
+    {
+        return $this->hasMany(CompanySubscription::class);
+    }
 }

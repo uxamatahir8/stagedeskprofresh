@@ -26,4 +26,9 @@ class Company extends Model
     {
         return $this->hasMany(SocialLink::class, 'company_id');
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(CompanySubscription::class);
+    }
 }

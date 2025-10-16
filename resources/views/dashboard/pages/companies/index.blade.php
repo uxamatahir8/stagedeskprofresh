@@ -20,10 +20,17 @@
 
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('company.create') }}" class="btn btn-primary">
-                Add Company
-            </a>
+            <div class="title">
+                <h4 class="card-title mb-0">{{ $title }}</h4>
+            </div>
+            <div class="action-btns">
+                <a href="{{ route('subscriptions') }}" class="btn btn-danger">
+                    Manage Subscriptions
+                </a>
+                <a href="{{ route('company.create') }}" class="btn btn-primary">
+                    Add Company
+                </a>
+            </div>
         </div>
 
         <div class="card-body">
@@ -53,11 +60,15 @@
                                 <td>{{ $company->phone }}</td>
                                 <td>
                                     <span
-                                        class="badge badge-label badge-soft-{{ $company->status == 'active' ? 'primary' : 'danger' }}">
+                                        class="badge badge-label badge-soft-{{ config('arrays.status_colors')[$company->status] }}">
                                         {{ ucfirst($company->status) }}
                                     </span>
                                 </td>
                                 <td class="d-flex gap-2">
+
+                                    <a href="{{ route('subscription.create', $company) }}" class="btn btn-warning btn-sm">
+                                        <i data-lucide="settings"></i>
+                                    </a>
 
                                     <a href="{{ route('company.show', $company) }}" class="btn btn-dark btn-sm">
                                         <i data-lucide="eye"></i>
