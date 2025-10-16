@@ -23,8 +23,8 @@
 
     <div class="card">
         <div class="card-header justify-content-between">
-            <h4 class="card-title"> Export Data with Dropdowns </h4>
-            <a href="https://datatables.net/reference/button/" target="_blank" class="btn btn-primary">Add Package</a>
+            <h4 class="card-title"> {{ $title }}</h4>
+            <a href="{{ route('package.create') }}" class="btn btn-primary">Add Package</a>
         </div>
 
         <div class="card-body">

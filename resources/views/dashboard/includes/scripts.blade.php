@@ -4,6 +4,9 @@
 <!-- App js -->
 <script src="{{ asset('js/app.js') }}"></script>
 
+{{-- Validation JS --}}
+
+<script src="{{ asset('js/validation.js') }}"></script>
 
 
 <!-- Jquery for Datatables-->
