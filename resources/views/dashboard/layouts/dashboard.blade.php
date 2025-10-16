@@ -18,6 +18,27 @@
 
         <div class="content-page">
             <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        @if ($errors->any())
+                            <div class="alert alert-danger mt-3">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        @if (session('success'))
+                            <div class="alert alert-info mt-3">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+
                 @yield('content')
             </div>
             <!-- container -->

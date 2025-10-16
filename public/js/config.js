@@ -51,8 +51,6 @@
               !["offcanvas"].includes(t) &&
               (t = "condensed"),
             e.setAttribute("data-sidenav-size", t),
-            !0 === o.sidenav.user
-                ? e.setAttribute("data-sidenav-user", "true")
-                : e.removeAttribute("data-sidenav-user");
+            e.setAttribute("data-sidenav-user", "true");
     }
 })();
