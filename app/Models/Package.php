@@ -9,4 +9,14 @@ class Package extends Model
 {
     //
     use SoftDeletes;
+
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'max_users_allowed',
+        'max_requests_allowed',
+        'max_responses_allowed',
+        'status',
+    ];
 }

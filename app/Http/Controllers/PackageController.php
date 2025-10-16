@@ -28,7 +28,7 @@ class PackageController extends Controller
         $title = 'Create Package';
         $mode = 'create';
 
-        return view('dashboard.pages.packages.manage', compact('title'));
+        return view('dashboard.pages.packages.manage', compact('title', 'mode'));
     }
 
     /**
@@ -37,6 +37,27 @@ class PackageController extends Controller
     public function store(Request $request)
     {
         //
+        $validate = $request->validate([
+            'name' => 'required',
+            'price' => 'required',
+            'duration_type' => 'required',
+            'max_users_allowed' => 'required',
+            'max_requests_allowed' => 'required',
+            'max_responses_allowed' => 'required',
+            'description' => 'max:255',
+            'status' => 'nullable'
+        ]);
+
+        $validate['status'] = $request->has('status') ? 'active' : 'inactive';
+
+
+        // if validations failed
+        if ($validate) {
+            Package::create($validate);
+            return redirect()->route('packages')->with('success', 'Package Created Successfully');
+        } else {
+            return redirect()->back()->with('error', 'Something went wrong');
+        }
     }
 
     /**
@@ -53,6 +74,10 @@ class PackageController extends Controller
     public function edit(Package $package)
     {
         //
+        $title = 'Edit Package';
+        $mode = 'edit';
+
+        return view('dashboard.pages.packages.manage', compact('title', 'package', 'mode'));
     }
 
     /**
@@ -60,14 +85,43 @@ class PackageController extends Controller
      */
     public function update(Request $request, Package $package)
     {
-        //
+        // Validate request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'duration_type' => 'required|string',
+            'max_users_allowed' => 'required|integer',
+            'max_requests_allowed' => 'required|integer',
+            'max_responses_allowed' => 'required|integer',
+            'description' => 'nullable|string|max:255',
+            'status' => 'nullable',
+        ]);
+
+        // Handle checkbox (if unchecked, it won't exist in request)
+        $validated['status'] = $request->has('status') ? 'active' : 'ianctive';
+        if ($validated) {
+            // Update package
+            $package->update($validated);
+
+            // Redirect with success message
+            return redirect()->route('packages')->with('success', 'Package updated successfully');
+        } else {
+            // Redirect with error message
+            return redirect()->back()->with('error', 'Something went wrong');
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Package $package)
     {
-        //
+        try {
+            $package->delete();
+            return redirect()->route('packages')->with('success', 'Package deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('packages')->with('error', 'Failed to delete the package. Please try again.');
+        }
     }
 }
