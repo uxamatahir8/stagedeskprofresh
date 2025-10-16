@@ -32,27 +32,55 @@
                     <thead class="thead-sm text-uppercase fs-xxs">
                         <tr>
                             <th>#</th>
+                            <th>KVK Number</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Address</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $c = 1;
+                        @endphp
                         @foreach ($companies as $company)
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>{{ $c }}</td>
+                                <td>{{ $company->kvk_number }}</td>
+                                <td>{{ $company->name }}</td>
+                                <td>{{ $company->email }}</td>
+                                <td>{{ $company->phone }}</td>
                                 <td>
-                                    <a href="{{ route('company.edit', $company->id) }}" class="btn btn-primary">
-                                        Edit
+                                    <span
+                                        class="badge badge-label badge-soft-{{ $company->status == 'active' ? 'primary' : 'danger' }}">
+                                        {{ ucfirst($company->status) }}
+                                    </span>
+                                </td>
+                                <td class="d-flex gap-2">
+
+                                    <a href="{{ route('company.show', $company) }}" class="btn btn-dark btn-sm">
+                                        <i data-lucide="eye"></i>
                                     </a>
+
+
+                                    <a href="{{ route('company.edit', $company) }}" class="btn btn-info btn-sm">
+                                        <i data-lucide="pencil"></i>
+                                    </a>
+                                    <!-- Delete Button -->
+                                    <form action="{{ route('company.destroy', $company) }}" method="POST"
+                                        onsubmit="return confirm('Are you sure you want to delete this company?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                            <i data-lucide="trash-2"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
+                            @php
+                                $c++
+                            @endphp
                         @endforeach
                     </tbody>
                 </table>
