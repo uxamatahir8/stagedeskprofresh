@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Package;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -13,6 +14,10 @@ class CompanyController extends Controller
     public function index()
     {
         //
+        $title = 'Companies List';
+        $companies = Company::all();
+
+        return view('dashboard.pages.companies.index', compact('title', 'companies'));
     }
 
     /**
@@ -21,6 +26,12 @@ class CompanyController extends Controller
     public function create()
     {
         //
+        $title = 'Create Company';
+        $mode = 'create';
+
+        $packages = Package::all();
+
+        return view('dashboard.pages.companies.manage', compact('title', 'mode', 'packages'));
     }
 
     /**

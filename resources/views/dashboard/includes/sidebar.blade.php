@@ -105,6 +105,12 @@
                     <span class="menu-text" data-lang="packages">Packages</span>
                 </a>
             </li>
+            <li class="side-nav-item">
+                <a href="{{ route('companies') }}" class="side-nav-link">
+                    <span class="menu-icon"><i data-lucide="building"></i></span>
+                    <span class="menu-text" data-lang="companies">Companies</span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>
