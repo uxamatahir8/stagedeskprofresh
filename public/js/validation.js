@@ -58,14 +58,13 @@ const validateRequiredInput = (element) => {
         if (element.classList.contains("valid_url")) {
             if (element.value.trim() !== "") {
                 const url_regex =
-                    /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})(:[0-9]{1,5})?(\/[^\s]*)?$/;
-
+                    /^(?!https?:\/\/)([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]{1,5})?(\/.*)?$/;
                 if (!url_regex.test(element.value.trim())) {
                     element.classList.add("is-invalid");
                     element.classList.remove("is-valid");
                     validationMessage.textContent = `${formatLabel(
                         element.getAttribute("name")
-                    )} must be a valid URL starting with 'http://' or 'https://' (e.g., https://example.com)!`;
+                    )} must be a valid URL without 'http' or 'https' (e.g., example.com)!`;
                     validationMessage.classList.remove("d-none");
                 } else {
                     element.classList.remove("is-invalid");
@@ -173,6 +172,27 @@ const validateRequiredInput = (element) => {
                     element.classList.add("is-valid");
                     validationMessage.classList.add("d-none");
                 }
+            }
+        }
+
+        if (
+            element.getAttribute("type") === "password" &&
+            element.value.trim() !== "" &&
+            element.getAttribute("#id") !== "confirm_password"
+        ) {
+            const password = element.value.trim();
+            const password_regex =
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+            if (!password_regex.test(password)) {
+                element.classList.add("is-invalid");
+                element.classList.remove("is-valid");
+                validationMessage.textContent =
+                    "Password must include at least 10 characters, including uppercase, lowercase, number, and special character!";
+                validationMessage.classList.remove("d-none");
+            } else {
+                element.classList.remove("is-invalid");
+                element.classList.add("is-valid");
+                validationMessage.classList.add("d-none");
             }
         }
     }

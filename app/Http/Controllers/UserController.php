@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +32,12 @@ class UserController extends Controller
     public function create()
     {
         //
+        $title = 'Create User';
+        $roles = Role::all();
+        $companies = Company::all();
+        $mode = 'create';
+
+        return view('dashboard.pages.users.manage', compact('title', 'roles', 'mode', 'companies'));
     }
 
     /**
