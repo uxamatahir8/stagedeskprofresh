@@ -11,7 +11,7 @@ class Cities extends Model
     protected $fillables = [
         'name',
         'state_id'
-    ]
+    ];
 
     public function state()
     {
