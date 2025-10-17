@@ -67,7 +67,7 @@
                             </div>
                             <div class="col-lg-8">
                                 <input type="text" id="phone" name="phone" class="form-control phone required"
-                                    value="{{ old('phone', $user->phone ?? '') }}" placeholder="Phone">
+                                    value="{{ old('phone', $user->profile->phone ?? '') }}" placeholder="Phone">
                             </div>
                         </div>
                     </div>
