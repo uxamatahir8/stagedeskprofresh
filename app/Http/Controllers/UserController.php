@@ -21,7 +21,7 @@ class UserController extends Controller
             ? User::all()
             : User::companyUsers()->get();
 
-        return view('users.index', compact('title', 'users'));
+        return view('dashboard.pages.users.index', compact('title', 'users'));
     }
 
     /**
