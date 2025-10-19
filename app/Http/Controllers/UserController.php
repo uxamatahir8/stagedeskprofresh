@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cities;
 use App\Models\Company;
+use App\Models\Countries;
 use App\Models\Role;
+use App\Models\States;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,8 +39,9 @@ class UserController extends Controller
         $roles = Role::all();
         $companies = Company::all();
         $mode = 'create';
+        $countries = Countries::all();
 
-        return view('dashboard.pages.users.manage', compact('title', 'roles', 'mode', 'companies'));
+        return view('dashboard.pages.users.manage', compact('title', 'roles', 'mode', 'companies', 'countries'));
     }
 
     /**
@@ -78,5 +82,24 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         //
+    }
+
+
+    public function getStates($country_id)
+    {
+        $states = States::where('country_id', $country_id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+        return response()->json($states);
+    }
+
+    public function getCities($state_id)
+    {
+        $cities = Cities::where('state_id', $state_id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+        return response()->json($cities);
     }
 }
