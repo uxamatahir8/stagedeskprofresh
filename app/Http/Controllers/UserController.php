@@ -213,7 +213,6 @@ class UserController extends Controller
         return redirect()->route('users')->with('success', 'User and profile updated successfully.');
     }
 
-
     /**
      * Remove the specified resource from storage.
      */
