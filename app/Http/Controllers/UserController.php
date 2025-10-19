@@ -228,9 +228,6 @@ class UserController extends Controller
         try {
             // ✅ Delete profile and image if exists
             if ($user->profile) {
-                if ($user->profile->profile_image && Storage::disk('public')->exists($user->profile->profile_image)) {
-                    Storage::disk('public')->delete($user->profile->profile_image);
-                }
                 $user->profile->delete();
             }
 
