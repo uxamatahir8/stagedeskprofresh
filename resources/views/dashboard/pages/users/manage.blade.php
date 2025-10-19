@@ -71,13 +71,24 @@
                             </div>
                         </div>
 
+                        {{-- Address --}}
+                        <div class="row g-lg-4 g-2 mt-2">
+                            <div class="col-lg-4">
+                                <label class="col-form-label">Address:</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <input type="text" name="address" class="form-control required"
+                                    value="{{ old('address', $user->profile->address ?? '') }}" placeholder="Address">
+                            </div>
+                        </div>
+
                         {{-- Dynamic Country, State, City --}}
                         <div class="row g-lg-4 g-2 mt-3">
                             <div class="col-lg-4">
                                 <label class="col-form-label">Country:</label>
                             </div>
                             <div class="col-lg-8">
-                                <select class="form-control form-select" name="country_id" id="country">
+                                <select class="form-control form-select required" name="country_id" id="country">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $country)
                                         <option value="{{ $country->id }}" {{ old('country_id', $user->profile->country_id ?? '') == $country->id ? 'selected' : '' }}>
@@ -93,7 +104,7 @@
                                 <label class="col-form-label">State:</label>
                             </div>
                             <div class="col-lg-8">
-                                <select class="form-control form-select" name="state_id" id="state">
+                                <select class="form-control form-select required" name="state_id" id="state">
                                     <option value="">Select State</option>
                                 </select>
                             </div>
@@ -104,11 +115,24 @@
                                 <label class="col-form-label">City:</label>
                             </div>
                             <div class="col-lg-8">
-                                <select class="form-control form-select" name="city_id" id="city">
+                                <select class="form-control form-select required" name="city_id" id="city">
                                     <option value="">Select City</option>
                                 </select>
                             </div>
                         </div>
+
+                        <div class="row g-lg-4 g-2 mt-1">
+                            <div class="col-lg-4">
+                                <label for="status" class="col-form-label">Status</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-check form-switch form-check-secondary fs-xxl mb-2">
+                                    <input type="checkbox" name="status" value="active" class="form-check-input mt-1"
+                                        id="checkboxSize20" {{ ($mode == 'edit' && $user->status) == 'active' ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     {{-- Right Side --}}
@@ -167,7 +191,58 @@
                                     placeholder="Confirm Password">
                             </div>
                         </div>
+
+                        {{-- Zip Code --}}
+                        <div class="row g-lg-4 g-2 mt-2">
+                            <div class="col-lg-4">
+                                <label class="col-form-label">Zip Code:</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <input type="text" name="zipcode" class="form-control required"
+                                    value="{{ old('zipcode', $user->profile->zipcode ?? '') }}" placeholder="Zip Code">
+                            </div>
+                        </div>
+
+                        {{-- About --}}
+                        <div class="row g-lg-4 g-2 mt-2">
+                            <div class="col-lg-4">
+                                <label class="col-form-label">About:</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <textarea name="about" class="form-control" rows="5"
+                                    placeholder="About">{{ old('about', $user->profile->about ?? '') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row g-lg-4 g-2 mt-2">
+                            <div class="col-lg-4">
+                                <label for="logo" class="col-form-label">Upload Logo</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <input type="file" name="logo" id="logo" class="form-control" accept="image/*">
+
+                                <div class="mt-3 position-relative" id="logo-preview-container">
+                                    @if(isset($user) && $user->profile->profile_image)
+                                        <img src="{{ asset('storage/' . $user->profile->profile_image) }}" alt="Profile Picture"
+                                            id="logo-preview" class="img-fluid rounded" style="max-height: 120px;">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                            id="remove-logo-btn">&times;</button>
+                                    @else
+                                        <img src="" alt="Logo Preview" id="logo-preview" class="img-fluid rounded d-none"
+                                            style="max-height: 120px;">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 d-none"
+                                            id="remove-logo-btn">&times;</button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-{{ $mode == 'edit' ? 'warning' : 'primary' }}">
+                        {{ $mode == 'edit' ? 'Update' : 'Save' }} Company
+                    </button>
                 </div>
             </form>
         </div>
@@ -175,6 +250,80 @@
 
     {{-- ================== SCRIPT SECTION ================== --}}
     <script>
+
+
+            document.querySelector('select[name="role_id"]').addEventListener('change', (e) => {
+                const select = e.target;
+                const role_key = select.options[select.selectedIndex].text;
+
+
+                const company_roles_key = ['Artist', 'Company Admin']
+
+                if (company_roles_key.includes(role_key)) {
+                    document.querySelector('#company_admin').classList.remove('d-none');
+                    document.querySelector('#company_id').classList.add('required');
+                    document.querySelector('#email-div').classList.add('mt-2');
+                } else {
+                    document.querySelector('#company_admin').classList.add('d-none');
+                    document.querySelector('#company_id').classList.remove('required');
+                    document.querySelector('#company_id').value = '';
+                    document.querySelector('#email-div').classList.remove('mt-2');
+                }
+
+            });
+        document.addEventListener('DOMContentLoaded', function () {
+            const logoInput = document.getElementById('logo');
+            const preview = document.getElementById('logo-preview');
+            const removeBtn = document.getElementById('remove-logo-btn');
+
+            logoInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // ✅ Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Invalid file type! Only jpeg, png, jpg, gif, webp are allowed.');
+                    logoInput.value = '';
+                    return;
+                }
+
+                // ✅ Validate file size (max 2MB)
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                if (file.size > maxSize) {
+                    alert('File too large! Maximum size allowed is 2MB.');
+                    logoInput.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    removeBtn.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Remove logo
+            removeBtn.addEventListener('click', function () {
+                logoInput.value = '';
+                preview.src = '';
+                preview.classList.add('d-none');
+                removeBtn.classList.add('d-none');
+
+                // Optional: flag to remove existing logo on server
+                if (!document.getElementById('remove_logo_flag')) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'remove_logo';
+                    input.id = 'remove_logo_flag';
+                    input.value = '1';
+                    logoInput.closest('form').appendChild(input);
+                }
+            });
+        });
         document.addEventListener('DOMContentLoaded', () => {
             const countrySelect = document.getElementById('country');
             const stateSelect = document.getElementById('state');
