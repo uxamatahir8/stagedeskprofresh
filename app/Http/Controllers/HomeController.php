@@ -9,6 +9,7 @@ class HomeController extends Controller
     //
     public function index()
     {
-        return view('website');
+        $title = 'Home - StageDesk Pro';
+        return view('website', compact('title'));
     }
 }
