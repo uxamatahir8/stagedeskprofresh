@@ -111,6 +111,16 @@
                     <span class="menu-text" data-lang="companies">Companies</span>
                 </a>
             </li>
+
+            @if(hasRole('master_admin', 'company_admin'))
+                <li class="side-nav-item">
+                    <a href="{{ route('users') }}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="users"></i></span>
+                        <span class="menu-text" data-lang="users">Users</span>
+                    </a>
+                </li>
+            @endif
+
         </ul>
     </div>
 </div>
