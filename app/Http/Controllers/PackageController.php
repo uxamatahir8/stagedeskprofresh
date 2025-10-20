@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Models\PackageFeatures;
 use Illuminate\Http\Request;
 
 class PackageController extends Controller
@@ -36,28 +37,36 @@ class PackageController extends Controller
      */
     public function store(Request $request)
     {
-        //
-        $validate = $request->validate([
-            'name' => 'required',
-            'price' => 'required',
-            'duration_type' => 'required',
-            'max_users_allowed' => 'required',
-            'max_requests_allowed' => 'required',
-            'max_responses_allowed' => 'required',
-            'description' => 'max:255',
-            'status' => 'nullable'
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'duration_type' => 'required|string',
+            'max_users_allowed' => 'required|integer',
+            'max_requests_allowed' => 'required|integer',
+            'max_responses_allowed' => 'required|integer',
+            'description' => 'nullable|string|max:255',
+            'status' => 'nullable',
+            'features.*' => 'nullable|string|max:255',
         ]);
 
-        $validate['status'] = $request->has('status') ? 'active' : 'inactive';
+        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
 
+        // Create package
+        $package = Package::create($validated);
 
-        // if validations failed
-        if ($validate) {
-            Package::create($validate);
-            return redirect()->route('packages')->with('success', 'Package Created Successfully');
-        } else {
-            return redirect()->back()->with('error', 'Something went wrong');
+        // Store features
+        if ($request->filled('features')) {
+            foreach ($request->features as $feature) {
+                if (!empty($feature)) {
+                    PackageFeatures::create([
+                        'package_id' => $package->id,
+                        'feature_description' => $feature,
+                    ]);
+                }
+            }
         }
+
+        return redirect()->route('packages')->with('success', 'Package created successfully');
     }
 
     /**
@@ -85,7 +94,6 @@ class PackageController extends Controller
      */
     public function update(Request $request, Package $package)
     {
-        // Validate request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
@@ -95,20 +103,29 @@ class PackageController extends Controller
             'max_responses_allowed' => 'required|integer',
             'description' => 'nullable|string|max:255',
             'status' => 'nullable',
+            'features.*' => 'nullable|string|max:255',
         ]);
 
-        // Handle checkbox (if unchecked, it won't exist in request)
-        $validated['status'] = $request->has('status') ? 'active' : 'ianctive';
-        if ($validated) {
-            // Update package
-            $package->update($validated);
+        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
 
-            // Redirect with success message
-            return redirect()->route('packages')->with('success', 'Package updated successfully');
-        } else {
-            // Redirect with error message
-            return redirect()->back()->with('error', 'Something went wrong');
+        // Update package
+        $package->update($validated);
+
+        // Update features (delete old, add new)
+        PackageFeatures::where('package_id', $package->id)->delete();
+
+        if ($request->filled('features')) {
+            foreach ($request->features as $feature) {
+                if (!empty($feature)) {
+                    PackageFeatures::create([
+                        'package_id' => $package->id,
+                        'feature_description' => $feature,
+                    ]);
+                }
+            }
         }
+
+        return redirect()->route('packages')->with('success', 'Package updated successfully');
     }
 
 
