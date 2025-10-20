@@ -201,7 +201,7 @@ class AuthController extends Controller
             $user->profile()->save($profile);
 
             // If registering as company
-            if ($request->register_as === 'company') {
+            if ($role->role_key === 'company_admin') {
                 $company = Company::create([
                     'name' => $request->company_name,
                     'website' => $request->company_website,
@@ -209,6 +209,9 @@ class AuthController extends Controller
                     'email' => $request->company_email,
                     'phone' => $request->company_phone,
                     'address' => $request->company_address,
+                    'contact_name' => $request->name,
+                    'contact_email' => $request->email,
+                    'contact_phone' => $request->phone,
                     'status' => 'active',
                 ]);
 
