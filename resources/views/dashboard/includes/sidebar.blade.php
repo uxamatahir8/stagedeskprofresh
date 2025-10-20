@@ -99,18 +99,21 @@
                     <span class="menu-text" data-lang="dashboard">Dashboard</span>
                 </a>
             </li>
-            <li class="side-nav-item">
-                <a href="{{ route('packages') }}" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="package-open"></i></span>
-                    <span class="menu-text" data-lang="packages">Packages</span>
-                </a>
-            </li>
-            <li class="side-nav-item">
-                <a href="{{ route('companies') }}" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="building"></i></span>
-                    <span class="menu-text" data-lang="companies">Companies</span>
-                </a>
-            </li>
+            @if(hasRole('master_admin'))
+                <li class="side-nav-item">
+                    <a href="{{ route('packages') }}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="package-open"></i></span>
+                        <span class="menu-text" data-lang="packages">Packages</span>
+                    </a>
+                </li>
+
+                <li class="side-nav-item">
+                    <a href="{{ route('companies') }}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="building"></i></span>
+                        <span class="menu-text" data-lang="companies">Companies</span>
+                    </a>
+                </li>
+            @endif
 
             @if(hasRole('master_admin', 'company_admin'))
                 <li class="side-nav-item">
