@@ -1,23 +1,20 @@
 @extends('auth.layouts.auth')
 
 @section('content')
-    <form method="POST" action="" enctype="multipart/form-data" autocomplete="off">
+    <form method="POST" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
         @csrf
 
         <!-- Register As Toggle Buttons -->
+        <label class="form-label fw-bold d-block mb-2">Register As:</label>
         <div class="text-center mb-4">
-            <label class="form-label fw-semibold d-block mb-2">Register As:</label>
             <div class="btn-group d-flex" role="group" aria-label="Register As">
-                <input type="radio" class="btn-check" name="register_as" id="as_company" value="company" autocomplete="off">
-                <label class="btn btn-outline-primary fw-semibold w-100" for="as_company">Company</label>
 
-                <input type="radio" class="btn-check" name="register_as" id="as_affiliate" value="affiliate"
-                    autocomplete="off">
-                <label class="btn btn-outline-primary fw-semibold w-100" for="as_affiliate">Affiliate</label>
-
-                <input type="radio" class="btn-check" name="register_as" id="as_customer" value="customer"
-                    autocomplete="off" checked>
-                <label class="btn btn-outline-primary fw-semibold w-100" for="as_customer">Customer</label>
+                @foreach (config('arrays.registerable_roles') as $role_id => $role)
+                    <input type="radio" class="btn-check" data-value="{{ strtolower($role) }}" name="register_as"
+                        id="as_{{ strtolower($role) }}" value="{{ $role_id }}" {{ strtolower($role) == 'customer' ? 'checked' : '' }} autocomplete="off">
+                    <label class="btn btn-outline-primary fw-semibold w-100"
+                        for="as_{{ strtolower($role) }}">{{ $role }}</label>
+                @endforeach
             </div>
         </div>
 
@@ -155,7 +152,7 @@
 
             radios.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    if (radio.value === 'company') {
+                    if (radio.getAttribute('data-value') === 'company') {
                         companyFields.classList.remove('d-none');
                     } else {
                         companyFields.classList.add('d-none');

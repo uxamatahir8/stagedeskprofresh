@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Countries;
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
+use App\Models\Company;
 
 class AuthController extends Controller
 {
@@ -157,6 +161,76 @@ class AuthController extends Controller
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email'); // keep entered email in input
     }
+
+
+    public function userRegister(Request $request)
+    {
+        $validated = $request->validate([
+            'register_as' => 'required',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $role = Role::where('id', $request->register_as)->first();
+
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'status' => 'active',
+                'role_id' => $role->id
+            ]);
+
+            // Save profile
+            $profile = new UserProfile([
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'zipcode' => $request->zipcode,
+                'country_id' => $request->country_id,
+                'state_id' => $request->state_id,
+                'city_id' => $request->city_id
+            ]);
+
+            if ($request->hasFile('profile_image')) {
+                $profile->profile_image = $request->file('profile_image')->store('profiles', 'public');
+            }
+
+            $user->profile()->save($profile);
+
+            // If registering as company
+            if ($request->register_as === 'company') {
+                $company = Company::create([
+                    'name' => $request->company_name,
+                    'website' => $request->company_website,
+                    'kvk_number' => $request->kvk_number,
+                    'email' => $request->company_email,
+                    'phone' => $request->company_phone,
+                    'address' => $request->company_address,
+                    'status' => 'active',
+                ]);
+
+                if ($request->hasFile('company_logo')) {
+                    $company->logo = $request->file('company_logo')->store('companies', 'public');
+                    $company->save();
+                }
+
+                $user->update(['company_id' => $company->id]);
+            }
+
+            // Send welcome email
+            Mail::to($user->email)->send(new WelcomeMail($user));
+
+            DB::commit();
+            return redirect()->route('login')->with('success', 'Registration successful! You can now log in.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
+    }
+
 
     public function logout()
     {
