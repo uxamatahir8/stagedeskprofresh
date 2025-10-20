@@ -25,7 +25,8 @@
                 <input class="form-check-input form-check-input-light fs-14" type="checkbox" checked id="rememberMe">
                 <label class="form-check-label" for="rememberMe">Keep me signed in</label>
             </div>
-            <a href="auth-reset-pass.html" class="text-decoration-underline link-offset-3 text-muted">Forgot Password?</a>
+            <a href="{{ route('forgot-password') }}" class="text-decoration-underline link-offset-3 text-muted">Forgot
+                Password?</a>
         </div>
 
         <div class="d-grid">
@@ -34,7 +35,7 @@
     </form>
 
     <p class="text-muted text-center mt-4 mb-0">
-        New here? <a href="auth-sign-up.html" class="text-decoration-underline link-offset-3 fw-semibold">Create an
+        New here? <a href="{{ route('register') }}" class="text-decoration-underline link-offset-3 fw-semibold">Create an
             account</a>
     </p>
 @endsection
