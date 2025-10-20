@@ -25,4 +25,9 @@ class Package extends Model
     {
         return $this->hasMany(CompanySubscription::class);
     }
+
+    public function features()
+    {
+        return $this->hasMany(PackageFeatures::class);
+    }
 }
