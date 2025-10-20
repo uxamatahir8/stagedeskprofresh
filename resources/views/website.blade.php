@@ -4,8 +4,9 @@
 
 
     <!--===== WELCOME STARTS =======-->
-    <div class="welcome4-section-area" style="background-image: url({{ asset('landing/images/background/header4-bg.png') }});
-            background-position: center; background-size: cover; width: 100%; height: 100%;">
+    <div class="welcome4-section-area"
+        style="background-image: url({{ asset('landing/images/background/header4-bg.png') }});
+                                                                                                                                                                                                background-position: center; background-size: cover; width: 100%; height: 100%;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -401,7 +402,7 @@
         <!--===== OTHERS AREA ENDS =======-->
 
         <!--===== PRICING PLAN AREA STARTS =======-->
-        <div class="pricing-paln-section-area pricicng-paln3 sp4">
+        <div class="pricing-paln-section-area pricicng-paln3 sp4" id="pricing">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-7 m-auto">
@@ -433,322 +434,111 @@
                         <div class="tab-content">
                             <div id="monthly" style="display: block;">
                                 <div class="row">
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area">
-                                                    <h3>Basic Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$9.9<span>/month</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">You can
-                                                            buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
+                                    @foreach($monthly_packages as $package)
+                                        <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
+                                            <div class="price-box">
+                                                <div class="hadding">
+                                                    <div class="pricing-area">
+                                                        <h3>{{ $package->name }}</h3>
+                                                        <div class="space24"></div>
+                                                        <h2 class="pricing-heading">${{ $package->price }} <span>/month</span>
+                                                        </h2>
+                                                        <div class="space16"></div>
+                                                        <p>{{ $package->description }}</p>
+                                                        <div class="space24"></div>
+                                                        <ul>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                No. of Aritsts Allowed : {{ $package->max_users_allowed }}
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                Requests view Allowed :
+                                                                {{ $package->max_requests_allowed }}/month
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                Responses Allowed: {{ $package->max_responses_allowed }}/month
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            @foreach ($package->features as $feature)
+                                                                <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                        alt="">{{ $feature->feature_description }}</li>
+                                                                <li class="space16"></li>
+                                                            @endforeach
+                                                        </ul>
+                                                        <div class="space32"></div>
+                                                        <div>
+                                                            <a href="{{ route('register') }}?package_id={{ $package->id }}"
+                                                                class="header-btn7">Get Started
+                                                                with
+                                                                {{ $package->name }}
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-left" data-aos-duration="1200">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area bg2">
-                                                    <div class="popular">
-                                                        <p>Most Popular</p>
-                                                    </div>
-                                                    <h3>Pro Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$12.9<span>/month</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">You
-                                                            can buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1400">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area">
-                                                    <h3>Bussiness Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$19.9<span>/month</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">You
-                                                            can buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                             <div id="yearly" style="display: none;">
                                 <div class="row">
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area">
-                                                    <h3>Basic Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$99.9<span>/Year</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">You can
-                                                            buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/red-exit.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
+                                    @foreach($yearly_packages as $package)
+                                        <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
+                                            <div class="price-box">
+                                                <div class="hadding">
+                                                    <div class="pricing-area">
+                                                        <h3>{{ $package->name }}</h3>
+                                                        <div class="space24"></div>
+                                                        <h2 class="pricing-heading">${{ $package->price }} <span>/year</span>
+                                                        </h2>
+                                                        <div class="space16"></div>
+                                                        <p>{{ $package->description }}</p>
+                                                        <div class="space24"></div>
+                                                        <ul>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                No. of Aritsts Allowed : {{ $package->max_users_allowed }}
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                Requests view Allowed :
+                                                                {{ $package->max_requests_allowed }}/year
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            <li>
+                                                                <img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                    alt="">
+                                                                Responses Allowed: {{ $package->max_responses_allowed }}/year
+                                                            </li>
+                                                            <li class="space16"></li>
+                                                            @foreach ($package->features as $feature)
+                                                                <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
+                                                                        alt="">{{ $feature->feature_description }}</li>
+                                                                <li class="space16"></li>
+                                                            @endforeach
+                                                        </ul>
+                                                        <div class="space32"></div>
+                                                        <div>
+                                                            <a href="{{ route('register') }}?package_id={{ $package->id }}"
+                                                                class="header-btn7">
+                                                                Get Started with {{ $package->name }}
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-left" data-aos-duration="1200">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area bg2">
-                                                    <div class="popular">
-                                                        <p>Most Popular</p>
-                                                    </div>
-                                                    <h3>Pro Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$199.9<span>/Year</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">You
-                                                            can buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1400">
-                                        <div class="price-box">
-                                            <div class="hadding">
-                                                <div class="pricing-area">
-                                                    <h3>Bussiness Plan</h3>
-                                                    <div class="space24"></div>
-                                                    <h2 class="pricing-heading">$39.9<span>/Year</span></h2>
-                                                    <div class="space16"></div>
-                                                    <p>Ideal for individuals or small businesses looking to establish a
-                                                        solid online presence.</p>
-                                                    <div class="space24"></div>
-                                                    <ul>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Unlimited posts</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">10
-                                                            days planning period</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">2
-                                                            account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            project</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">1
-                                                            RSS-feed</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">You
-                                                            can buy additional account</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">DM&
-                                                            comments</li>
-                                                        <li class="space16"></li>
-                                                        <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                alt="">Collaboration roles and tools</li>
-                                                    </ul>
-                                                    <div class="space32"></div>
-                                                    <div>
-                                                        <a href="pricing-plan.html" class="header-btn7">Quad Compare
-                                                            plan</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
