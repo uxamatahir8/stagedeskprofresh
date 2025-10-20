@@ -14,14 +14,11 @@
                         <i class="ti ti-home"></i>
                     </a>
                 </li>
-
                 <li class="breadcrumb-item"><a href="{{ route('packages') }}">Packages</a></li>
-
                 <li class="breadcrumb-item active">{{ $title }}</li>
             </ol>
         </div>
     </div>
-
 
     <div class="card">
         <div class="card-header justify-content-between">
@@ -142,6 +139,33 @@
 
                 <hr>
 
+                <!-- Package Features -->
+                <div class="row mt-4">
+                    <div class="col-lg-12">
+                        <h5 class="mb-3">Package Features</h5>
+                        <div id="feature-wrapper">
+                            @if($mode == 'edit' && isset($package->features))
+                                @foreach($package->features as $feature)
+                                    <div class="input-group mb-2 feature-item">
+                                        <input type="text" name="features[]" value="{{ $feature->feature_description }}"
+                                            class="form-control" placeholder="Enter feature description">
+                                        <button type="button" class="btn btn-danger remove-feature">×</button>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="input-group mb-2 feature-item">
+                                    <input type="text" name="features[]" class="form-control required"
+                                        placeholder="Enter feature description">
+                                    <button type="button" class="btn btn-danger remove-feature">×</button>
+                                </div>
+                            @endif
+                        </div>
+                        <button type="button" id="add-feature" class="btn btn-secondary btn-sm mt-2">+ Add Feature</button>
+                    </div>
+                </div>
+
+                <hr>
+
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-{{ $mode == 'edit' ? 'warning' : 'primary' }}">
                         {{ $mode == 'edit' ? 'Update' : 'Save' }} Package
@@ -150,5 +174,53 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('add-feature').addEventListener('click', function () {
+            const wrapper = document.getElementById('feature-wrapper');
+            const featureItems = wrapper.querySelectorAll('.feature-item');
+            const total = featureItems.length;
+
+            // Max limit check
+            if (total >= 6) {
+                alert('You can add a maximum of 6 features only.');
+                return;
+            }
+
+            // Check if last input is filled
+            const lastInput = featureItems[featureItems.length - 1]?.querySelector('input');
+            if (lastInput && lastInput.value.trim() === '') {
+                alert('Please fill the previous feature before adding a new one.');
+                lastInput.focus();
+                return;
+            }
+
+            // Create new input group
+            const div = document.createElement('div');
+            div.classList.add('input-group', 'mb-2', 'feature-item');
+            div.innerHTML = `
+            <input type="text" name="features[]" class="form-control required" placeholder="Enter feature description">
+            <button type="button" class="btn btn-danger remove-feature">×</button>
+        `;
+            wrapper.appendChild(div);
+        });
+
+        // Handle remove feature
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-feature')) {
+                const wrapper = document.getElementById('feature-wrapper');
+                const total = wrapper.querySelectorAll('.feature-item').length;
+
+                // Prevent removing last one
+                if (total <= 1) {
+                    alert('At least one feature is required.');
+                    return;
+                }
+
+                e.target.closest('.feature-item').remove();
+            }
+        });
+    </script>
+
 
 @endsection
