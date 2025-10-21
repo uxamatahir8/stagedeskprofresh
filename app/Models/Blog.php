@@ -15,6 +15,13 @@ class Blog extends Model
         'blog_category_id',
         'user_id',
         'status',
-        'feature_image'
+        'feature_image',
+        'published_at'
     ];
+
+
+    public function category()
+    {
+        return $this->belongsTo(BlogCategory::class);
+    }
 }
