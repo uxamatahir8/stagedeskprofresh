@@ -149,7 +149,7 @@
                             </a>
                         </li>
                         <li class="side-nav-item">
-                            <a href="ticket-details.html" class="side-nav-link">
+                            <a href="{{ asset('blogs') }}" class="side-nav-link">
                                 <span class="menu-text" data-lang="ticket-details">Blogs</span>
                             </a>
                         </li>
