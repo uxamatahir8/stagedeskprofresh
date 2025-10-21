@@ -24,4 +24,14 @@ class Blog extends Model
     {
         return $this->belongsTo(BlogCategory::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(BlogThread::class);
+    }
 }
