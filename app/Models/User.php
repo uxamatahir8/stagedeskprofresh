@@ -65,4 +65,14 @@ class User extends Authenticatable
     {
         return $query->where('company_id', Auth::user()->company_id);
     }
+
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(BlogThread::class);
+    }
 }
