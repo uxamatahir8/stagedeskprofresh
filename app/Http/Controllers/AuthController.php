@@ -238,6 +238,6 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 }
