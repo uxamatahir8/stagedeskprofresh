@@ -11,6 +11,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/blog-details/{slug}', [BlogController::class, 'show'])->name('blog.details');
 
+Route::get('/states/{country_id}', [UserController::class, 'getStates']);
+Route::get('/cities/{state_id}', [UserController::class, 'getCities']);
+
 
 // add guests routes with guest middleware
 Route::middleware('guest')->group(function () {
@@ -23,11 +26,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'userRegister'])->name('user_register');
     Route::post('/forgot-password', [AuthController::class, 'userForgotPassword'])->name('user.forgot-password');
     Route::post('/reset-password', [AuthController::class, 'userResetPassword'])->name('user.reset-password');
-
-
-
-    Route::get('/states/{country_id}', [UserController::class, 'getStates']);
-    Route::get('/cities/{state_id}', [UserController::class, 'getCities']);
 });
 
 
