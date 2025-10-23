@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\Package;
+use App\Models\Testimonials;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -18,6 +19,8 @@ class HomeController extends Controller
 
         $blogs = Blog::with('category')->where('status', 'published')->get();
 
-        return view('website', compact('title', 'monthly_packages', 'yearly_packages', 'blogs'));
+        $testimonials = Testimonials::all();
+
+        return view('website', compact('title', 'monthly_packages', 'yearly_packages', 'blogs', 'testimonials'));
     }
 }

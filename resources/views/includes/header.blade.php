@@ -11,7 +11,7 @@
                                     <img width="100" src="{{ asset('images/stagedeskpro_logo.png') }}" alt=""></a>
                                 <div class="main-menu">
                                     <ul class="nav nav-pills">
-                                        <li><a href="#">Home</a>
+                                        <li><a href="{{ route('home') }}">Home</a>
                                         </li>
                                         <li class="nav-item"><a href="{{ route('home') }}#works"
                                                 class="nav-link active"><span>Works</span></a></li>
