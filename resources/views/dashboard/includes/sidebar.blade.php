@@ -113,6 +113,12 @@
                         <span class="menu-text" data-lang="companies">Companies</span>
                     </a>
                 </li>
+                <li class="side-nav-item">
+                    <a href="{{ route('testimonials') }}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="star"></i></span>
+                        <span class="menu-text" data-lang="companies">Testimonials</span>
+                    </a>
+                </li>
             @endif
 
             @if(hasRole('master_admin', 'company_admin'))
@@ -149,7 +155,7 @@
                             </a>
                         </li>
                         <li class="side-nav-item">
-                            <a href="{{ asset('blogs') }}" class="side-nav-link">
+                            <a href="{{ route('blogs') }}" class="side-nav-link">
                                 <span class="menu-text" data-lang="ticket-details">Blogs</span>
                             </a>
                         </li>
