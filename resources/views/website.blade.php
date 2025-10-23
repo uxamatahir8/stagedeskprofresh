@@ -6,7 +6,7 @@
     <!--===== WELCOME STARTS =======-->
     <div class="welcome4-section-area"
         style="background-image: url({{ asset('landing/images/background/header4-bg.png') }});
-                                                                                                                                                                                                                                                                                                                            background-position: center; background-size: cover; width: 100%; height: 100%;">
+                                                                                                                                                                                                                                                                                                                                                            background-position: center; background-size: cover; width: 100%; height: 100%;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -710,76 +710,29 @@
                             <div class="row">
                                 <div class="col-lg-8 m-auto">
                                     <div class="testimonial-main-box heading6 owl-carousel">
-                                        <div class="testimonial-content">
-                                            <div class="img1 text-center">
-                                                <img src="{{ asset('landing/images/icons/quito-img1.svg') }}" alt="">
-                                            </div>
-                                            <div class="space16"></div>
-                                            <h2 class="text-center">Client Success Stories </h2>
-                                            <div class="space32"></div>
-                                            <p class="text-center">"Working with Quad has been a game-changer for our
-                                                social media presence. Their team's expertise and dedication have
-                                                significantly boosted our engagement and brand visibility. Highly
-                                                recommend their services!"</p>
-                                            <div class="space32"></div>
-                                            <div class="team-details">
-                                                <div class="img1">
-                                                    <img src="{{ asset('landing/images/all-images/testimonial4-img1.png') }}"
-                                                        alt="">
-                                                </div>
-                                                <div class="content">
-                                                    <a href="team.html">Adam Smith</a>
-                                                    <p>Owner At Frenzy Design</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        @foreach ($testimonials as $testimonial)
 
-                                        <div class="testimonial-content">
-                                            <div class="img1 text-center">
-                                                <img src="{{ asset('landing/images/icons/quito-img1.svg') }}" alt="">
-                                            </div>
-                                            <div class="space16"></div>
-                                            <h2 class="text-center">Client Success Stories </h2>
-                                            <div class="space32"></div>
-                                            <p class="text-center">"Working with Quad has been a game-changer for our
-                                                social media presence. Their team's expertise and dedication have
-                                                significantly boosted our engagement and brand visibility. Highly
-                                                recommend their services!"</p>
-                                            <div class="space32"></div>
-                                            <div class="team-details">
-                                                <div class="img1">
-                                                    <img src="{{ asset('landing/images/all-images/testimonial4-img1.png') }}"
-                                                        alt="">
+
+                                            <div class="testimonial-content">
+                                                <div class="img1 text-center">
+                                                    <img src="{{ asset('landing/images/icons/quito-img1.svg') }}" alt="">
                                                 </div>
-                                                <div class="content">
-                                                    <a href="team.html">Adam Smith</a>
-                                                    <p>Owner At Frenzy Design</p>
+                                                <div class="space16"></div>
+                                                <h2 class="text-center">Client Success Stories </h2>
+                                                <div class="space32"></div>
+                                                <p class="text-center">" {{ $testimonial->testimonial }} "</p>
+                                                <div class="space32"></div>
+                                                <div class="team-details">
+                                                    <div class="img1">
+                                                        <img src="{{ asset('storage/' . $testimonial->avatar ?? '') }}" alt="">
+                                                    </div>
+                                                    <div class="content">
+                                                        <a href="team.html">{{ $testimonial->name }}</a>
+                                                        <p>{{ $testimonial->designation }}</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="testimonial-content">
-                                            <div class="img1 text-center">
-                                                <img src="{{ asset('landing/images/icons/quito-img1.svg') }}" alt="">
-                                            </div>
-                                            <div class="space16"></div>
-                                            <h2 class="text-center">Client Success Stories </h2>
-                                            <div class="space32"></div>
-                                            <p class="text-center">"Working with Quad has been a game-changer for our
-                                                social media presence. Their team's expertise and dedication have
-                                                significantly boosted our engagement and brand visibility. Highly
-                                                recommend their services!"</p>
-                                            <div class="space32"></div>
-                                            <div class="team-details">
-                                                <div class="img1">
-                                                    <img src="{{ asset('landing/images/all-images/testimonial4-img1.png') }}"
-                                                        alt="">
-                                                </div>
-                                                <div class="content">
-                                                    <a href="team.html">Adam Smith</a>
-                                                    <p>Owner At Frenzy Design</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
