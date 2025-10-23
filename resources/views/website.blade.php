@@ -6,7 +6,7 @@
     <!--===== WELCOME STARTS =======-->
     <div class="welcome4-section-area"
         style="background-image: url({{ asset('landing/images/background/header4-bg.png') }});
-                                                                                                                                                                                                background-position: center; background-size: cover; width: 100%; height: 100%;">
+                                                                                                                                                                                                                                                                                                                            background-position: center; background-size: cover; width: 100%; height: 100%;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -807,83 +807,33 @@
                 </div>
                 <div class="space60"></div>
                 <div class="row">
-                    <div class="col-lg-4 col-md-6" data-aos="flip-left" data-aos-duration="800">
-                        <div class="blog4-boxarea">
-                            <div class="img1">
-                                <img src="{{ asset('landing/images/all-images/blog4-img1.png') }}" alt="">
-                            </div>
-                            <div class="blog-content">
-                                <div class="date">
-                                    <div class="social">
-                                        <a href="blog-details.html">Social Media</a>
-                                    </div>
-                                    <div class="date-day">
-                                        <a href="#"><img src="{{ asset('landing/images/icons/clock-img1.svg') }}" alt="">Oct
-                                            15,2023</a>
-                                    </div>
+                    @foreach($blogs as $blog)
+                        <div class="col-lg-4 col-md-6" data-aos="flip-left" data-aos-duration="1200">
+                            <div class="blog4-boxarea">
+                                <div class=" img1">
+                                    <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}" alt="">
                                 </div>
-                                <div class="space16"></div>
-                                <a href="blog-details.html">The Importance of Social Media Management for Businesses</a>
-                                <div class="space16"></div>
-                                <p>Discuss why businesses need to actively manage their social media accounts.</p>
-                                <div class="space20"></div>
-                                <a href="blog-details.html" class="readmore">Read More <i
-                                        class="fa-solid fa-arrow-right"></i></a>
+                                <div class="blog-content">
+                                    <div class="date">
+                                        <div class="social">
+                                            <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->category->name }}</a>
+                                        </div>
+                                        <div class="date-day">
+                                            <a href="#"><img src="{{ asset('landing/images/icons/clock-img1.svg') }}"
+                                                    alt="">{{ date('d-M-Y', strtotime($blog->published_at)) }}</a>
+                                        </div>
+                                    </div>
+                                    <div class="space16"></div>
+                                    <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
+                                    <div class="space16"></div>
+                                    <p>{!! Str::words($blog->content, 11, '...') !!}</p>
+                                    <div class="space20"></div>
+                                    <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Read More <i
+                                            class="fa-solid fa-arrow-right"></i></a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6" data-aos="flip-right" data-aos-duration="1000">
-                        <div class="blog4-boxarea">
-                            <div class="img1">
-                                <img src=" {{ asset('landing/images/all-images/blog4-img2.png') }}" alt="">
-                            </div>
-                            <div class="blog-content">
-                                <div class="date">
-                                    <div class="social">
-                                        <a href="#">Content</a>
-                                    </div>
-                                    <div class="date-day">
-                                        <a href="#"><img src="{{ asset('landing/images/icons/clock-img1.svg') }}" alt="">Oct
-                                            15,2023</a>
-                                    </div>
-                                </div>
-                                <div class="space16"></div>
-                                <a href="blog-details.html">Effective Strategies for Social Media Content Planning</a>
-                                <div class="space16"></div>
-                                <p>Discuss why businesses need to actively manage their social media accounts.</p>
-                                <div class="space20"></div>
-                                <a href="blog-details.html" class="readmore">Read More <i
-                                        class="fa-solid fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6" data-aos="flip-left" data-aos-duration="1200">
-                        <div class="blog4-boxarea">
-                            <div class=" img1">
-                                <img src="{{ asset('landing/images/all-images/blog4-img3.png') }}" alt="">
-                            </div>
-                            <div class="blog-content">
-                                <div class="date">
-                                    <div class="social">
-                                        <a href="blog-details.html">Engaging</a>
-                                    </div>
-                                    <div class="date-day">
-                                        <a href="#"><img src="{{ asset('landing/images/icons/clock-img1.svg') }}" alt="">Oct
-                                            15,2023</a>
-                                    </div>
-                                </div>
-                                <div class="space16"></div>
-                                <a href="blog-details.html">How to Create Engaging Social Media Content Management</a>
-                                <div class="space16"></div>
-                                <p>Discuss why businesses need to actively manage their social media accounts.</p>
-                                <div class="space20"></div>
-                                <a href="blog-details.html" class="readmore">Read More <i
-                                        class="fa-solid fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>

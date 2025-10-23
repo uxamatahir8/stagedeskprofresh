@@ -172,4 +172,12 @@ class BlogController extends Controller
         $blog->delete();
         return redirect()->route('blogs')->with('success', 'Blog deleted successfully!');
     }
+
+    public function show($slug)
+    {
+        $blog = Blog::with(['category', 'user'])->where('slug', $slug)->firstOrFail();
+        $title = $blog->title;
+
+        return view('blog', compact('blog', 'title'));
+    }
 }
