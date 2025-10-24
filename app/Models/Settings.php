@@ -38,4 +38,9 @@ class Settings extends Model
 
         return $settings;
     }
+
+    public static function clearCache()
+    {
+        Cache::forget('settings');
+    }
 }
