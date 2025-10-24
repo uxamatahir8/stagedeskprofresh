@@ -26,8 +26,6 @@ class AppServiceProvider extends ServiceProvider
         if (Schema::hasTable('settings')) {
             $settings = Settings::loadAll();
 
-            config(['app.settings', $settings]);
-
             View::share('share', $settings);
         }
     }
