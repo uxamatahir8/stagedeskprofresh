@@ -167,6 +167,15 @@
                     </ul>
                 </div>
             </li>
+
+            @if(hasRole('master_admin'))
+                <li class="side-nav-item">
+                    <a href="{{ route('settings') }}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="cog"></i></span>
+                        <span class="menu-text" data-lang="settings">Settings</span>
+                    </a>
+                </li>
+            @endif
         </ul>
     </div>
 </div>
