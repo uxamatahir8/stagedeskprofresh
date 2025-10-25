@@ -178,6 +178,6 @@ class BlogController extends Controller
         $blog = Blog::with(['category', 'user'])->where('slug', $slug)->firstOrFail();
         $title = $blog->title;
 
-        return view('blog', compact('blog', 'title'));
+        return view('blog_details', compact('blog', 'title'));
     }
 }

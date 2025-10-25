@@ -23,4 +23,11 @@ class HomeController extends Controller
 
         return view('website', compact('title', 'monthly_packages', 'yearly_packages', 'blogs', 'testimonials'));
     }
+
+    public function blogs()
+    {
+        $title = 'Blogs';
+        $blogs = Blog::with('category')->get();
+        return view('blogs', compact('title', 'blogs'));
+    }
 }
