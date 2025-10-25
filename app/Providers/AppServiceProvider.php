@@ -24,8 +24,8 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         if (Schema::hasTable('settings')) {
-            $settings = Settings::loadAll();
 
+            $settings = Settings::query()->pluck('value', 'key')->toArray();
             View::share('share', $settings);
         }
     }

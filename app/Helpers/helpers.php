@@ -15,7 +15,7 @@ if (!function_exists('hasRole')) {
 if (!function_exists('settings')) {
     function settings()
     {
-        return Settings::loadAll();
+        return Settings::query()->pluck('value', 'key')->toArray();
     }
 }
 

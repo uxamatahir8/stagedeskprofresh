@@ -1,6 +1,6 @@
 <head>
     <meta charset="utf-8">
-    <title>{{ $title }}</title>
+    <title>{{ $title }} - {{ settings_get('site_name') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description"
         content="UBold is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features.">

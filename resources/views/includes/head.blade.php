@@ -4,7 +4,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <!--=====TITLE=======-->
-    <title>{{ $title }}</title>
+    <title>{{ $title }} - {{ settings_get('site_name') }}</title>
 
     <!--=====FAV ICON=======-->
     <link rel="shortcut icon" href="{{ asset('landing/images/logo/logo6.png') }}">
