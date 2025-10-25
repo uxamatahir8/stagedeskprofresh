@@ -12,7 +12,7 @@ class HomeController extends Controller
     //
     public function index()
     {
-        $title = 'Home - StageDesk Pro';
+        $title = 'Home';
 
         $monthly_packages = Package::where('duration_type', 'monthly')->get();
         $yearly_packages = Package::where('duration_type', 'yearly')->get();

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{{ $title }}</title>
+    <title>{{ $title }} - {{ settings_get('site_name') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- App favicon -->
