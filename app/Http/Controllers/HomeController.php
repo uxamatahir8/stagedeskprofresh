@@ -26,8 +26,8 @@ class HomeController extends Controller
 
     public function blogs()
     {
-        $title = 'Blogs';
-        $blogs = Blog::with('category')->get();
+        $title = 'Insights & Updates';
+        $blogs = Blog::with('category')->paginate(6); // show 6 per page (adjust as needed)
         return view('blogs', compact('title', 'blogs'));
     }
 }
