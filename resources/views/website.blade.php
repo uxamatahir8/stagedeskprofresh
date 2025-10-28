@@ -5,27 +5,33 @@
 
     <!--===== WELCOME STARTS =======-->
     <div class="welcome4-section-area"
-        style="background-image: url({{ asset('landing/images/background/header4-bg.png') }});
-                                                                                                                                                                                                                                                                                                                                                                                                            background-position: center; background-size: cover; width: 100%; height: 100%;">
+        style="background-image: url({{ asset('landing/images/background/header4-bg.png') }}); background-position: center; background-size: cover; width: 100%; height: 100%;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="welcome4-header heading5">
+                        <!-- Updated Title and Intro according to StageDesk Pro -->
                         <span data-aos="fade-up" data-aos-duration="700"><img
-                                src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Social Media Schedule
-                            Platform.</span>
+                                src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">StageDesk Pro
+                            Platform</span>
                         <div class="space20"></div>
-                        <h1 data-aos="fade-up" data-aos-duration="1000">Success Social Media Management & Scheduling
+                        <h1 data-aos="fade-up" data-aos-duration="1000">Complete DJ Booking & Company Management Solution
                         </h1>
                         <div class="space16"></div>
-                        <p data-aos="fade-up" data-aos-duration="1000">Welcome to the ultimate hub for social media
-                            mastery. Our platform offers comprehensive solutions for managing and scheduling your social
-                            media presence with ease and efficiency.</p>
+                        <p data-aos="fade-up" data-aos-duration="1000">
+                            StageDesk Pro is a full-fledged platform designed for event companies, DJs, and customers.
+                            It streamlines company registrations, DJ management, bookings, and affiliate partnerships — all
+                            under one secure, modern system.
+                        </p>
                         <div class="space32"></div>
                         <div class="btn-area" data-aos="fade-up" data-aos-duration="1200">
-                            <a href="javascript:void(0)" class="header-btn7">Schedule a Consultation</a>
-                            <a href="https://www.youtube.com/watch?v=Y8XpQpW5OVY" class="header-btn6 popup-youtube"> <i
-                                    class="fa-solid fa-play"></i>Watch Demo Video</a>
+
+                            <!-- Button for customers -->
+                            <a href="{{ route('register') }}" class="header-btn6">Book Your DJ Now</a>
+
+                            <!-- Button for companies -->
+                            <a href="{{ route('register') }}" class="header-btn7">Register Your Company</a>
+
                         </div>
                     </div>
                 </div>
@@ -51,17 +57,17 @@
     <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%"
         data-bs-smooth-scroll="true" class="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
 
-        <!--===== WORKS AREA STARTS =======-->
+        <!--===== HOW IT WORKS AREA STARTS =======-->
         <div class="works4-section-area sp3" id="works">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-6 m-auto">
                         <div class="works4-header text-center heading6 tags2">
-                            <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">How It Works</span>
+                            <span data-aos="fade-up" data-aos-duration="800">
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">How It Works</span>
                             <div class="space16"></div>
-                            <h2 data-aos="fade-up" data-aos-duration="1000">How Social Media Management & Scheduling
-                                Works</h2>
+                            <h2 data-aos="fade-up" data-aos-duration="1000">How StageDesk Pro Streamlines the Booking
+                                Process</h2>
                         </div>
                     </div>
                 </div>
@@ -76,40 +82,44 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-5">
-                                    <div class="sticky-text text2 heading6">
+                                    <!-- Updated step descriptions -->
+                                    <div class="sticky-text heading6">
                                         <h3>01</h3>
                                         <div class="space16"></div>
-                                        <h2>Scheduling and Posting</h2>
+                                        <h2>Company Registration</h2>
                                         <div class="space24"></div>
-                                        <p>Utilizing advanced scheduling tools, we'll schedule posts at optimal times to
-                                            maximize reach and engagement</p>
+                                        <p>Register your company by selecting a plan — including a free tier with limited
+                                            features. Create an admin login and start managing DJs and requests instantly.
+                                        </p>
                                     </div>
 
                                     <div class="sticky-text heading6">
                                         <h3>02</h3>
                                         <div class="space16"></div>
-                                        <h2>Community Engagement</h2>
+                                        <h2>DJ Onboarding</h2>
                                         <div class="space24"></div>
-                                        <p>We actively engage with your audience by responding to comments, messages,
-                                            and mentions in a timely and authentic manner.</p>
+                                        <p>Invite DJs to join your portal or register them manually. Each DJ has their own
+                                            login, service list, and pricing options.</p>
                                     </div>
 
                                     <div class="sticky-text heading6">
                                         <h3>03</h3>
                                         <div class="space16"></div>
-                                        <h2>Analytics & Engagement</h2>
+                                        <h2>Customer Booking</h2>
                                         <div class="space24"></div>
-                                        <p>Performance Tracking: Comprehensive analytics and reporting to track the
-                                            success your social media campaigns initiatives.</p>
+                                        <p>Customers can request DJs publicly. Companies can view and respond to bookings
+                                            depending on their plan limitations.</p>
+                                        <div class="space16"></div>
+                                        <a href="{{ route('register') }}" class="header-btn7">Book Your DJ Now</a>
                                     </div>
 
                                     <div class="sticky-text heading6">
                                         <h3>04</h3>
                                         <div class="space16"></div>
-                                        <h2>Content Creation</h2>
+                                        <h2>Subscription & Payment</h2>
                                         <div class="space24"></div>
-                                        <p>Compelling Visuals Professionally designed graphics, images, and videos to
-                                            captivate your audience.</p>
+                                        <p>Securely manage subscription renewals, payment methods, and plan upgrades.
+                                            Automatic renewals ensure uninterrupted access.</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-1"></div>
@@ -119,7 +129,7 @@
                 </div>
             </div>
         </div>
-        <!--===== WORKS AREA ENDS =======-->
+        <!--===== HOW IT WORKS AREA ENDS =======-->
 
         <!--===== BRAND AREA STARTS =======-->
         <div class="brand4-section-area sp3">
@@ -240,18 +250,16 @@
         </div>
         <!--===== BRAND AREA ENDS =======-->
 
-        <!--===== SERVICE AREA STARTS =======-->
+        <!--===== SERVICES AREA STARTS =======-->
         <div class="marketing-section-area sp3">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 m-auto">
                         <div class="marketing-header tags2 heading6 text-center">
                             <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Social Media
-                                Marketing</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Platform Features</span>
                             <div class="space16"></div>
-                            <h2 data-aos="fade-up" data-aos-duration="1000"> Our Proven Social Media Strategy Process
-                            </h2>
+                            <h2 data-aos="fade-up" data-aos-duration="1000">Key Features of StageDesk Pro</h2>
                         </div>
                     </div>
                 </div>
@@ -260,29 +268,29 @@
                     <div class="col-lg-6">
                         <div class="marketing-img" data-aos="flip-left" data-aos-duration="1000">
                             <img src="{{ asset('landing/images/all-images/marketing-img1.png') }}" alt="">
-                            <img src="{{ asset('landing/images/background/marketing-bg.png') }}" alt=""
-                                class="marketing-bg">
                         </div>
                     </div>
                     <div class="col-lg-6">
+                        <!-- Updated features from project -->
                         <div class="tabs-text-area" data-aos="fade-up" data-aos-duration="800">
                             <div class="tabs-icon">
                                 <img src="{{ asset('landing/images/icons/service-icon1.svg') }}" alt="">
                             </div>
                             <div class="tabs-text">
-                                <a href="features.html">Choose The Right Platform</a>
-                                <p>Tailor your content to fit the format and audience preferences of each platform.</p>
+                                <a href="#">Multi-User Portals</a>
+                                <p>Separate dashboards for Admin, Companies, DJs, Customers, and Affiliates — each with
+                                    role-based access and permissions.</p>
                             </div>
                         </div>
-                        <div class="space20"> </div>
+                        <div class="space20"></div>
                         <div class="tabs-text-area" data-aos="fade-up" data-aos-duration="1000">
                             <div class="tabs-icon1">
                                 <img src="{{ asset('landing/images/icons/service-icon2.svg') }}" alt="">
                             </div>
                             <div class="tabs-text">
-                                <a href="features.html">Create Engaging Content</a>
-                                <p>Use attention-grabbing visuals, such as images, videos, or infographics, make your
-                                    content stand out.</p>
+                                <a href="#">Booking & Payment System</a>
+                                <p>Integrated with secure payment gateways allowing customers to book and pay directly on
+                                    the platform.</p>
                             </div>
                         </div>
                         <div class="space20"></div>
@@ -291,9 +299,9 @@
                                 <img src="{{ asset('landing/images/icons/service-icon3.svg') }}" alt="">
                             </div>
                             <div class="tabs-text">
-                                <a href="features.html">Utilise Hashtags & Keyword </a>
-                                <p>Research relevant hashtags and keywords to increase the discoverability of your
-                                    posts.</p>
+                                <a href="#">Subscription Management</a>
+                                <p>Companies can subscribe to plans — free, monthly, or yearly — and renew automatically
+                                    with card-based payments.</p>
                             </div>
                         </div>
                         <div class="space20"></div>
@@ -302,50 +310,53 @@
                                 <img src="{{ asset('landing/images/icons/service-icons4.svg') }}" alt="">
                             </div>
                             <div class="tabs-text">
-                                <a href="features.html">Promote User Generated Content</a>
-                                <p>Encourage your audience to create and share content related to your brand, products,
-                                    or services.</p>
+                                <a href="#">Affiliate System</a>
+                                <p>Affiliates can promote StageDesk Pro, onboard companies, and earn commission from paid
+                                    subscriptions.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--===== SERVICE AREA ENDS =======-->
+        <!--===== SERVICES AREA ENDS =======-->
 
-        <!--===== OTHERS AREA STARTS =======-->
+        <!--===== COLLABORATION AREA STARTS =======-->
         <div class="others4-section-area sp3" id="features">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-5">
                         <div class="others-collaborate-area heading6 tags2 ">
                             <span data-aos="fade-right" data-aos-duration="600"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Collaborate</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Collaboration</span>
                             <div class="space16"></div>
-                            <h2 data-aos="fade-right" data-aos-duration="700">Collective Collaborative Social Media
-                                Mastery</h2>
+                            <h2 data-aos="fade-right" data-aos-duration="700">Empowering Collaboration Between DJs &
+                                Companies
+                            </h2>
                             <div class="space32"></div>
                             <div class="listarea" data-aos="fade-right" data-aos-duration="800">
                                 <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
                                 <div>
-                                    <p><span>Brainstorming Sessions: </span> We can schedule regular brainstorming
-                                        sessions to generate creative ideas for social media content.</p>
+                                    <p><span>Invite & Manage DJs:</span> Companies can easily invite DJs via email and
+                                        manage
+                                        their profiles, services, and assignments.</p>
                                 </div>
                             </div>
                             <div class="space24"></div>
                             <div class="listarea" data-aos="fade-right" data-aos-duration="900">
                                 <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
                                 <div>
-                                    <p><span>Content Creation:</span>We can collaborate on content creation by dividing
-                                        tasks basedour on our strengths and areas of expertise. </p>
+                                    <p><span>Smart Request Handling:</span> Companies can respond to customer requests and
+                                        assign DJs in real-time.</p>
                                 </div>
                             </div>
                             <div class="space24"></div>
                             <div class="listarea" data-aos="fade-right" data-aos-duration="1000">
                                 <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
                                 <div>
-                                    <p><span>Data Analysis: </span>After launching campaigns, we can collaborate on
-                                        analyzing performance data to measure the effectiveness.</p>
+                                    <p><span>Automated Notifications:</span> Stay informed through automated notifications
+                                        about
+                                        bookings, renewals, and status updates.</p>
                                 </div>
                             </div>
                         </div>
@@ -356,50 +367,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="space60 d-lg-block d-none"></div>
-                <div class="row align-items-center">
-                    <div class="col-lg-7">
-                        <div class="collaborate-img img2" data-aos="flip-right" data-aos-duration="1000">
-                            <img src="{{ asset('landing/images/all-images/others-img6.png') }}" alt="">
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <div class="others-collaborate-area heading6 tags2 ">
-                            <span data-aos="fade-right" data-aos-duration="600"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Collaborate</span>
-                            <div class="space16"></div>
-                            <h2 data-aos="fade-right" data-aos-duration="700">Elevating Social Media Strategies With
-                                Quad</h2>
-                            <div class="space32"></div>
-                            <div class="listarea" data-aos="fade-right" data-aos-duration="800">
-                                <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
-                                <div>
-                                    <p><span>Campaign Planning: </span>We can collaborate on planning and executing
-                                        social media marketing campaigns. This includes setting goals.</p>
-                                </div>
-                            </div>
-                            <div class="space24"></div>
-                            <div class="listarea" data-aos="fade-right" data-aos-duration="900">
-                                <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
-                                <div>
-                                    <p><span>Feedback & Iteration: </span>Collaboration also involves providing
-                                        constructive feedback and iterating on our strategies.</p>
-                                </div>
-                            </div>
-                            <div class="space24"></div>
-                            <div class="listarea" data-aos="fade-right" data-aos-duration="1000">
-                                <div><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt=""></div>
-                                <div>
-                                    <p><span>Data Analysis: </span>After launching campaigns, we can collaborate on
-                                        analyzing performance data to measure the effectiveness.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
-        <!--===== OTHERS AREA ENDS =======-->
+        <!--===== COLLABORATION AREA ENDS =======-->
 
         <!--===== PRICING PLAN AREA STARTS =======-->
         <div class="pricing-paln-section-area pricicng-paln3 sp4" id="pricing">
@@ -809,18 +779,27 @@
                         <div class="row">
                             <div class="col-lg-8 m-auto">
                                 <div class="cta-content-area text-center heading6">
-                                    <h2 data-aos="zoom-out" data-aos-duration="800">You Have Many Things to Do. Let Us
-                                        Help You With Social Media</h2>
+                                    <!-- ✅ Updated headline to match StageDesk Pro purpose -->
+                                    <h2 data-aos="zoom-out" data-aos-duration="800">
+                                        Simplify Your DJ Bookings and Company Management with StageDesk Pro
+                                    </h2>
                                     <div class="space16"></div>
-                                    <p data-aos="zoom-out" data-aos-duration="1000">Whether you're looking to boost
-                                        engagement, increase brand visibility, or drive sales, our team is here to help
-                                        you achieve your social media goals. Schedule a consultation today to learn how
-                                        our tailored solutions can transform your online presence."</p>
+                                    <!-- ✅ Updated CTA message: focused on event companies, DJs, and booking automation -->
+                                    <p data-aos="zoom-out" data-aos-duration="1000">
+                                        Manage your entertainment business seamlessly — register your company, onboard DJs,
+                                        handle customer requests, and automate bookings. StageDesk Pro gives you the tools
+                                        to grow faster with modern technology, integrated payments, and subscription
+                                        control.
+                                    </p>
                                     <div class="space32"></div>
                                     <div class="btn-area" data-aos="zoom-out" data-aos-duration="1200">
-                                        <a href="contact.html" class="header-btn7">Get Started Now</a>
-                                        <a href="pricing-plan.html" class="header-btn8">15 Days Free Trails</a>
+                                        <a href="{{ route('register') }}" class="header-btn5">Book Your DJ Now</a>
+                                        <a href="{{ route('register') }}" class="header-btn7">Register Your Company</a>
+                                        <a href="#pricing" class="header-btn8">Explore Plans</a>
                                     </div>
+                                    <!-- ✅ Optional note for context -->
+                                    <!-- The first button leads companies to register,
+                                                                                                                and the second one takes users to pricing/subscription packages -->
                                 </div>
                             </div>
                         </div>
@@ -830,5 +809,6 @@
         </div>
     </div>
     <!--===== CTA AREA ENDS =======-->
+
 
 @endsection
