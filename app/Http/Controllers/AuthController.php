@@ -143,23 +143,28 @@ class AuthController extends Controller
 
     public function userLogin(Request $request)
     {
-        // Validate input fields
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        // Attempt to authenticate user
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // prevent session fixation
+            $request->session()->regenerate();
 
+            $previous = url()->previous();
+
+            // Check if user came from a blog page
+            if (str_contains($previous, '/blogs')) {
+                return redirect($previous)->with('success', 'Login successful!');
+            }
+
+            // Default redirect to dashboard
             return redirect()->route('dashboard')->with('success', 'Login successful!');
         }
 
-        // Authentication failed
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email'); // keep entered email in input
+        ])->onlyInput('email');
     }
 
 
