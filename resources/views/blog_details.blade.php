@@ -34,4 +34,5 @@
             </div>
         </div>
         <!--===== BLOG PLAN AREA ENDS =======-->
+    </div>
 @endsection

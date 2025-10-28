@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\BlogCategory;
 use App\Models\Package;
 use App\Models\Testimonials;
 use Illuminate\Http\Request;
@@ -24,10 +25,27 @@ class HomeController extends Controller
         return view('website', compact('title', 'monthly_packages', 'yearly_packages', 'blogs', 'testimonials'));
     }
 
-    public function blogs()
+    public function blogs($categorySlug = null)
     {
         $title = 'Insights & Updates';
-        $blogs = Blog::with('category')->paginate(6); // show 6 per page (adjust as needed)
-        return view('blogs', compact('title', 'blogs'));
+        $query = Blog::with('category');
+
+        $category = null;
+
+        if ($categorySlug) {
+            // Find category by slug
+            $category = BlogCategory::where('name', $categorySlug)
+                ->orWhereRaw('LOWER(name) = ?', [strtolower($categorySlug)])
+                ->firstOrFail();
+
+            // Filter blogs by that category
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('id', $category->id);
+            });
+        }
+
+        $blogs = $query->paginate(6);
+
+        return view('blogs', compact('title', 'blogs', 'category'));
     }
 }

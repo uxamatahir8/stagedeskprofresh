@@ -59,6 +59,13 @@
                         </div>
                         <div class="space60"></div>
                         <div class="row">
+                            @if(isset($category))
+                                <div class="text-center mb-4">
+                                    <h4>Showing blogs in category: <strong>{{ $category->name }}</strong></h4>
+                                    <a href="{{ route('blogs') }}" class="header-btn7 mt-3">View All
+                                        Blogs</a>
+                                </div>
+                            @endif
                             @foreach($blogs as $blog)
                                 <div class="col-lg-6 col-md-6">
                                     <div class="blog-inner-boxarea">
@@ -67,7 +74,11 @@
                                         </div>
                                         <div class="space24"></div>
                                         <div class="content tags">
-                                            <span>{{ $blog->category->name }}</span>
+                                            <a href="{{ url('blogs/' . strtolower($blog->category->name)) }}"
+                                                class="text-decoration-none">
+                                                <span>{{ $blog->category->name }}</span>
+                                            </a>
+
                                             <div class="space16"></div>
                                             <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
                                             <div class="space16"></div>
