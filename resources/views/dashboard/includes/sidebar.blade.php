@@ -93,90 +93,48 @@
         <!--- Sidenav Menu -->
         <ul class="side-nav">
             <li class="side-nav-title" data-lang="apps-title">Side Bar Menu</li>
-            <li class="side-nav-item">
-                <a href="{{ route('dashboard') }}" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="earth"></i></span>
-                    <span class="menu-text" data-lang="dashboard">Dashboard</span>
-                </a>
-            </li>
-            @if(hasRole('master_admin'))
-                <li class="side-nav-item">
-                    <a href="{{ route('packages') }}" class="side-nav-link">
-                        <span class="menu-icon"><i data-lucide="package-open"></i></span>
-                        <span class="menu-text" data-lang="packages">Packages</span>
-                    </a>
-                </li>
 
-                <li class="side-nav-item">
-                    <a href="{{ route('companies') }}" class="side-nav-link">
-                        <span class="menu-icon"><i data-lucide="building"></i></span>
-                        <span class="menu-text" data-lang="companies">Companies</span>
-                    </a>
-                </li>
-                <li class="side-nav-item">
-                    <a href="{{ route('testimonials') }}" class="side-nav-link">
-                        <span class="menu-icon"><i data-lucide="star"></i></span>
-                        <span class="menu-text" data-lang="companies">Testimonials</span>
-                    </a>
-                </li>
-            @endif
+            @foreach (config('sidebar') as $item)
+                @php
+                    $roles = $item['roles'] ?? []; // default empty array when not defined
+                @endphp
 
-            @if(hasRole('master_admin', 'company_admin'))
-                <li class="side-nav-item">
-                    <a href="{{ route('users') }}" class="side-nav-link">
-                        <span class="menu-icon"><i data-lucide="users"></i></span>
-                        <span class="menu-text" data-lang="users">Users</span>
-                    </a>
-                </li>
-            @endif
-
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarTickets" aria-expanded="false" aria-controls="sidebarTickets"
-                    class="side-nav-link collapsed">
-                    <span class="menu-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" data-lucide="life-buoy"
-                            class="lucide lucide-life-buoy">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="m4.93 4.93 4.24 4.24"></path>
-                            <path d="m14.83 9.17 4.24-4.24"></path>
-                            <path d="m14.83 14.83 4.24 4.24"></path>
-                            <path d="m9.17 14.83-4.24 4.24"></path>
-                            <circle cx="12" cy="12" r="4"></circle>
-                        </svg></span>
-                    <span class="menu-text" data-lang="support"> Blogs CMS</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarTickets" style="">
-                    <ul class="sub-menu">
+                @if (empty($roles) || hasRole(...$roles))
+                    @if (isset($item['submenu']))
                         <li class="side-nav-item">
-                            <a href="{{ route('blog-categories') }}" class="side-nav-link">
-                                <span class="menu-text" data-lang="tickets">Blog Categories</span>
+                            <a data-bs-toggle="collapse" href="#menu{{ Str::slug($item['title']) }}"
+                                aria-expanded="false" aria-controls="menu{{ Str::slug($item['title']) }}"
+                                class="side-nav-link collapsed">
+                                <span class="menu-icon">
+                                    <i data-lucide="{{ $item['icon'] ?? 'circle' }}"></i>
+                                </span>
+                                <span class="menu-text">{{ $item['title'] }}</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="menu{{ Str::slug($item['title']) }}">
+                                <ul class="sub-menu">
+                                    @foreach ($item['submenu'] as $sub)
+                                        <li class="side-nav-item">
+                                            <a href="{{ route($sub['route']) }}" class="side-nav-link">
+                                                <span class="menu-text">{{ $sub['title'] }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </li>
+                    @else
+                        <li class="side-nav-item">
+                            <a href="{{ route($item['route']) }}" class="side-nav-link">
+                                <span class="menu-icon"><i data-lucide="{{ $item['icon'] ?? 'circle' }}"></i></span>
+                                <span class="menu-text">{{ $item['title'] }}</span>
                             </a>
                         </li>
-                        <li class="side-nav-item">
-                            <a href="{{ route('blogs.list') }}" class="side-nav-link">
-                                <span class="menu-text" data-lang="ticket-details">Blogs</span>
-                            </a>
-                        </li>
-                        <li class="side-nav-item">
-                            <a href="ticket-create.html" class="side-nav-link">
-                                <span class="menu-text" data-lang="ticket-create">Blog Comments</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-
-            @if(hasRole('master_admin'))
-                <li class="side-nav-item">
-                    <a href="{{ route('settings') }}" class="side-nav-link">
-                        <span class="menu-icon"><i data-lucide="cog"></i></span>
-                        <span class="menu-text" data-lang="settings">Settings</span>
-                    </a>
-                </li>
-            @endif
+                    @endif
+                @endif
+            @endforeach
         </ul>
+
     </div>
 </div>
 <!-- Sidenav Menu End -->
