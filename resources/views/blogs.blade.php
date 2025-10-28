@@ -59,20 +59,20 @@
                         </div>
                         <div class="space60"></div>
                         <div class="row">
-                            @if(!$blogs->isEmpty())
-
-                                @if(isset($category))
+                            @if (!$blogs->isEmpty())
+                                @if (isset($category))
                                     <div class="text-center mb-4">
                                         <h4>Showing blogs in category: <strong>{{ $category->name }}</strong></h4>
                                         <a href="{{ route('blogs') }}" class="header-btn7 mt-3">View All
                                             Blogs</a>
                                     </div>
                                 @endif
-                                @foreach($blogs as $blog)
+                                @foreach ($blogs as $blog)
                                     <div class="col-lg-6 col-md-6">
                                         <div class="blog-inner-boxarea">
                                             <div class="images">
-                                                <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}" alt="">
+                                                <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}"
+                                                    alt="">
                                             </div>
                                             <div class="space24"></div>
                                             <div class="content tags">
@@ -86,8 +86,8 @@
                                                 <div class="space16"></div>
                                                 <p>{!! Str::words($blog->content, 11, '...') !!}</p>
                                                 <div class="space24"></div>
-                                                <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Learn More <i
-                                                        class="fa-solid fa-arrow-right"></i></a>
+                                                <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Learn
+                                                    More <i class="fa-solid fa-arrow-right"></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -102,14 +102,16 @@
                                                 @if ($blogs->onFirstPage())
                                                     <li class="page-item disabled">
                                                         <a class="page-link" href="#" aria-label="Previous">
-                                                            <span aria-hidden="true"><i class="fa-solid fa-angle-left"></i></span>
+                                                            <span aria-hidden="true"><i
+                                                                    class="fa-solid fa-angle-left"></i></span>
                                                         </a>
                                                     </li>
                                                 @else
                                                     <li class="page-item">
                                                         <a class="page-link" href="{{ $blogs->previousPageUrl() }}"
                                                             aria-label="Previous">
-                                                            <span aria-hidden="true"><i class="fa-solid fa-angle-left"></i></span>
+                                                            <span aria-hidden="true"><i
+                                                                    class="fa-solid fa-angle-left"></i></span>
                                                         </a>
                                                     </li>
                                                 @endif
@@ -118,24 +120,29 @@
                                                 @foreach ($blogs->getUrlRange(1, $blogs->lastPage()) as $page => $url)
                                                     @if ($page == $blogs->currentPage())
                                                         <li class="page-item"><a class="page-link active"
-                                                                href="#">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a></li>
+                                                                href="#">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a>
+                                                        </li>
                                                     @else
                                                         <li class="page-item"><a class="page-link"
-                                                                href="{{ $url }}">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a></li>
+                                                                href="{{ $url }}">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a>
+                                                        </li>
                                                     @endif
                                                 @endforeach
 
                                                 {{-- Next Page Link --}}
                                                 @if ($blogs->hasMorePages())
                                                     <li class="page-item">
-                                                        <a class="page-link" href="{{ $blogs->nextPageUrl() }}" aria-label="Next">
-                                                            <span aria-hidden="true"><i class="fa-solid fa-angle-right"></i></span>
+                                                        <a class="page-link" href="{{ $blogs->nextPageUrl() }}"
+                                                            aria-label="Next">
+                                                            <span aria-hidden="true"><i
+                                                                    class="fa-solid fa-angle-right"></i></span>
                                                         </a>
                                                     </li>
                                                 @else
                                                     <li class="page-item disabled">
                                                         <a class="page-link" href="#" aria-label="Next">
-                                                            <span aria-hidden="true"><i class="fa-solid fa-angle-right"></i></span>
+                                                            <span aria-hidden="true"><i
+                                                                    class="fa-solid fa-angle-right"></i></span>
                                                         </a>
                                                     </li>
                                                 @endif
@@ -146,9 +153,14 @@
                                 </div>
                             @else
                                 <div class="text-center mb-4">
-                                    <h4>No blogs found in category: <strong>{{ $category->name }}</strong></h4>
-                                    <a href="{{ route('blogs') }}" class="header-btn7 mt-3">View All
-                                        Blogs</a>
+                                    @if (isset($category))
+                                        <h4>No blogs found in category: <strong>{{ $category->name ?? '' }}</strong></h4>
+                                        <a href="{{ route('blogs') }}" class="header-btn7 mt-3">View All
+                                            Blogs</a>
+                                    @else
+                                        <h4>No blogs found</strong></h4>
+                                        <a href="{{ route('home') }}" class="header-btn7 mt-3">Home</a>
+                                    @endif
                                 </div>
                             @endif
                         </div>

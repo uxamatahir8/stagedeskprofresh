@@ -64,7 +64,8 @@
                     <div class="col-lg-6 m-auto">
                         <div class="works4-header text-center heading6 tags2">
                             <span data-aos="fade-up" data-aos-duration="800">
-                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">How It Works</span>
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">How It
+                                Works</span>
                             <div class="space16"></div>
                             <h2 data-aos="fade-up" data-aos-duration="1000">How StageDesk Pro Streamlines the Booking
                                 Process</h2>
@@ -257,7 +258,8 @@
                     <div class="col-lg-8 m-auto">
                         <div class="marketing-header tags2 heading6 text-center">
                             <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Platform Features</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Platform
+                                Features</span>
                             <div class="space16"></div>
                             <h2 data-aos="fade-up" data-aos-duration="1000">Key Features of StageDesk Pro</h2>
                         </div>
@@ -328,7 +330,8 @@
                     <div class="col-lg-5">
                         <div class="others-collaborate-area heading6 tags2 ">
                             <span data-aos="fade-right" data-aos-duration="600"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Collaboration</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}"
+                                    alt="">Collaboration</span>
                             <div class="space16"></div>
                             <h2 data-aos="fade-right" data-aos-duration="700">Empowering Collaboration Between DJs &
                                 Companies
@@ -378,7 +381,8 @@
                     <div class="col-lg-7 m-auto">
                         <div class="pricing-header text-center heading6 tags2">
                             <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Pricing Plan</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Pricing
+                                Plan</span>
                             <div class="space16"></div>
                             <h2 data-aos="fade-up" data-aos-duration="1000" class="text-capitalize">Choose Your
                                 Subscription</h2>
@@ -404,14 +408,15 @@
                         <div class="tab-content">
                             <div id="monthly" style="display: block;">
                                 <div class="row">
-                                    @foreach($monthly_packages as $package)
+                                    @foreach ($monthly_packages as $package)
                                         <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
                                             <div class="price-box">
                                                 <div class="hadding">
                                                     <div class="pricing-area">
                                                         <h3>{{ $package->name }}</h3>
                                                         <div class="space24"></div>
-                                                        <h2 class="pricing-heading">${{ $package->price }} <span>/month</span>
+                                                        <h2 class="pricing-heading">${{ $package->price }}
+                                                            <span>/month</span>
                                                         </h2>
                                                         <div class="space16"></div>
                                                         <p>{{ $package->description }}</p>
@@ -433,12 +438,14 @@
                                                             <li>
                                                                 <img src="{{ asset('landing/images/icons/check-green.svg') }}"
                                                                     alt="">
-                                                                Responses Allowed: {{ $package->max_responses_allowed }}/month
+                                                                Responses Allowed:
+                                                                {{ $package->max_responses_allowed }}/month
                                                             </li>
                                                             <li class="space16"></li>
                                                             @foreach ($package->features as $feature)
                                                                 <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                        alt="">{{ $feature->feature_description }}</li>
+                                                                        alt="">{{ $feature->feature_description }}
+                                                                </li>
                                                                 <li class="space16"></li>
                                                             @endforeach
                                                         </ul>
@@ -459,14 +466,15 @@
                             </div>
                             <div id="yearly" style="display: none;">
                                 <div class="row">
-                                    @foreach($yearly_packages as $package)
+                                    @foreach ($yearly_packages as $package)
                                         <div class="col-md-6 col-lg-4" data-aos="flip-right" data-aos-duration="1000">
                                             <div class="price-box">
                                                 <div class="hadding">
                                                     <div class="pricing-area">
                                                         <h3>{{ $package->name }}</h3>
                                                         <div class="space24"></div>
-                                                        <h2 class="pricing-heading">${{ $package->price }} <span>/year</span>
+                                                        <h2 class="pricing-heading">${{ $package->price }}
+                                                            <span>/year</span>
                                                         </h2>
                                                         <div class="space16"></div>
                                                         <p>{{ $package->description }}</p>
@@ -488,12 +496,14 @@
                                                             <li>
                                                                 <img src="{{ asset('landing/images/icons/check-green.svg') }}"
                                                                     alt="">
-                                                                Responses Allowed: {{ $package->max_responses_allowed }}/year
+                                                                Responses Allowed:
+                                                                {{ $package->max_responses_allowed }}/year
                                                             </li>
                                                             <li class="space16"></li>
                                                             @foreach ($package->features as $feature)
                                                                 <li><img src="{{ asset('landing/images/icons/check-green.svg') }}"
-                                                                        alt="">{{ $feature->feature_description }}</li>
+                                                                        alt="">{{ $feature->feature_description }}
+                                                                </li>
                                                                 <li class="space16"></li>
                                                             @endforeach
                                                         </ul>
@@ -525,7 +535,8 @@
                     <div class="col-lg-6 m-auto">
                         <div class="social-area-header heading6 tags2 text-center">
                             <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Integration</span>
+                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}"
+                                    alt="">Integration</span>
                             <div class="space16"></div>
                             <h2 data-aos="fade-up" data-aos-duration="1000" class="text-capitalize">We’re a Meta
                                 Business Partner</h2>
@@ -538,56 +549,64 @@
                         <div class="all-social-area">
                             <div class="facebook" data-aos="zoom-in" data-aos-duration="800">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/facebook.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/facebook.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Facebook</a>
                             </div>
                             <div class="instagram" data-aos="zoom-in" data-aos-duration="900">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/instagram2.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/instagram2.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Instagram</a>
                             </div>
                             <div class="behance" data-aos="zoom-in" data-aos-duration="900">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Behance</a>
                             </div>
                             <div class="twitter" data-aos="zoom-in" data-aos-duration="1000">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/twitter.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/twitter.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Twitter</a>
                             </div>
                             <div class="telegram" data-aos="zoom-in" data-aos-duration="1100">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/telegram.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/telegram.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Telegram</a>
                             </div>
                             <div class="tiktok" data-aos="zoom-in" data-aos-duration="1200">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/tiktok.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/tiktok.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Tiktok</a>
                             </div>
                             <div class="youtube" data-aos="zoom-in" data-aos-duration="800">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/youtube.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/youtube.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Youtube</a>
                             </div>
                             <div class="behance" data-aos="zoom-in" data-aos-duration="900">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Behance</a>
@@ -599,14 +618,16 @@
                         <div class="all-social-area">
                             <div class="pinterest" data-aos="zoom-in" data-aos-duration="1000">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/pinterest.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/pinterest.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Pinterest</a>
                             </div>
                             <div class="linkedin" data-aos="zoom-in" data-aos-duration="1000">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/linkedin.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/linkedin.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Linkedin</a>
@@ -614,42 +635,48 @@
 
                             <div class="instagram" data-aos="zoom-in" data-aos-duration="1100">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/massenger.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/massenger.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Messenger</a>
                             </div>
                             <div class="github" data-aos="zoom-out" data-aos-duration="1200">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/github.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/github.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Github</a>
                             </div>
                             <div class="gtp" data-aos="zoom-out" data-aos-duration="800">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/gpt.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/gpt.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Chat GPT</a>
                             </div>
                             <div class="reddit" data-aos="zoom-out" data-aos-duration="900">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/reddit.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/reddit.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Reddit</a>
                             </div>
                             <div class="paypal" data-aos="zoom-out" data-aos-duration="1000">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/paypal.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/paypal.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Paypal</a>
                             </div>
                             <div class="thumb" data-aos="zoom-out" data-aos-duration="1100">
                                 <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/thumb.svg') }}" alt=""></a>
+                                    <a href="#"><img src="{{ asset('landing/images/icons/thumb.svg') }}"
+                                            alt=""></a>
                                 </div>
                                 <div class="space20"></div>
                                 <a class="link" href="#">Paypal</a>
@@ -673,19 +700,18 @@
                 <div class="row">
                     <div class="col-lg-12 m-auto">
                         <div class="tastemonial-box-area">
-                            <img src="{{ asset('landing/images/icons/pinterest1.svg') }}" alt="" class="pinterest1"
-                                data-aos="fade-right" data-aos-duration="1000">
-                            <img src="{{ asset('landing/images/background/testimonial.png') }}" alt="" class="testimonial"
-                                data-aos="zoom-out" data-aos-duration="800">
+                            <img src="{{ asset('landing/images/icons/pinterest1.svg') }}" alt=""
+                                class="pinterest1" data-aos="fade-right" data-aos-duration="1000">
+                            <img src="{{ asset('landing/images/background/testimonial.png') }}" alt=""
+                                class="testimonial" data-aos="zoom-out" data-aos-duration="800">
                             <div class="row">
                                 <div class="col-lg-8 m-auto">
                                     <div class="testimonial-main-box heading6 owl-carousel">
                                         @foreach ($testimonials as $testimonial)
-
-
                                             <div class="testimonial-content">
                                                 <div class="img1 text-center">
-                                                    <img src="{{ asset('landing/images/icons/quito-img1.svg') }}" alt="">
+                                                    <img src="{{ asset('landing/images/icons/quito-img1.svg') }}"
+                                                        alt="">
                                                 </div>
                                                 <div class="space16"></div>
                                                 <h2 class="text-center">Client Success Stories </h2>
@@ -694,7 +720,8 @@
                                                 <div class="space32"></div>
                                                 <div class="team-details">
                                                     <div class="img1">
-                                                        <img src="{{ asset('storage/' . $testimonial->avatar ?? '') }}" alt="">
+                                                        <img src="{{ asset('storage/' . $testimonial->avatar ?? '') }}"
+                                                            alt="">
                                                     </div>
                                                     <div class="content">
                                                         <a href="team.html">{{ $testimonial->name }}</a>
@@ -706,8 +733,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <img src="{{ asset('landing/images/icons/instagram3.svg') }}" alt="" class="instagram3"
-                                data-aos="fade-left" data-aos-duration="1000">
+                            <img src="{{ asset('landing/images/icons/instagram3.svg') }}" alt=""
+                                class="instagram3" data-aos="fade-left" data-aos-duration="1000">
                         </div>
                     </div>
                 </div>
@@ -730,41 +757,53 @@
                 </div>
                 <div class="space60"></div>
                 <div class="row">
-                    @foreach($blogs as $blog)
-                        <div class="col-lg-4 col-md-6" data-aos="flip-left" data-aos-duration="1200">
-                            <div class="blog4-boxarea">
-                                <div class=" img1">
-                                    <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}" alt="">
-                                </div>
-                                <div class="blog-content">
-                                    <div class="date">
-                                        <div class="social">
-                                            <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->category->name }}</a>
-                                        </div>
-                                        <div class="date-day">
-                                            <a href="#"><img src="{{ asset('landing/images/icons/clock-img1.svg') }}"
-                                                    alt="">{{ date('d-M-Y', strtotime($blog->published_at)) }}</a>
-                                        </div>
+                    @if (!$blogs->isEmpty())
+                        @foreach ($blogs as $blog)
+                            <div class="col-lg-4 col-md-6" data-aos="flip-left" data-aos-duration="1200">
+                                <div class="blog4-boxarea">
+                                    <div class=" img1">
+                                        <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}" alt="">
                                     </div>
-                                    <div class="space16"></div>
-                                    <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
-                                    <div class="space16"></div>
-                                    <p>{!! Str::words($blog->content, 11, '...') !!}</p>
-                                    <div class="space20"></div>
-                                    <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Read More <i
-                                            class="fa-solid fa-arrow-right"></i></a>
+                                    <div class="blog-content">
+                                        <div class="date">
+                                            <div class="social">
+                                                <a
+                                                    href="{{ route('blog.details', $blog->slug) }}">{{ $blog->category->name }}</a>
+                                            </div>
+                                            <div class="date-day">
+                                                <a href="#"><img
+                                                        src="{{ asset('landing/images/icons/clock-img1.svg') }}"
+                                                        alt="">{{ date('d-M-Y', strtotime($blog->published_at)) }}</a>
+                                            </div>
+                                        </div>
+                                        <div class="space16"></div>
+                                        <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
+                                        <div class="space16"></div>
+                                        <p>{!! Str::words($blog->content, 11, '...') !!}</p>
+                                        <div class="space20"></div>
+                                        <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Read More <i
+                                                class="fa-solid fa-arrow-right"></i></a>
+                                    </div>
                                 </div>
                             </div>
+                        @endforeach
+                    @else
+                        <div class="col-lg-12">
+                            <div class="text-center">
+                                <h4>No blogs available at the moment.</h4>
+                            </div>
                         </div>
-                    @endforeach
+                    @endif
                 </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <a href="{{ route('blogs') }}" class="header-btn7">View All Blogs</a>
+                @if (!$blogs->isEmpty())
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="text-center">
+                                <a href="{{ route('blogs') }}" class="header-btn7">View All Blogs</a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
         <!--===== BLOG AREA ENDS =======-->
@@ -799,7 +838,7 @@
                                     </div>
                                     <!-- ✅ Optional note for context -->
                                     <!-- The first button leads companies to register,
-                                                                                                                and the second one takes users to pricing/subscription packages -->
+                                                                                                                            and the second one takes users to pricing/subscription packages -->
                                 </div>
                             </div>
                         </div>
