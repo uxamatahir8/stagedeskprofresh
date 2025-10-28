@@ -758,6 +758,13 @@
                         </div>
                     @endforeach
                 </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center">
+                            <a href="{{ route('blogs') }}" class="header-btn7">View All Blogs</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <!--===== BLOG AREA ENDS =======-->
@@ -792,7 +799,7 @@
                                     </div>
                                     <!-- ✅ Optional note for context -->
                                     <!-- The first button leads companies to register,
-                                                                                                            and the second one takes users to pricing/subscription packages -->
+                                                                                                                and the second one takes users to pricing/subscription packages -->
                                 </div>
                             </div>
                         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\BlogCategory;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -175,9 +176,37 @@ class BlogController extends Controller
 
     public function show($slug)
     {
-        $blog = Blog::with(['category', 'user'])->where('slug', $slug)->firstOrFail();
+        $blog = Blog::with(['category', 'comments.user', 'comments.replies.user'])->where('slug', $slug)->firstOrFail();
+
+        $categories = BlogCategory::all();
         $title = $blog->title;
 
-        return view('blog', compact('blog', 'title'));
+        // Other blogs from the same category
+        $relatedBlogs = Blog::where('blog_category_id', $blog->category_id)
+            ->where('id', '!=', $blog->id)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return view('blog_details', compact('blog', 'categories', 'relatedBlogs', 'title'));
+    }
+
+    public function postComment(Request $request, $slug)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:comments,id'
+        ]);
+
+        $blog = Blog::where('slug', $slug)->firstOrFail();
+
+        Comment::create([
+            'user_id' => Auth::user()->id,
+            'blog_id' => $blog->id,
+            'parent_id' => $request->parent_id,
+            'content' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Your comment has been posted.');
     }
 }

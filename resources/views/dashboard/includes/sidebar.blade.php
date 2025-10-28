@@ -155,7 +155,7 @@
                             </a>
                         </li>
                         <li class="side-nav-item">
-                            <a href="{{ route('blogs') }}" class="side-nav-link">
+                            <a href="{{ route('blogs.list') }}" class="side-nav-link">
                                 <span class="menu-text" data-lang="ticket-details">Blogs</span>
                             </a>
                         </li>

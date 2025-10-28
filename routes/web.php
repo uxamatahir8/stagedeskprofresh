@@ -14,6 +14,10 @@ Route::get('/blog-details/{slug}', [BlogController::class, 'show'])->name('blog.
 Route::get('/states/{country_id}', [UserController::class, 'getStates']);
 Route::get('/cities/{state_id}', [UserController::class, 'getCities']);
 
+Route::get('/blogs/{categorySlug?}', [HomeController::class, 'blogs'])->name('blogs');
+
+Route::post('/blogs/{slug}/comment', [BlogController::class, 'postComment'])->name('blogs.comment')->middleware('auth');
+
 
 // add guests routes with guest middleware
 Route::middleware('guest')->group(function () {
