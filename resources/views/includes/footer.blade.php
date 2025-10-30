@@ -78,7 +78,7 @@
                             <div class="copyright-social-area">
                                 <ul>
                                     <li class="pera">
-                                        <p>Copyright @2024 Quad. All Right Reserved</p>
+                                        <p>{{ settings_get('footer_text') }} {{ date('Y') }} All Right Reserved</p>
                                     </li>
                                 </ul>
                                 <ul>
