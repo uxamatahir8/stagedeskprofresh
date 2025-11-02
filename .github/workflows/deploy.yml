@@ -2,27 +2,24 @@ name: Deploy to Staging
 
 on:
   push:
-    branches:
-      - dev
+    branches: [dev]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup SSH Keys
+      - name: Setup SSH Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-      - name: Add server to known hosts
-        run: |
-          ssh-keyscan -H ${{ secrets.STAG_HOST }} >> ~/.ssh/known_hosts
+      - name: Add VPS to known_hosts
+        run: ssh-keyscan -H ${{ secrets.STAG_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy Laravel to Staging
+      - name: Deploy to Staging Server
         run: |
           ssh ${{ secrets.STAG_USER }}@${{ secrets.STAG_HOST }} "
             cd ${{ secrets.STAG_DIR }} &&
