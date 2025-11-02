@@ -25,7 +25,6 @@ jobs:
             cd ${{ secrets.STAG_DIR }} &&
             git pull origin dev &&
             composer install --no-dev --optimize-autoloader &&
-            cp .env.example .env &&
             php artisan key:generate &&
             php artisan migrate:fresh --seed --force &&
             php artisan storage:link &&
