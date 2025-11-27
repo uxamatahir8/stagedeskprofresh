@@ -35,7 +35,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <a href="javascript:void(0);" class="link-reset">
-                        <img src="{{ Auth::user()->profile->profile_image == '' ? asset('images/users/user-4.jpg') : asset('storage/' . Auth::user()->profile->profile_image) }}"
+                        <img src="{{ Auth::user()->profile?->profile_image == '' ? asset('images/users/user-4.jpg') : asset('storage/' . Auth::user()->profile->profile_image) }}"
                             alt="user-image" class="rounded-circle mb-2 avatar-md">
                         <span class="sidenav-user-name fw-bold">{{ Auth::user()->name }}</span>
                         <span class="fs-12 fw-semibold" data-lang="user-role">{{ Auth::user()->role->name }}</span>
