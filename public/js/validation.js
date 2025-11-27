@@ -1,5 +1,5 @@
 const inputs = document.querySelectorAll(
-    ".number, .required, .valid_url, .match"
+    ".number, .required, .valid_url, .match, .phone, .email"
 );
 const validateRequiredInput = (element) => {
     let required = false;
@@ -135,29 +135,6 @@ const validateRequiredInput = (element) => {
                     element.classList.add("is-valid");
                     validationMessage.classList.add("d-none");
                     validEmail = true;
-                }
-            }
-            if (element.classList.contains("unique_email")) {
-                const email = element.value.trim();
-                if (validEmail == true) {
-                    axios
-                        .get(base_url + "manage/validate_email?email=" + email)
-                        .then((response) => {
-                            console.log(response?.data?.status);
-                            if (response.data.status == 1) {
-                                element.classList.add("is-invalid");
-                                element.classList.remove("is-valid");
-                                validationMessage.textContent = `Email already exists!`;
-                                validationMessage.classList.remove("d-none");
-                            } else {
-                                element.classList.remove("is-invalid");
-                                element.classList.add("is-valid");
-                                validationMessage.classList.add("d-none");
-                            }
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                        });
                 }
             }
 
