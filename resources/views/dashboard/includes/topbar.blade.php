@@ -198,12 +198,6 @@
                         <!-- Divider -->
                         <div class="dropdown-divider"></div>
 
-                        <!-- Lock -->
-                        <a href="auth-lock-screen.html" class="dropdown-item">
-                            <i class="ti ti-lock me-1 fs-17 align-middle"></i>
-                            <span class="align-middle">Lock Screen</span>
-                        </a>
-
                         <!-- Logout -->
                         <a href="{{ route('logout') }}" class="dropdown-item fw-semibold">
                             <i class="ti ti-logout-2 me-1 fs-17 align-middle"></i>
