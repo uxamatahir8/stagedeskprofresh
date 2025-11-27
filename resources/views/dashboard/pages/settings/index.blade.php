@@ -41,7 +41,6 @@
                 @foreach($settings as $key => $setting)
                     @php
                         $extraClass = '';
-
                         if (str_contains($setting->key, 'email')) {
                             $extraClass = 'email';
                         } elseif (str_contains($setting->key, 'phone')) {
@@ -67,14 +66,20 @@
                                     </div>
                                 @endif
 
+                                {{-- NEW PREVIEW HOLDER --}}
+                                <img id="{{ $setting->key }}_preview" src="" alt=""
+                                    style="display:none; height:70px; margin-bottom:10px;">
+
                                 <input type="file" name="{{ $setting->key }}" id="{{ $setting->key }}"
-                                    class="form-control {{ $extraClass }}">
+                                    class="form-control {{ $extraClass }} image-preview-input">
 
                                 {{-- TEXTAREA FIELDS --}}
                             @elseif(in_array($setting->key, $textAreaFields))
                                 <textarea name="{{ $setting->key }}" id="{{ $setting->key }}" rows="4"
                                     class="form-control {{ $extraClass }}"
                                     placeholder="{{ ucwords(str_replace('_', ' ', $setting->key)) }}">{{ old($setting->key, $setting->value) }}</textarea>
+
+                                {{-- TIMEZONE SELECT --}}
                             @elseif(in_array($setting->key, $timezoneFields))
                                 <select name="{{ $setting->key }}" id="{{ $setting->key }}" class="form-select">
                                     <option value="">Select Timezone</option>
@@ -84,6 +89,7 @@
                                         </option>
                                     @endforeach
                                 </select>
+
                                 {{-- TEXT & EMAIL INPUTS --}}
                             @else
                                 <input type="{{ str_contains($setting->key, 'email') ? 'email' : 'text' }}"
@@ -103,5 +109,21 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.image-preview-input').forEach(input => {
+            input.addEventListener('change', function () {
+                const preview = document.getElementById(this.id + '_preview');
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        preview.src = event.target.result;
+                        preview.style.display = "block";
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    </script>
 
 @endsection
