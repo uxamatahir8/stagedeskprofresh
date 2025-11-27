@@ -132,7 +132,8 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Company Website</label>
-                        <input type="text" name="company_website" class="form-control" placeholder="https://example.com">
+                        <input type="text" name="company_website" class="form-control valid_url"
+                            placeholder="https://example.com">
                     </div>
                 </div>
                 <div class="col-md-4">
