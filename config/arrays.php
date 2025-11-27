@@ -23,7 +23,6 @@ return [
     ],
     'registerable_roles' => [
         '2' => 'Company',
-        '3' => 'Customer',
         '5' => 'Affiliate'
     ]
 ];
