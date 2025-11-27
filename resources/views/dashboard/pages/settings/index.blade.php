@@ -35,6 +35,7 @@
                 @php
                     $fileFields = ['site_logo', 'site_favicon', 'seo_image'];
                     $textAreaFields = ['custom_head_script', 'custom_body_script', 'seo_description', 'seo_keywords'];
+                    $timezoneFields = ['timezone'];
                 @endphp
 
                 @foreach($settings as $key => $setting)
@@ -74,7 +75,15 @@
                                 <textarea name="{{ $setting->key }}" id="{{ $setting->key }}" rows="4"
                                     class="form-control {{ $extraClass }}"
                                     placeholder="{{ ucwords(str_replace('_', ' ', $setting->key)) }}">{{ old($setting->key, $setting->value) }}</textarea>
-
+                            @elseif(in_array($setting->key, $timezoneFields))
+                                <select name="{{ $setting->key }}" id="{{ $setting->key }}" class="form-select">
+                                    <option value="">Select Timezone</option>
+                                    @foreach($timezones as $timezone)
+                                        <option value="{{ $timezone->timezone }}" {{ old($setting->key, $setting->value) == $timezone->timezone ? 'selected' : '' }}>
+                                            {{ "$timezone->timezone - $timezone->offset" }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 {{-- TEXT & EMAIL INPUTS --}}
                             @else
                                 <input type="{{ str_contains($setting->key, 'email') ? 'email' : 'text' }}"
