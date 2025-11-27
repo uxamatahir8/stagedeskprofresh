@@ -24,7 +24,7 @@
     <div class="auth-box overflow-hidden align-items-center d-flex">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xxl-4 col-md-6 col-sm-8">
+                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '10' : '5' }} col-sm-8">
                     <div class="card p-4">
                         <div class="position-absolute top-0 end-0" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"
@@ -108,10 +108,10 @@
                             </svg>
                         </div>
                         <div class="auth-brand text-start mb-4">
-                            <a href="{{ route('login') }}" class="logo-dark">
+                            <a href="{{ route('home') }}" class="logo-dark">
                                 <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="dark logo" height="80">
                             </a>
-                            <a href="{{ route('login') }}" class="logo-light">
+                            <a href="{{ route('home') }}" class="logo-light">
                                 <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="logo" height="80"
                                     width="190">
                             </a>
