@@ -1,5 +1,5 @@
 const inputs = document.querySelectorAll(
-    ".number, .required, .valid_url, .match"
+    ".number, .required, .valid_url, .match, .phone, .email"
 );
 const validateRequiredInput = (element) => {
     let required = false;
@@ -58,13 +58,14 @@ const validateRequiredInput = (element) => {
         if (element.classList.contains("valid_url")) {
             if (element.value.trim() !== "") {
                 const url_regex =
-                    /^(?!https?:\/\/)([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]{1,5})?(\/.*)?$/;
+                    /^(https?:\/\/)?([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]{1,5})?(\/.*)?$/;
+
                 if (!url_regex.test(element.value.trim())) {
                     element.classList.add("is-invalid");
                     element.classList.remove("is-valid");
                     validationMessage.textContent = `${formatLabel(
                         element.getAttribute("name")
-                    )} must be a valid URL without 'http' or 'https' (e.g., example.com)!`;
+                    )} must be a valid URL (e.g., example.com or https://example.com)!`;
                     validationMessage.classList.remove("d-none");
                 } else {
                     element.classList.remove("is-invalid");
@@ -77,6 +78,7 @@ const validateRequiredInput = (element) => {
                 validationMessage.classList.add("d-none");
             }
         }
+
         if (element.classList.contains("match")) {
             const match_with = element.getAttribute("data-match");
             const match_with_element = document.querySelector("#" + match_with);
@@ -133,29 +135,6 @@ const validateRequiredInput = (element) => {
                     element.classList.add("is-valid");
                     validationMessage.classList.add("d-none");
                     validEmail = true;
-                }
-            }
-            if (element.classList.contains("unique_email")) {
-                const email = element.value.trim();
-                if (validEmail == true) {
-                    axios
-                        .get(base_url + "manage/validate_email?email=" + email)
-                        .then((response) => {
-                            console.log(response?.data?.status);
-                            if (response.data.status == 1) {
-                                element.classList.add("is-invalid");
-                                element.classList.remove("is-valid");
-                                validationMessage.textContent = `Email already exists!`;
-                                validationMessage.classList.remove("d-none");
-                            } else {
-                                element.classList.remove("is-invalid");
-                                element.classList.add("is-valid");
-                                validationMessage.classList.add("d-none");
-                            }
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                        });
                 }
             }
 

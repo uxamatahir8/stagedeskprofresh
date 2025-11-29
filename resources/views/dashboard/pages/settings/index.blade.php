@@ -24,41 +24,80 @@
         </div>
 
         <div class="card-body">
+
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
-            <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('settings.update') }}" class="validate_form" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 @php
-                    // Fields with file upload
                     $fileFields = ['site_logo', 'site_favicon', 'seo_image'];
-                    $text_area_fields = ['custom_head_script', 'custom_body_script', 'seo_description', 'seo_keywords'];
+                    $textAreaFields = ['custom_head_script', 'custom_body_script', 'seo_description', 'seo_keywords'];
+                    $timezoneFields = ['timezone'];
                 @endphp
 
-                @foreach($settings as $key => $value)
+                @foreach($settings as $key => $setting)
+                    @php
+                        $extraClass = '';
+                        if (str_contains($setting->key, 'email')) {
+                            $extraClass = 'email';
+                        } elseif (str_contains($setting->key, 'phone')) {
+                            $extraClass = 'phone';
+                        } elseif (str_contains($setting->key, 'url')) {
+                            $extraClass = 'valid_url';
+                        }
+                    @endphp
+
                     <div class="row g-3 align-items-center mb-3">
                         <div class="col-lg-4">
-                            <label for="{{ $value->key }}"
-                                class="col-form-label">{{ ucwords(str_replace('_', ' ', $value->key)) }}</label>
+                            <label for="{{ $setting->key }}" class="col-form-label">
+                                {{ ucwords(str_replace('_', ' ', $setting->key)) }}
+                            </label>
                         </div>
                         <div class="col-lg-8">
-                            @if(in_array($value->key, $fileFields))
-                                @if($value)
+
+                            {{-- FILE FIELDS --}}
+                            @if(in_array($setting->key, $fileFields))
+                                @if(!empty($setting->value))
                                     <div class="mb-2">
-                                        <img src="{{ asset('storage/' . $value->value) }}" alt="{{ $value->key }}" height="50">
+                                        <img src="{{ asset('storage/' . $setting->value) }}" alt="{{ $setting->key }}" height="50">
                                     </div>
                                 @endif
-                                <input type="file" name="{{ $value->key }}" id="{{ $value->key }}" class="form-control">
-                            @elseif(in_array($value->key, $text_area_fields))
-                                <textarea name="{{ $value->key }}" id="{{ $value->key }}" class="form-control" rows="4"
-                                    placeholder="{{ ucwords(str_replace('_', ' ', $value->key)) }}">{{ old($value->key, $value->value) }}</textarea>
+
+                                {{-- NEW PREVIEW HOLDER --}}
+                                <img id="{{ $setting->key }}_preview" src="" alt=""
+                                    style="display:none; height:70px; margin-bottom:10px;">
+
+                                <input type="file" name="{{ $setting->key }}" id="{{ $setting->key }}"
+                                    class="form-control {{ $extraClass }} image-preview-input">
+
+                                {{-- TEXTAREA FIELDS --}}
+                            @elseif(in_array($setting->key, $textAreaFields))
+                                <textarea name="{{ $setting->key }}" id="{{ $setting->key }}" rows="4"
+                                    class="form-control {{ $extraClass }}"
+                                    placeholder="{{ ucwords(str_replace('_', ' ', $setting->key)) }}">{{ old($setting->key, $setting->value) }}</textarea>
+
+                                {{-- TIMEZONE SELECT --}}
+                            @elseif(in_array($setting->key, $timezoneFields))
+                                <select name="{{ $setting->key }}" id="{{ $setting->key }}" class="form-select">
+                                    <option value="">Select Timezone</option>
+                                    @foreach($timezones as $timezone)
+                                        <option value="{{ $timezone->timezone }}" {{ old($setting->key, $setting->value) == $timezone->timezone ? 'selected' : '' }}>
+                                            {{ "$timezone->timezone - $timezone->offset" }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                {{-- TEXT & EMAIL INPUTS --}}
                             @else
-                                <input type="text" name="{{ $value->key }}" id="{{ $value->key }}" class="form-control"
-                                    value="{{ old($value->key, $value->value) }}"
-                                    placeholder="{{ ucwords(str_replace('_', ' ', $value->key)) }}">
+                                <input type="{{ str_contains($setting->key, 'email') ? 'email' : 'text' }}"
+                                    name="{{ $setting->key }}" id="{{ $setting->key }}" class="form-control {{ $extraClass }}"
+                                    value="{{ old($setting->key, $setting->value) }}"
+                                    placeholder="{{ ucwords(str_replace('_', ' ', $setting->key)) }}">
                             @endif
+
                         </div>
                     </div>
                 @endforeach
@@ -66,8 +105,25 @@
                 <div class="d-flex justify-content-end mt-4">
                     <button type="submit" class="btn btn-primary">Update Settings</button>
                 </div>
+
             </form>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.image-preview-input').forEach(input => {
+            input.addEventListener('change', function () {
+                const preview = document.getElementById(this.id + '_preview');
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        preview.src = event.target.result;
+                        preview.style.display = "block";
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    </script>
 
 @endsection

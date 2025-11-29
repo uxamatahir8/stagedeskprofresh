@@ -35,8 +35,8 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <a href="javascript:void(0);" class="link-reset">
-                        <img src="{{ asset('images/users/user-3.jpg') }}" alt="user-image"
-                            class="rounded-circle mb-2 avatar-md">
+                        <img src="{{ Auth::user()->profile?->profile_image == '' ? asset('images/users/user-4.jpg') : asset('storage/' . Auth::user()->profile->profile_image) }}"
+                            alt="user-image" class="rounded-circle mb-2 avatar-md">
                         <span class="sidenav-user-name fw-bold">{{ Auth::user()->name }}</span>
                         <span class="fs-12 fw-semibold" data-lang="user-role">{{ Auth::user()->role->name }}</span>
                     </a>
@@ -102,9 +102,8 @@
                 @if (empty($roles) || hasRole(...$roles))
                     @if (isset($item['submenu']))
                         <li class="side-nav-item">
-                            <a data-bs-toggle="collapse" href="#menu{{ Str::slug($item['title']) }}"
-                                aria-expanded="false" aria-controls="menu{{ Str::slug($item['title']) }}"
-                                class="side-nav-link collapsed">
+                            <a data-bs-toggle="collapse" href="#menu{{ Str::slug($item['title']) }}" aria-expanded="false"
+                                aria-controls="menu{{ Str::slug($item['title']) }}" class="side-nav-link collapsed">
                                 <span class="menu-icon">
                                     <i data-lucide="{{ $item['icon'] ?? 'circle' }}"></i>
                                 </span>

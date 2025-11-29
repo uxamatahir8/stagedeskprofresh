@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Settings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
@@ -16,7 +17,9 @@ class SettingsController extends Controller
 
         $settings = Settings::all();
 
-        return view('dashboard.pages.settings.index', compact('title', 'settings'));
+        $timezones = DB::table('timezones')->get();
+
+        return view('dashboard.pages.settings.index', compact('title', 'settings', 'timezones'));
     }
 
     public function update(Request $request)
