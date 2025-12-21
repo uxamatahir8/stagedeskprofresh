@@ -65,7 +65,7 @@
                                 <label for="kvk_number" class="col-form-label">Kvk Number</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="text" class="form-control number required" id="kvk_number" name="kvk_number"
+                                <input type="text" class="form-control kvk_number required" id="kvk_number" name="kvk_number"
                                     value="{{ old('kvk_number', $company->kvk_number ?? '') }}" placeholder="KVK Number">
                             </div>
                         </div>
