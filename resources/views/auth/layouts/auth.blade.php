@@ -24,7 +24,7 @@
     <div class="auth-box overflow-hidden align-items-center d-flex">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '10' : '5' }} col-sm-8">
+                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '8' : '5' }} col-sm-8">
                     <div class="card p-4">
                         <div class="position-absolute top-0 end-0" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"

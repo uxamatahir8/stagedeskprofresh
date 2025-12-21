@@ -3,68 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\Package;
+use App\Models\Countries;
 use App\Models\SocialLink;
+use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CompanyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
         $title = 'Companies List';
         $companies = Company::all();
-
         return view('dashboard.pages.companies.index', compact('title', 'companies'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
         $title = 'Create Company';
         $mode = 'create';
-
-        return view('dashboard.pages.companies.manage', compact('title', 'mode'));
+        $countries = Countries::all(); // For admin country select
+        return view('dashboard.pages.companies.manage', compact('title', 'mode', 'countries'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string|max:20',
-            'website' => 'nullable|url',
-            'kvk_number' => 'nullable|string|max:50',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email',
-            'status' => 'nullable|string|in:active,inactive',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'social_links' => 'nullable|array',
-            'social_links.*' => 'nullable|url',
-            'address' => 'nullable|string|max:255'
-        ]);
+        $validated = $this->getArr($request);
 
-        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
-
-        // ✅ Handle logo upload
+        // Handle company logo
         if ($request->hasFile('logo')) {
             $validated['logo'] = $request->file('logo')->store('company_logos', 'public');
         }
 
         $company = Company::create($validated);
 
-        // ✅ Store social links
+        // Social links
         foreach ($request->input('social_links', []) as $handle => $url) {
             if (!empty($url)) {
                 SocialLink::create([
@@ -76,59 +52,57 @@ class CompanyController extends Controller
             }
         }
 
-        return redirect()->route('companies')->with('success', 'Company created successfully, you can add subscription to the comapny by clicking gear icon');
+        // Handle company admin
+        if ($request->has('is_admin') && $request->is_admin) {
+            $adminData = [
+                'name' => $request->contact_name,
+                'email' => $request->contact_email,
+                'role_id' => 2, // Company Admin
+                'company_id' => $company->id,
+                'password' => Hash::make($request->password),
+            ];
+
+            $adminUser = User::create($adminData);
+
+            $profileData = [
+                'user_id' => $adminUser->id,
+                'phone' => $request->contact_phone,
+                'address' => $request->admin_address,
+                'country_id' => $request->admin_country_id,
+                'state_id' => $request->admin_state_id,
+                'city_id' => $request->admin_city_id,
+            ];
+
+            if ($request->hasFile('admin_profile_image')) {
+                $profileData['profile_image'] = $request->file('admin_profile_image')->store('profile_images', 'public');
+            }
+
+            UserProfile::create($profileData);
+        }
+
+        return redirect()->route('companies')->with('success', 'Company created successfully.');
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Company $company)
     {
-        //
         $title = $company->name;
-
         return view('dashboard.pages.companies.show', compact('title', 'company'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Company $company)
     {
-        //
         $title = 'Edit Company';
         $mode = 'edit';
-
-        return view('dashboard.pages.companies.manage', compact('title', 'mode', 'company'));
+        $countries = \App\Models\Country::all();
+        return view('dashboard.pages.companies.manage', compact('title', 'mode', 'company', 'countries'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Company $company)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string|max:20',
-            'website' => 'nullable|url',
-            'kvk_number' => 'nullable|string|max:50',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email',
-            'status' => 'nullable|string|in:active,inactive',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'social_links' => 'nullable|array',
-            'social_links.*' => 'nullable|url',
-            'address' => 'nullable|string|max:255'
-        ]);
+        $validated = $this->getArr($request);
 
-        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
-
+        // Company logo
         if ($request->hasFile('logo')) {
-            // Delete old logo if exists
             if ($company->logo && Storage::disk('public')->exists($company->logo)) {
                 Storage::disk('public')->delete($company->logo);
             }
@@ -137,11 +111,10 @@ class CompanyController extends Controller
 
         $company->update($validated);
 
-        // ✅ Sync social links
+        // Social links
         $socialLinks = $request->input('social_links', []);
         foreach ($socialLinks as $handle => $url) {
             $link = $company->socialLinks()->where('handle', $handle)->first();
-
             if (!empty($url)) {
                 if ($link) {
                     $link->update(['url' => $url]);
@@ -158,27 +131,110 @@ class CompanyController extends Controller
             }
         }
 
-        return redirect()->route('companies')->with('success', 'Company updated successfully');
+        // Handle company admin
+        if ($request->has('is_admin') && $request->is_admin) {
+            $adminUser = User::where('company_id', $company->id)->where('role_id', 2)->first();
+
+            if (!$adminUser) {
+                // Create new admin
+                $adminData = [
+                    'name' => $request->contact_name,
+                    'email' => $request->contact_email,
+                    'role_id' => 2,
+                    'company_id' => $company->id,
+                    'password' => Hash::make($request->password),
+                ];
+                $adminUser = User::create($adminData);
+            } else {
+                // Update existing admin
+                $adminUser->update([
+                    'name' => $request->contact_name,
+                    'email' => $request->contact_email,
+                    'password' => $request->password ? Hash::make($request->password) : $adminUser->password,
+                ]);
+            }
+
+            $profileData = [
+                'phone' => $request->contact_phone,
+                'address' => $request->admin_address,
+                'country_id' => $request->admin_country_id,
+                'state_id' => $request->admin_state_id,
+                'city_id' => $request->admin_city_id,
+            ];
+
+            if ($request->hasFile('admin_profile_image')) {
+                $profileData['profile_image'] = $request->file('admin_profile_image')->store('profile_images', 'public');
+            }
+
+            if ($adminUser->profile) {
+                $adminUser->profile->update($profileData);
+            } else {
+                $profileData['user_id'] = $adminUser->id;
+                UserProfile::create($profileData);
+            }
+        }
+
+        return redirect()->route('companies')->with('success', 'Company updated successfully.');
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Company $company)
     {
-        //
-        // Delete associated social links
+        // Delete social links
         $company->socialLinks()->delete();
 
-        // Delete logo file if exists
+        // Delete logo
         if ($company->logo && Storage::disk('public')->exists($company->logo)) {
             Storage::disk('public')->delete($company->logo);
         }
 
-        // Delete the company
+        // Delete admin and profile if exists
+        $adminUser = User::where('company_id', $company->id)->where('role_id', 2)->first();
+        if ($adminUser) {
+            if ($adminUser->profile && $adminUser->profile->profile_image && Storage::disk('public')->exists($adminUser->profile->profile_image)) {
+                Storage::disk('public')->delete($adminUser->profile->profile_image);
+            }
+            $adminUser->profile()->delete();
+            $adminUser->delete();
+        }
+
+        // Delete company
         $company->delete();
 
-        return redirect()->route('companies')->with('success', 'Company and related social links deleted successfully.');
+        return redirect()->route('companies')->with('success', 'Company and related data deleted successfully.');
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function getArr(Request $request): array
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string|max:20',
+            'website' => 'nullable|url',
+            'kvk_number' => 'nullable|string|max:50',
+            'contact_name' => 'nullable|string|max:255',
+            'contact_phone' => 'nullable|string|max:20',
+            'contact_email' => 'nullable|email',
+            'status' => 'nullable|string|in:active,inactive',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'social_links' => 'nullable|array',
+            'social_links.*' => 'nullable|url',
+            'address' => 'nullable|string|max:255',
+
+            // Admin fields
+            'is_admin' => 'nullable|boolean',
+            'password' => 'required_if:is_admin,1|confirmed|min:6',
+            'admin_address' => 'nullable|string|max:255',
+            'admin_country_id' => 'nullable|exists:countries,id',
+            'admin_state_id' => 'nullable|exists:states,id',
+            'admin_city_id' => 'nullable|exists:cities,id',
+            'admin_profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
+        return $validated;
     }
 }

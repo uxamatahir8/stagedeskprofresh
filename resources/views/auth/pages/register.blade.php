@@ -1,7 +1,7 @@
 @extends('auth.layouts.auth')
 
 @section('content')
-    <form method="POST" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
+    <form method="POST" class="validate_form" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
         @csrf
         <div class="row d-felx justify-content-start align-items-center">
             <div class="col-md-6">
@@ -139,7 +139,7 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">KVK Number</label>
-                        <input type="text" name="kvk_number" class="form-control" placeholder="KVK Number">
+                        <input type="text" name="kvk_number" class="form-control kvk_number" placeholder="KVK Number">
                     </div>
                 </div>
             </div>

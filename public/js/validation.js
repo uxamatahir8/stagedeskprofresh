@@ -1,5 +1,5 @@
 const inputs = document.querySelectorAll(
-    ".number, .required, .valid_url, .match, .phone, .email"
+    ".number, .required, .valid_url, .match, .phone, .email, .kvk_number"
 );
 const validateRequiredInput = (element) => {
     let required = false;
@@ -35,6 +35,22 @@ const validateRequiredInput = (element) => {
             element.classList.add("is-valid");
             validationMessage.classList.add("d-none");
             required = true;
+        }
+
+        if (element.classList.contains('kvk_number')) {
+            if (element.value.trim() !== "") {
+                const vatRegex = /^NL\d{9}B\d{2}$/i; // NL + 9 digits + B + 2 digits
+                if (!vatRegex.test(element.value.trim())) {
+                    element.classList.add("is-invalid");
+                    element.classList.remove("is-valid");
+                    validationMessage.textContent = `${formatLabel(element.getAttribute("name"))} must be a valid Dutch VAT number (e.g., NL123456789B01)!`;
+                    validationMessage.classList.remove("d-none");
+                } else {
+                    element.classList.remove("is-invalid");
+                    element.classList.add("is-valid");
+                    validationMessage.classList.add("d-none");
+                }
+            }
         }
 
         if (element.classList.contains("number")) {

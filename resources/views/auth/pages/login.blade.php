@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <form method="post" autocomplete="off" action="{{ route('user_login') }}">
+    <form method="post" class="validate_form" autocomplete="off" action="{{ route('user_login') }}">
         @csrf
         <div class="mb-3">
             <label for="userEmail" class="form-label">Email address <span class="text-danger">*</span></label>
