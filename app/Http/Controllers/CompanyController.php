@@ -8,6 +8,7 @@ use App\Models\SocialLink;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -29,60 +30,84 @@ class CompanyController extends Controller
         return view('dashboard.pages.companies.manage', compact('title', 'mode', 'countries'));
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function store(Request $request)
     {
-        $validated = $this->getArr($request);
+        DB::beginTransaction();
+        $uploadedFiles = [];
 
-        // Handle company logo
-        if ($request->hasFile('logo')) {
-            $validated['logo'] = $request->file('logo')->store('company_logos', 'public');
-        }
+        try {
+            $validated = $this->getArr($request);
 
-        $company = Company::create($validated);
+            // Company logo
+            if ($request->hasFile('logo')) {
+                $path = $request->file('logo')->store('company_logos', 'public');
+                $validated['logo'] = $path;
+                $uploadedFiles[] = $path;
+            }
 
-        // Social links
-        foreach ($request->input('social_links', []) as $handle => $url) {
-            if (!empty($url)) {
-                SocialLink::create([
-                    'handle' => $handle,
-                    'url' => $url,
+            $company = Company::create($validated);
+
+            // Social links
+            foreach ($request->input('social_links', []) as $handle => $url) {
+                if (!empty($url)) {
+                    SocialLink::create([
+                        'handle' => $handle,
+                        'url' => $url,
+                        'company_id' => $company->id,
+                        'user_id' => null,
+                    ]);
+                }
+            }
+
+            // Handle company admin
+            if ($request->boolean('is_admin')) {
+                $adminUser = User::create([
+                    'name' => $request->contact_name,
+                    'email' => $request->contact_email,
+                    'role_id' => 2,
                     'company_id' => $company->id,
-                    'user_id' => null,
+                    'password' => Hash::make($request->password),
                 ]);
-            }
-        }
 
-        // Handle company admin
-        if ($request->has('is_admin') && $request->is_admin) {
-            $adminData = [
-                'name' => $request->contact_name,
-                'email' => $request->contact_email,
-                'role_id' => 2, // Company Admin
-                'company_id' => $company->id,
-                'password' => Hash::make($request->password),
-            ];
+                $profileData = [
+                    'user_id' => $adminUser->id,
+                    'phone' => $request->contact_phone,
+                    'address' => $request->admin_address,
+                    'country_id' => $request->admin_country_id,
+                    'state_id' => $request->admin_state_id,
+                    'city_id' => $request->admin_city_id,
+                ];
 
-            $adminUser = User::create($adminData);
+                if ($request->hasFile('admin_profile_image')) {
+                    $path = $request->file('admin_profile_image')
+                        ->store('profile_images', 'public');
 
-            $profileData = [
-                'user_id' => $adminUser->id,
-                'phone' => $request->contact_phone,
-                'address' => $request->admin_address,
-                'country_id' => $request->admin_country_id,
-                'state_id' => $request->admin_state_id,
-                'city_id' => $request->admin_city_id,
-            ];
+                    $profileData['profile_image'] = $path;
+                    $uploadedFiles[] = $path;
+                }
 
-            if ($request->hasFile('admin_profile_image')) {
-                $profileData['profile_image'] = $request->file('admin_profile_image')->store('profile_images', 'public');
+                UserProfile::create($profileData);
             }
 
-            UserProfile::create($profileData);
-        }
+            DB::commit();
 
-        return redirect()->route('companies')->with('success', 'Company created successfully.');
+            return redirect()
+                ->route('companies')
+                ->with('success', 'Company created successfully.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            foreach ($uploadedFiles as $file) {
+                Storage::disk('public')->delete($file);
+            }
+
+            throw $e;
+        }
     }
-
     public function show(Company $company)
     {
         $title = $company->name;
@@ -93,90 +118,122 @@ class CompanyController extends Controller
     {
         $title = 'Edit Company';
         $mode = 'edit';
-        $countries = \App\Models\Country::all();
+        $countries = Countries::all();
         return view('dashboard.pages.companies.manage', compact('title', 'mode', 'company', 'countries'));
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function update(Request $request, Company $company)
     {
-        $validated = $this->getArr($request);
+        DB::beginTransaction();
 
-        // Company logo
-        if ($request->hasFile('logo')) {
-            if ($company->logo && Storage::disk('public')->exists($company->logo)) {
-                Storage::disk('public')->delete($company->logo);
+        // Track uploaded files in case rollback is needed
+        $uploadedFiles = [];
+
+        try {
+            $validated = $this->getArr($request);
+
+            // Company logo
+            if ($request->hasFile('logo')) {
+                if ($company->logo && Storage::disk('public')->exists($company->logo)) {
+                    Storage::disk('public')->delete($company->logo);
+                }
+
+                $path = $request->file('logo')->store('company_logos', 'public');
+                $validated['logo'] = $path;
+                $uploadedFiles[] = $path;
             }
-            $validated['logo'] = $request->file('logo')->store('company_logos', 'public');
-        }
 
-        $company->update($validated);
+            $company->update($validated);
 
-        // Social links
-        $socialLinks = $request->input('social_links', []);
-        foreach ($socialLinks as $handle => $url) {
-            $link = $company->socialLinks()->where('handle', $handle)->first();
-            if (!empty($url)) {
-                if ($link) {
-                    $link->update(['url' => $url]);
-                } else {
-                    SocialLink::create([
-                        'handle' => $handle,
-                        'url' => $url,
+            // Social links
+            $socialLinks = $request->input('social_links', []);
+            foreach ($socialLinks as $handle => $url) {
+                $link = $company->socialLinks()->where('handle', $handle)->first();
+
+                if (!empty($url)) {
+                    if ($link) {
+                        $link->update(['url' => $url]);
+                    } else {
+                        SocialLink::create([
+                            'handle' => $handle,
+                            'url' => $url,
+                            'company_id' => $company->id,
+                            'user_id' => null,
+                        ]);
+                    }
+                } elseif ($link) {
+                    $link->delete();
+                }
+            }
+
+            // Handle company admin
+            if ($request->boolean('is_admin')) {
+                $adminUser = User::where('company_id', $company->id)
+                    ->where('role_id', 2)
+                    ->first();
+
+                if (!$adminUser) {
+                    $adminUser = User::create([
+                        'name' => $request->contact_name,
+                        'email' => $request->contact_email,
+                        'role_id' => 2,
                         'company_id' => $company->id,
-                        'user_id' => null,
+                        'password' => Hash::make($request->password),
+                    ]);
+                } else {
+                    $adminUser->update([
+                        'name' => $request->contact_name,
+                        'email' => $request->contact_email,
+                        'password' => $request->filled('password')
+                            ? Hash::make($request->password)
+                            : $adminUser->password,
                     ]);
                 }
-            } elseif ($link) {
-                $link->delete();
-            }
-        }
 
-        // Handle company admin
-        if ($request->has('is_admin') && $request->is_admin) {
-            $adminUser = User::where('company_id', $company->id)->where('role_id', 2)->first();
-
-            if (!$adminUser) {
-                // Create new admin
-                $adminData = [
-                    'name' => $request->contact_name,
-                    'email' => $request->contact_email,
-                    'role_id' => 2,
-                    'company_id' => $company->id,
-                    'password' => Hash::make($request->password),
+                $profileData = [
+                    'phone' => $request->contact_phone,
+                    'address' => $request->admin_address,
+                    'country_id' => $request->admin_country_id,
+                    'state_id' => $request->admin_state_id,
+                    'city_id' => $request->admin_city_id,
                 ];
-                $adminUser = User::create($adminData);
-            } else {
-                // Update existing admin
-                $adminUser->update([
-                    'name' => $request->contact_name,
-                    'email' => $request->contact_email,
-                    'password' => $request->password ? Hash::make($request->password) : $adminUser->password,
-                ]);
+
+                if ($request->hasFile('admin_profile_image')) {
+                    $path = $request->file('admin_profile_image')
+                        ->store('profile_images', 'public');
+
+                    $profileData['profile_image'] = $path;
+                    $uploadedFiles[] = $path;
+                }
+
+                if ($adminUser->profile) {
+                    $adminUser->profile->update($profileData);
+                } else {
+                    $profileData['user_id'] = $adminUser->id;
+                    UserProfile::create($profileData);
+                }
             }
 
-            $profileData = [
-                'phone' => $request->contact_phone,
-                'address' => $request->admin_address,
-                'country_id' => $request->admin_country_id,
-                'state_id' => $request->admin_state_id,
-                'city_id' => $request->admin_city_id,
-            ];
+            DB::commit();
 
-            if ($request->hasFile('admin_profile_image')) {
-                $profileData['profile_image'] = $request->file('admin_profile_image')->store('profile_images', 'public');
+            return redirect()
+                ->route('companies')
+                ->with('success', 'Company updated successfully.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            // Cleanup uploaded files
+            foreach ($uploadedFiles as $file) {
+                Storage::disk('public')->delete($file);
             }
 
-            if ($adminUser->profile) {
-                $adminUser->profile->update($profileData);
-            } else {
-                $profileData['user_id'] = $adminUser->id;
-                UserProfile::create($profileData);
-            }
+            throw $e; // or handle gracefully
         }
-
-        return redirect()->route('companies')->with('success', 'Company updated successfully.');
     }
-
     public function destroy(Company $company)
     {
         // Delete social links
