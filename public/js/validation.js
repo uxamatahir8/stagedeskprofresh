@@ -131,7 +131,7 @@ const validateRequiredInput = (element) => {
             }
         }
 
-        if (required == true) {
+        if (required === true) {
             let validEmail;
             // Specific validation for email inputs
             if (
@@ -173,7 +173,7 @@ const validateRequiredInput = (element) => {
         if (
             element.getAttribute("type") === "password" &&
             element.value.trim() !== "" &&
-            element.getAttribute("#id") !== "confirm_password"
+            element.getAttribute("id") !== "confirm_password"
         ) {
             const password = element.value.trim();
             const password_regex =

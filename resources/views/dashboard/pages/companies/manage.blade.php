@@ -155,15 +155,16 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <div class="form-check form-switch mb-2">
-                            <input type="checkbox" name="is_admin" value="1" class="form-check-input" id="companyAdminSwitch">
-                            <label class="form-check-label" for="companyAdminSwitch">Add this contact as Company Admin</label>
+                @if($mode != 'edit')
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="is_admin" value="1" class="form-check-input" id="companyAdminSwitch">
+                                <label class="form-check-label" for="companyAdminSwitch">Add this contact as Company Admin</label>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
                 <div id="adminFields" style="display: none;">
                     <div class="row">
@@ -171,7 +172,7 @@
                             <div class="row g-lg-4 g-2 mt-2">
                                 <div class="col-lg-4"><label class="col-form-label">Password</label></div>
                                 <div class="col-lg-8">
-                                    <input type="password" name="password" class="form-control" placeholder="Password">
+                                    <input type="password" name="password" class="form-control" id="password" placeholder="Password">
                                 </div>
                             </div>
                         </div>
@@ -179,7 +180,9 @@
                             <div class="row g-lg-4 g-2 mt-1">
                                 <div class="col-lg-4"><label class="col-form-label">Confirm Password</label></div>
                                 <div class="col-lg-8">
-                                    <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm Password">
+                                    <input type="password" name="password_confirmation" class="form-control match"
+                                           id="confirm_password"
+                                           data-match="password" placeholder="Confirm Password">
                                 </div>
                             </div>
                         </div>
