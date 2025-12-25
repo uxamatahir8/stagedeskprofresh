@@ -103,13 +103,13 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control required" placeholder="••••••••">
+                        <input type="password" name="password" id="password" class="form-control required" placeholder="••••••••">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control required"
+                        <input type="password" name="password_confirmation" id="confirm_password" data-match="password" class="form-control match required"
                             placeholder="••••••••">
                     </div>
                 </div>

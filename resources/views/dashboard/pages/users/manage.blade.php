@@ -172,7 +172,7 @@
                             </div>
                             <div class="col-lg-8">
                                 <input type="password" name="password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}"
+                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}" id="password"
                                     placeholder="Enter Password">
                                 @if($mode == 'edit')
                                     <small class="text-info ms-2">Leave blank if unchanged</small>
@@ -186,8 +186,8 @@
                                 <label class="col-form-label">Confirm Password:</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="password" name="confirm_password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}"
+                                <input type="password" name="confirm_password" id="confirm_password"
+                                    class="form-control {{ $mode == 'create' ? 'required' : '' }} match" data-match="password"
                                     placeholder="Confirm Password">
                             </div>
                         </div>
