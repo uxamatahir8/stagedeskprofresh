@@ -17,7 +17,7 @@ class SettingsController extends Controller
 
         $settings = Settings::all();
 
-        $timezones = DB::table('timezones')->get();
+        $timezones = DB::table('timezone')->get();
 
         return view('dashboard.pages.settings.index', compact('title', 'settings', 'timezones'));
     }

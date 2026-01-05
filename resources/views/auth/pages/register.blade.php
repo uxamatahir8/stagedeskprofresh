@@ -1,7 +1,7 @@
 @extends('auth.layouts.auth')
 
 @section('content')
-    <form method="POST" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
+    <form method="POST" class="validate_form" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
         @csrf
         <div class="row d-felx justify-content-start align-items-center">
             <div class="col-md-6">
@@ -103,13 +103,13 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control required" placeholder="••••••••">
+                        <input type="password" name="password" id="password" class="form-control required" placeholder="••••••••">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control required"
+                        <input type="password" name="password_confirmation" id="confirm_password" data-match="password" class="form-control match required"
                             placeholder="••••••••">
                     </div>
                 </div>
@@ -139,7 +139,7 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">KVK Number</label>
-                        <input type="text" name="kvk_number" class="form-control" placeholder="KVK Number">
+                        <input type="text" name="kvk_number" class="form-control kvk_number" placeholder="KVK Number">
                     </div>
                 </div>
             </div>

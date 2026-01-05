@@ -28,7 +28,9 @@
             <form class="validate_form" action="{{ $mode == 'edit' ? route('user.update', $user) : route('user.store') }}"
                 method="POST" enctype="multipart/form-data">
                 @csrf
-                @if($mode == 'edit') @method('PUT') @endif
+                @if ($mode == 'edit')
+                    @method('PUT')
+                @endif
 
                 <div class="row">
                     <div class="col-lg-6">
@@ -41,7 +43,8 @@
                                 <select class="form-control form-select required" name="role_id">
                                     <option value="">Select Role</option>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}" {{ old('role_id', $user->role_id ?? '') == $role->id ? 'selected' : '' }}>
+                                        <option value="{{ $role->id }}"
+                                            {{ old('role_id', $user->role_id ?? '') == $role->id ? 'selected' : '' }}>
                                             {{ $role->name }}
                                         </option>
                                     @endforeach
@@ -91,7 +94,8 @@
                                 <select class="form-control form-select required" name="country_id" id="country">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $country)
-                                        <option value="{{ $country->id }}" {{ old('country_id', $user->profile->country_id ?? '') == $country->id ? 'selected' : '' }}>
+                                        <option value="{{ $country->id }}"
+                                            {{ old('country_id', $user->profile->country_id ?? '') == $country->id ? 'selected' : '' }}>
                                             {{ $country->name }}
                                         </option>
                                     @endforeach
@@ -128,7 +132,8 @@
                             <div class="col-lg-8">
                                 <div class="form-check form-switch form-check-secondary fs-xxl mb-2">
                                     <input type="checkbox" name="status" value="active" class="form-check-input mt-1"
-                                        id="checkboxSize20" {{ ($mode == 'edit' && $user->status) == 'active' ? 'checked' : '' }}>
+                                        id="checkboxSize20"
+                                        {{ ($mode == 'edit' && $user->status) == 'active' ? 'checked' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -138,21 +143,24 @@
                     {{-- Right Side --}}
                     <div class="col-lg-6">
                         {{-- Company --}}
-                        <div id="company_admin" class="row g-lg-4 g-2 d-none">
-                            <div class="col-lg-4">
-                                <label class="col-form-label">Select Company:</label>
+                        @if ($role != 'Company Admin')
+                            <div id="company_admin" class="row g-lg-4 g-2 d-none">
+                                <div class="col-lg-4">
+                                    <label class="col-form-label">Select Company:</label>
+                                </div>
+                                <div class="col-lg-8">
+                                    <select class="form-control form-select" name="company_id" id="company_id">
+                                        <option value="">Select Company</option>
+                                        @foreach ($companies as $company)
+                                            <option value="{{ $company->id }}"
+                                                {{ old('company_id', $user->company_id ?? '') == $company->id ? 'selected' : '' }}>
+                                                {{ $company->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-lg-8">
-                                <select class="form-control form-select" name="company_id" id="company_id">
-                                    <option value="">Select Company</option>
-                                    @foreach ($companies as $company)
-                                        <option value="{{ $company->id }}" {{ old('company_id', $user->company_id ?? '') == $company->id ? 'selected' : '' }}>
-                                            {{ $company->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                        @endif
 
                         {{-- Email --}}
                         <div id="email-div" class="row g-lg-4 g-2">
@@ -172,9 +180,9 @@
                             </div>
                             <div class="col-lg-8">
                                 <input type="password" name="password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}"
+                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}" id="password"
                                     placeholder="Enter Password">
-                                @if($mode == 'edit')
+                                @if ($mode == 'edit')
                                     <small class="text-info ms-2">Leave blank if unchanged</small>
                                 @endif
                             </div>
@@ -186,9 +194,9 @@
                                 <label class="col-form-label">Confirm Password:</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="password" name="confirm_password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}"
-                                    placeholder="Confirm Password">
+                                <input type="password" name="confirm_password" id="confirm_password"
+                                    class="form-control {{ $mode == 'create' ? 'required' : '' }} match"
+                                    data-match="password" placeholder="Confirm Password">
                             </div>
                         </div>
 
@@ -209,28 +217,29 @@
                                 <label class="col-form-label">About:</label>
                             </div>
                             <div class="col-lg-8">
-                                <textarea name="about" class="form-control" rows="5"
-                                    placeholder="About">{{ old('about', $user->profile->about ?? '') }}</textarea>
+                                <textarea name="about" class="form-control" rows="5" placeholder="About">{{ old('about', $user->profile->about ?? '') }}</textarea>
                             </div>
                         </div>
 
                         <div class="row g-lg-4 g-2 mt-2">
                             <div class="col-lg-4">
-                                <label for="logo" class="col-form-label">Upload Logo</label>
+                                <label for="logo" class="col-form-label">Profile Picture</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="file" name="logo" id="logo" class="form-control" accept="image/*">
+                                <input type="file" name="logo" id="logo" class="form-control"
+                                    accept="image/*">
 
                                 <div class="mt-3 position-relative" id="logo-preview-container">
-                                    @if(isset($user) && $user->profile->profile_image)
+                                    @if(isset($user) && isset($user->profile) && $user->profile->profile_image)
                                         <img src="{{ asset('storage/' . $user->profile->profile_image) }}" alt="Profile Picture"
                                             id="logo-preview" class="img-fluid rounded" style="max-height: 120px;">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
                                             id="remove-logo-btn">&times;</button>
                                     @else
-                                        <img src="" alt="Logo Preview" id="logo-preview" class="img-fluid rounded d-none"
-                                            style="max-height: 120px;">
-                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 d-none"
+                                        <img src="" alt="Logo Preview" id="logo-preview"
+                                            class="img-fluid rounded d-none" style="max-height: 120px;">
+                                        <button type="button"
+                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 d-none"
                                             id="remove-logo-btn">&times;</button>
                                     @endif
                                 </div>
@@ -250,33 +259,31 @@
 
     {{-- ================== SCRIPT SECTION ================== --}}
     <script>
+        // document.querySelector('select[name="role_id"]').addEventListener('change', (e) => {
+        //     const select = e.target;
+        //     const role_key = select.options[select.selectedIndex].text;
 
 
-            document.querySelector('select[name="role_id"]').addEventListener('change', (e) => {
-                const select = e.target;
-                const role_key = select.options[select.selectedIndex].text;
+        //     const company_roles_key = ['Artist', 'Company Admin']
 
+        //     if (company_roles_key.includes(role_key)) {
+        //         document.querySelector('#company_admin').classList.remove('d-none');
+        //         document.querySelector('#company_id').classList.add('required');
+        //         document.querySelector('#email-div').classList.add('mt-2');
+        //     } else {
+        //         document.querySelector('#company_admin').classList.add('d-none');
+        //         document.querySelector('#company_id').classList.remove('required');
+        //         document.querySelector('#company_id').value = '';
+        //         document.querySelector('#email-div').classList.remove('mt-2');
+        //     }
 
-                const company_roles_key = ['Artist', 'Company Admin']
-
-                if (company_roles_key.includes(role_key)) {
-                    document.querySelector('#company_admin').classList.remove('d-none');
-                    document.querySelector('#company_id').classList.add('required');
-                    document.querySelector('#email-div').classList.add('mt-2');
-                } else {
-                    document.querySelector('#company_admin').classList.add('d-none');
-                    document.querySelector('#company_id').classList.remove('required');
-                    document.querySelector('#company_id').value = '';
-                    document.querySelector('#email-div').classList.remove('mt-2');
-                }
-
-            });
-        document.addEventListener('DOMContentLoaded', function () {
+        // });
+        document.addEventListener('DOMContentLoaded', function() {
             const logoInput = document.getElementById('logo');
             const preview = document.getElementById('logo-preview');
             const removeBtn = document.getElementById('remove-logo-btn');
 
-            logoInput.addEventListener('change', function (e) {
+            logoInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
 
@@ -298,7 +305,7 @@
 
                 // Show preview
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.classList.remove('d-none');
                     removeBtn.classList.remove('d-none');
@@ -307,7 +314,7 @@
             });
 
             // Remove logo
-            removeBtn.addEventListener('click', function () {
+            removeBtn.addEventListener('click', function() {
                 logoInput.value = '';
                 preview.src = '';
                 preview.classList.add('d-none');
@@ -330,7 +337,7 @@
             const citySelect = document.getElementById('city');
 
             // Load states when country changes
-            countrySelect.addEventListener('change', async function () {
+            countrySelect.addEventListener('change', async function() {
                 const countryId = this.value;
                 stateSelect.innerHTML = '<option value="">Select State</option>';
                 citySelect.innerHTML = '<option value="">Select City</option>';
@@ -350,7 +357,7 @@
             });
 
             // Load cities when state changes
-            stateSelect.addEventListener('change', async function () {
+            stateSelect.addEventListener('change', async function() {
                 const stateId = this.value;
                 citySelect.innerHTML = '<option value="">Select City</option>';
                 if (!stateId) return;
