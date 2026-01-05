@@ -45,9 +45,14 @@ return [
             ],
             [
                 'title' => 'Blog Comments',
-                'route' => 'testimonials', // placeholder or real route
+                'route' => 'testimonials',
             ],
         ],
+    ],
+    [
+        'title'=> 'Support Center',
+        'icon'=> 'headset',
+        'route' => 'support.tickets',
     ],
     [
         'title' => 'Settings',

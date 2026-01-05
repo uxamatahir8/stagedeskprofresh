@@ -14,8 +14,8 @@ class SupportTicketController extends Controller
     //
     public function index(){
         $title = "Support Tickets";
-        $support_tickets = SupportTicket::all();
-        return view('dashboard.pages.support_tickets.index',compact('support_tickets','title'));
+        $tickets = SupportTicket::all();
+        return view('dashboard.pages.support_tickets.index',compact('tickets','title'));
     }
 
     public function create(){

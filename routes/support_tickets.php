@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\SupportTicketController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/support-tickets', [SupportTicketController::class, 'index'])->name('support.tickets');
