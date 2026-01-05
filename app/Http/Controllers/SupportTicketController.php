@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\SupportTicket;
@@ -12,17 +11,19 @@ use Illuminate\Support\Facades\Storage;
 class SupportTicketController extends Controller
 {
     //
-    public function index(){
-        $title = "Support Tickets";
+    public function index()
+    {
+        $title   = "Support Tickets";
         $tickets = SupportTicket::all();
-        return view('dashboard.pages.support_tickets.index',compact('tickets','title'));
+        return view('dashboard.pages.support_tickets.index', compact('tickets', 'title'));
     }
 
-    public function create(){
+    public function create()
+    {
         $title = "Create Support Ticket";
-        $mode = 'create';
+        $mode  = 'create';
 
-        return view('dashboard.pages.support_tickets.manage',compact('title','mode'));
+        return view('dashboard.pages.support_tickets.manage', compact('title', 'mode'));
     }
 
     /**
@@ -31,34 +32,39 @@ class SupportTicketController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:issue,complaint,dispute,suggestion,other',
-            'description' => 'required|string',
+            'title'         => 'required|string|max:255',
+            'type'          => 'required|in:issue,complaint,dispute,suggestion,other',
+            'description'   => 'required|string',
+            'attachments'   => 'nullable|array|max:5',
             'attachments.*' => 'file|max:2048',
         ]);
 
         DB::transaction(function () use ($validated, $request) {
+
             $ticket = SupportTicket::create([
-                'user_id' => Auth::id(),
-                'title' => $validated['title'],
-                'type' => $validated['type'],
+                'user_id'     => Auth::id(),
+                'title'       => $validated['title'],
+                'type'        => $validated['type'],
                 'description' => $validated['description'],
             ]);
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
+
                     $path = $file->store('support_tickets', 'public');
 
                     SupportTicketAttachments::create([
                         'support_ticket_id' => $ticket->id,
-                        'file_path' => $path,
-                        'original_name' => $file->getClientOriginalName(),
+                        'file_path'         => $path,
+                        'original_name'     => $file->getClientOriginalName(),
                     ]);
                 }
             }
         });
 
-        return redirect()->route('support.tickets')->with('success', 'Ticket created successfully.');
+        return redirect()
+            ->route('support.tickets')
+            ->with('success', 'Ticket created successfully.');
     }
 
     public function edit(SupportTicket $ticket)
@@ -66,7 +72,7 @@ class SupportTicketController extends Controller
         abort_if($ticket->user_id !== Auth::id(), 403);
 
         $title = 'Edit Support Ticket';
-        $mode = 'edit';
+        $mode  = 'edit';
 
         return view('dashboard.pages.support_tickets.manage', compact('title', 'mode', 'ticket'));
     }
@@ -76,14 +82,48 @@ class SupportTicketController extends Controller
         abort_if($ticket->user_id !== Auth::id(), 403);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:issue,complaint,dispute,suggestion,other',
-            'description' => 'required|string',
+            'title'         => 'required|string|max:255',
+            'type'          => 'required|in:issue,complaint,dispute,suggestion,other',
+            'description'   => 'required|string',
+            'attachments'   => 'nullable|array|max:5',
+            'attachments.*' => 'file|max:2048',
         ]);
 
-        $ticket->update($validated);
+        DB::transaction(function () use ($validated, $request, $ticket) {
 
-        return redirect()->route('support.tickets')->with('success', 'Ticket updated successfully.');
+            $ticket->update([
+                'title'       => $validated['title'],
+                'type'        => $validated['type'],
+                'description' => $validated['description'],
+            ]);
+
+            if ($request->hasFile('attachments')) {
+
+                $existingCount = $ticket->attachments()->count();
+                $newCount      = count($request->file('attachments'));
+
+                if (($existingCount + $newCount) > 5) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'attachments' => 'You can upload a maximum of 5 attachments per ticket.',
+                    ]);
+                }
+
+                foreach ($request->file('attachments') as $file) {
+
+                    $path = $file->store('support_tickets', 'public');
+
+                    SupportTicketAttachments::create([
+                        'support_ticket_id' => $ticket->id,
+                        'file_path'         => $path,
+                        'original_name'     => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()
+            ->route('support.tickets')
+            ->with('success', 'Ticket updated successfully.');
     }
 
     public function destroy(SupportTicket $ticket)

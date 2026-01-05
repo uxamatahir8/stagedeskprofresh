@@ -85,7 +85,7 @@
                                     <option value="">Select Timezone</option>
                                     @foreach($timezones as $timezone)
                                         <option value="{{ $timezone->timezone }}" {{ old($setting->key, $setting->value) == $timezone->timezone ? 'selected' : '' }}>
-                                            {{ "(GMT " . ($timezone->gmt_offset > 0 ? "+" . $timezone->gmt_offset : $timezone->gmt_offset) . ":00) - $timezone->timezone" }}
+                                            {{ "(GMT" . ($timezone->gmt_offset > 0 ? "+" . $timezone->gmt_offset : $timezone->gmt_offset) . ":00) - $timezone->timezone" }}
                                         </option>
                                     @endforeach
                                 </select>
