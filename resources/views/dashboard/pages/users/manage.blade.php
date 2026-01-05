@@ -168,7 +168,7 @@
                                 <label class="col-form-label">Email:</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="email" name="email" class="form-control required"
+                                <input type="email" name="email" class="form-control required unique_email"
                                     value="{{ old('email', $user->email ?? '') }}" placeholder="Email">
                             </div>
                         </div>
