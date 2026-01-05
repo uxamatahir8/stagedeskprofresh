@@ -24,10 +24,10 @@
 
         <div class="card-body">
             <form class="validate_form"
-                  action="{{ $mode == 'edit' ? route('company.update', $company->id) : route('company.store') }}"
-                  method="POST" enctype="multipart/form-data">
+                action="{{ $mode == 'edit' ? route('company.update', $company->id) : route('company.store') }}"
+                method="POST" enctype="multipart/form-data">
                 @csrf
-                @if($mode == 'edit')
+                @if ($mode == 'edit')
                     @method('PUT')
                 @endif
 
@@ -38,34 +38,36 @@
                     <!-- Left Column -->
                     <div class="col-lg-6">
                         <div class="row g-lg-4 g-2">
-                            <div class="col-lg-4"><label for="company_name" class="col-form-label">Company Name</label></div>
+                            <div class="col-lg-4"><label for="company_name" class="col-form-label">Company Name</label>
+                            </div>
                             <div class="col-lg-8">
                                 <input type="text" id="company_name" name="name" class="form-control required"
-                                       value="{{ old('name', $company->name ?? '') }}" placeholder="Company Name">
+                                    value="{{ old('name', $company->name ?? '') }}" placeholder="Company Name">
                             </div>
                         </div>
 
                         <div class="row g-lg-4 g-2 mt-1">
-                            <div class="col-lg-4"><label for="company_website" class="col-form-label">Company Website</label></div>
+                            <div class="col-lg-4"><label for="company_website" class="col-form-label">Company
+                                    Website</label></div>
                             <div class="col-lg-8">
                                 <input type="text" id="company_website" name="website" class="form-control valid_url"
-                                       value="{{ old('website', $company->website ?? '') }}" placeholder="Company Website">
+                                    value="{{ old('website', $company->website ?? '') }}" placeholder="Company Website">
                             </div>
                         </div>
 
                         <div class="row g-lg-4 g-2 mt-1">
                             <div class="col-lg-4"><label for="kvk_number" class="col-form-label">Kvk Number</label></div>
                             <div class="col-lg-8">
-                                <input type="text" class="form-control kvk_number required" id="kvk_number" name="kvk_number"
-                                       value="{{ old('kvk_number', $company->kvk_number ?? '') }}" placeholder="KVK Number">
+                                <input type="text" class="form-control kvk_number required" id="kvk_number"
+                                    name="kvk_number" value="{{ old('kvk_number', $company->kvk_number ?? '') }}"
+                                    placeholder="KVK Number">
                             </div>
                         </div>
 
                         <div class="row g-lg-4 g-2 mt-2">
                             <div class="col-lg-4"><label for="address" class="col-form-label">Address</label></div>
                             <div class="col-lg-8">
-                            <textarea id="address" class="form-control" name="address" rows="2"
-                                      placeholder="Address">{{ old('address', $company->address ?? '') }}</textarea>
+                                <textarea id="address" class="form-control" name="address" rows="2" placeholder="Address">{{ old('address', $company->address ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -73,18 +75,20 @@
                     <!-- Right Column -->
                     <div class="col-lg-6">
                         <div class="row g-lg-4 g-2">
-                            <div class="col-lg-4"><label for="company_email" class="col-form-label">Company Email</label></div>
+                            <div class="col-lg-4"><label for="company_email" class="col-form-label">Company Email</label>
+                            </div>
                             <div class="col-lg-8">
                                 <input type="email" class="form-control email required" id="company_email" name="email"
-                                       value="{{ old('email', $company->email ?? '') }}" placeholder="Company Email">
+                                    value="{{ old('email', $company->email ?? '') }}" placeholder="Company Email">
                             </div>
                         </div>
 
                         <div class="row g-lg-4 g-2 mt-1">
-                            <div class="col-lg-4"><label for="company_phone" class="col-form-label">Company Phone</label></div>
+                            <div class="col-lg-4"><label for="company_phone" class="col-form-label">Company Phone</label>
+                            </div>
                             <div class="col-lg-8">
                                 <input type="text" class="form-control phone required" id="company_phone" name="phone"
-                                       value="{{ old('phone', $company->phone ?? '') }}" placeholder="Company Phone">
+                                    value="{{ old('phone', $company->phone ?? '') }}" placeholder="Company Phone">
                             </div>
                         </div>
 
@@ -93,7 +97,8 @@
                             <div class="col-lg-8">
                                 <div class="form-check form-switch form-check-secondary fs-xxl mb-2">
                                     <input type="checkbox" name="status" value="active" class="form-check-input mt-1"
-                                           id="checkboxSize20" {{ ($mode == 'edit' && $company->status) == 'active' ? 'checked' : '' }}>
+                                        id="checkboxSize20"
+                                        {{ ($mode == 'edit' && $company->status) == 'active' ? 'checked' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -109,15 +114,16 @@
                     <div class="col-lg-8">
                         <input type="file" name="logo" id="logo" class="form-control" accept="image/*">
                         <div class="mt-3 position-relative" id="logo-preview-container">
-                            @if(isset($company) && $company->logo)
+                            @if (isset($company) && $company->logo)
                                 <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo" id="logo-preview"
-                                     class="img-fluid rounded" style="max-height: 120px;">
+                                    class="img-fluid rounded" style="max-height: 120px;">
                                 <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
-                                        id="remove-logo-btn">&times;</button>
+                                    id="remove-logo-btn">&times;</button>
                             @else
-                                <img src="" alt="Logo Preview" id="logo-preview" class="img-fluid rounded d-none" style="max-height: 120px;">
+                                <img src="" alt="Logo Preview" id="logo-preview"
+                                    class="img-fluid rounded d-none" style="max-height: 120px;">
                                 <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 d-none"
-                                        id="remove-logo-btn">&times;</button>
+                                    id="remove-logo-btn">&times;</button>
                             @endif
                         </div>
                     </div>
@@ -133,14 +139,16 @@
                             <div class="col-lg-4"><label class="col-form-label">Contact Name</label></div>
                             <div class="col-lg-8">
                                 <input type="text" name="contact_name" class="form-control required"
-                                       value="{{ old('contact_name', $company->contact_name ?? '') }}" placeholder="Contact Name">
+                                    value="{{ old('contact_name', $company->contact_name ?? '') }}"
+                                    placeholder="Contact Name">
                             </div>
                         </div>
                         <div class="row g-lg-4 g-2 mt-1">
                             <div class="col-lg-4"><label class="col-form-label">Contact Phone</label></div>
                             <div class="col-lg-8">
                                 <input type="text" name="contact_phone" class="form-control phone required"
-                                       value="{{ old('contact_phone', $company->contact_phone ?? '') }}" placeholder="Contact Phone">
+                                    value="{{ old('contact_phone', $company->contact_phone ?? '') }}"
+                                    placeholder="Contact Phone">
                             </div>
                         </div>
                     </div>
@@ -149,18 +157,22 @@
                         <div class="row g-lg-4 g-2">
                             <div class="col-lg-4"><label class="col-form-label">Contact Email</label></div>
                             <div class="col-lg-8">
-                                <input type="email" name="contact_email" class="form-control required"
-                                       value="{{ old('contact_email', $company->contact_email ?? '') }}" placeholder="Contact Email">
+                                <input type="email" name="contact_email" id="contact_email"
+                                    class="form-control required"
+                                    value="{{ old('contact_email', $company->contact_email ?? '') }}"
+                                    placeholder="Contact Email">
                             </div>
                         </div>
                     </div>
                 </div>
-                @if($mode != 'edit')
+                @if ($mode != 'edit')
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="is_admin" value="1" class="form-check-input" id="companyAdminSwitch">
-                                <label class="form-check-label" for="companyAdminSwitch">Add this contact as Company Admin</label>
+                                <input type="checkbox" name="is_admin" value="1" class="form-check-input"
+                                    id="companyAdminSwitch">
+                                <label class="form-check-label" for="companyAdminSwitch">Add this contact as Company
+                                    Admin</label>
                             </div>
                         </div>
                     </div>
@@ -172,7 +184,8 @@
                             <div class="row g-lg-4 g-2 mt-2">
                                 <div class="col-lg-4"><label class="col-form-label">Password</label></div>
                                 <div class="col-lg-8">
-                                    <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+                                    <input type="password" name="password" class="form-control" id="password"
+                                        placeholder="Password">
                                 </div>
                             </div>
                         </div>
@@ -181,8 +194,7 @@
                                 <div class="col-lg-4"><label class="col-form-label">Confirm Password</label></div>
                                 <div class="col-lg-8">
                                     <input type="password" name="password_confirmation" class="form-control match"
-                                           id="confirm_password"
-                                           data-match="password" placeholder="Confirm Password">
+                                        id="confirm_password" data-match="password" placeholder="Confirm Password">
                                 </div>
                             </div>
                         </div>
@@ -195,7 +207,7 @@
                                 <div class="col-lg-8">
                                     <select name="admin_country_id" id="admin_country" class="form-select">
                                         <option value="">Select Country</option>
-                                        @foreach($countries as $country)
+                                        @foreach ($countries as $country)
                                             <option value="{{ $country->id }}">{{ $country->name }}</option>
                                         @endforeach
                                     </select>
@@ -237,8 +249,10 @@
                             <div class="row">
                                 <div class="col-lg-4"><label class="col-form-label">Profile Image</label></div>
                                 <div class="col-lg-8">
-                                    <input type="file" name="admin_profile_image" id="admin_profile_image" class="form-control" accept="image/*">
-                                    <img id="admin_profile_preview" class="img-fluid rounded mt-2 d-none" style="max-height: 100px;">
+                                    <input type="file" name="admin_profile_image" id="admin_profile_image"
+                                        class="form-control" accept="image/*">
+                                    <img id="admin_profile_preview" class="img-fluid rounded mt-2 d-none"
+                                        style="max-height: 100px;">
                                 </div>
                             </div>
                         </div>
@@ -250,16 +264,19 @@
                 <h4 class="fw-bold">Social Info</h4>
                 <hr>
                 <div class="row">
-                    @foreach(config('arrays.social_links') as $key => $social_link)
+                    @foreach (config('arrays.social_links') as $key => $social_link)
                         @php
-                            $existingLink = ($mode == 'edit') ? $company->socialLinks->firstWhere('handle', $key)->url ?? '' : '';
+                            $existingLink =
+                                $mode == 'edit' ? $company->socialLinks->firstWhere('handle', $key)->url ?? '' : '';
                         @endphp
                         <div class="col-lg-6 mt-2">
                             <div class="row g-lg-4 g-2">
                                 <div class="col-lg-4"><label class="col-form-label">{{ ucfirst($key) }}</label></div>
                                 <div class="col-lg-8">
-                                    <input type="text" name="social_links[{{ $key }}]" class="form-control valid_url"
-                                           value="{{ old('social_links.' . $key, $existingLink ?? '') }}" placeholder="{{ $social_link }}">
+                                    <input type="text" name="social_links[{{ $key }}]"
+                                        class="form-control valid_url"
+                                        value="{{ old('social_links.' . $key, $existingLink ?? '') }}"
+                                        placeholder="{{ $social_link }}">
                                 </div>
                             </div>
                         </div>
@@ -277,18 +294,34 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // Toggle admin fields
             const adminSwitch = document.getElementById('companyAdminSwitch');
             const adminFields = document.getElementById('adminFields');
             adminSwitch.addEventListener('change', () => {
+                const emailInput = document.getElementById('contact_email');
+
                 adminFields.style.display = adminSwitch.checked ? 'block' : 'none';
+
+                if (adminSwitch.checked) {
+                    emailInput.classList.add('unique_email');
+                } else {
+                    emailInput.classList.remove('unique_email');
+                }
+
+                // Trigger validation-related events
+                ['input', 'change', 'blur'].forEach(eventType => {
+                    emailInput.dispatchEvent(new Event(eventType, {
+                        bubbles: true
+                    }));
+                });
             });
+
 
             // Admin profile image preview
             const adminProfileInput = document.getElementById('admin_profile_image');
             const adminProfilePreview = document.getElementById('admin_profile_preview');
-            adminProfileInput.addEventListener('change', function (e) {
+            adminProfileInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -304,7 +337,7 @@
             const stateSelect = document.getElementById('admin_state');
             const citySelect = document.getElementById('admin_city');
 
-            countrySelect.addEventListener('change', async function () {
+            countrySelect.addEventListener('change', async function() {
                 const countryId = this.value;
                 stateSelect.innerHTML = '<option value="">Select State</option>';
                 citySelect.innerHTML = '<option value="">Select City</option>';
@@ -314,7 +347,7 @@
                 states.forEach(s => stateSelect.appendChild(new Option(s.name, s.id)));
             });
 
-            stateSelect.addEventListener('change', async function () {
+            stateSelect.addEventListener('change', async function() {
                 const stateId = this.value;
                 citySelect.innerHTML = '<option value="">Select City</option>';
                 if (!stateId) return;
@@ -327,7 +360,7 @@
             const logoInput = document.getElementById('logo');
             const logoPreview = document.getElementById('logo-preview');
             const removeBtn = document.getElementById('remove-logo-btn');
-            logoInput.addEventListener('change', function (e) {
+            logoInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -339,7 +372,7 @@
                 reader.readAsDataURL(file);
             });
 
-            removeBtn.addEventListener('click', function () {
+            removeBtn.addEventListener('click', function() {
                 logoInput.value = '';
                 logoPreview.src = '';
                 logoPreview.classList.add('d-none');

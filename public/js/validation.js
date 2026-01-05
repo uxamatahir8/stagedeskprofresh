@@ -155,7 +155,7 @@ const validateRequiredInput = (element) => {
                     validEmail = true;
                 }
             }
-            if (classList.contains("unique_email")) {
+            if (element.classList.contains("unique_email")) {
                 const email = element.value.trim();
 
                 fetch(
@@ -169,14 +169,14 @@ const validateRequiredInput = (element) => {
                 )
                     .then((response) => response.json())
                     .then((data) => {
-                        if (!data.isUnique) {
-                            element.classList.add("is-invalid");
-                            element.classList.remove("is-valid");
-                            validationMessage.textContent =
-                                "This email is already in use!";
-                            validationMessage.classList.remove("d-none");
-                        } else {
-                            if (validEmail !== false) {
+                        if (validEmail !== false) {
+                            if (data.isUnique) {
+                                element.classList.add("is-invalid");
+                                element.classList.remove("is-valid");
+                                validationMessage.textContent =
+                                    "This email is already in use!";
+                                validationMessage.classList.remove("d-none");
+                            } else {
                                 element.classList.remove("is-invalid");
                                 element.classList.add("is-valid");
                                 validationMessage.classList.add("d-none");
