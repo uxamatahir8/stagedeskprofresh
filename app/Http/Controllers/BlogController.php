@@ -14,7 +14,6 @@ use Illuminate\Support\Str;
 class BlogController extends Controller
 {
     //
-
     public function index()
     {
         $title = 'Blogs';

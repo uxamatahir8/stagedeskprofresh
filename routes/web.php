@@ -5,6 +5,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ValidationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -19,6 +20,7 @@ Route::get('/blogs/{categorySlug?}', [HomeController::class, 'blogs'])->name('bl
 Route::post('/blogs/{slug}/comment', [BlogController::class, 'postComment'])->name('blogs.comment')->middleware('auth');
 
 
+Route::get('/check-email-unique', [ValidationController::class, 'checkEmailUnique'])->name('check.email.unique');
 // add guests routes with guest middleware
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');

@@ -37,13 +37,15 @@ const validateRequiredInput = (element) => {
             required = true;
         }
 
-        if (element.classList.contains('kvk_number')) {
+        if (element.classList.contains("kvk_number")) {
             if (element.value.trim() !== "") {
                 const vatRegex = /^NL\d{9}B\d{2}$/i; // NL + 9 digits + B + 2 digits
                 if (!vatRegex.test(element.value.trim())) {
                     element.classList.add("is-invalid");
                     element.classList.remove("is-valid");
-                    validationMessage.textContent = `${formatLabel(element.getAttribute("name"))} must be a valid Dutch VAT number (e.g., NL123456789B01)!`;
+                    validationMessage.textContent = `${formatLabel(
+                        element.getAttribute("name")
+                    )} must be a valid Dutch VAT number (e.g., NL123456789B01)!`;
                     validationMessage.classList.remove("d-none");
                 } else {
                     element.classList.remove("is-invalid");
@@ -153,6 +155,67 @@ const validateRequiredInput = (element) => {
                     validEmail = true;
                 }
             }
+            let emailCheckTimeout = null;
+            let activeRequestId = 0;
+
+            if (element.classList.contains("unique_email")) {
+                const email = element.value.trim();
+
+                // Clear previous debounce
+                clearTimeout(emailCheckTimeout);
+
+                // Do not proceed if email format is invalid
+                if (validEmail === false || email === "") {
+                    hideWait();
+                    element.classList.remove("is-valid", "is-invalid");
+                    validationMessage.classList.add("d-none");
+                    return;
+                }
+
+                // Debounce API call
+                emailCheckTimeout = setTimeout(() => {
+                    const requestId = ++activeRequestId;
+                    showWait();
+
+                    fetch(
+                        `/check-email-unique?email=${encodeURIComponent(
+                            email
+                        )}`,
+                        {
+                            method: "GET",
+                            headers: { Accept: "application/json" },
+                        }
+                    )
+                        .then((response) => response.json())
+                        .then((data) => {
+                            // Ignore outdated responses
+                            if (requestId !== activeRequestId) return;
+
+                            hideWait();
+
+                            if (data.isUnique) {
+                                element.classList.add("is-invalid");
+                                element.classList.remove("is-valid");
+                                validationMessage.textContent =
+                                    "This email is already in use!";
+                                validationMessage.classList.remove("d-none");
+                            } else {
+                                element.classList.remove("is-invalid");
+                                element.classList.add("is-valid");
+                                validationMessage.classList.add("d-none");
+                            }
+                        })
+                        .catch((error) => {
+                            if (requestId === activeRequestId) {
+                                hideWait();
+                            }
+                            console.error(
+                                "Email uniqueness check failed:",
+                                error
+                            );
+                        });
+                }, 400); // delay after user stops typing
+            }
 
             if (element.classList.contains("phone")) {
                 const phone_regex = /^\+\d{1,3}\d{9,}$/;
@@ -220,3 +283,11 @@ form?.addEventListener("submit", (e) => {
         invalidInputs[0].focus();
     }
 });
+
+const showWait = (endPoint = "") => {
+    document.querySelector("#icon-wait").style.display = "block";
+};
+
+const hideWait = (endPoint = "") => {
+    document.querySelector("#icon-wait").style.display = "none";
+};

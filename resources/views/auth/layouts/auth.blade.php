@@ -17,14 +17,59 @@
 
     <!-- App css -->
     <link href="{{ asset('css/app.min.css') }}" rel="stylesheet" type="text/css">
+
+
+
+    <style>
+        .icon-wait {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            z-index: 999999;
+            opacity: 0.85;
+            transition-duration: 2s;
+        }
+
+        .icon-wait .icon-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .icon-wait .icon-wrapper .icon-main {
+            min-height: 85px;
+            height: 85px;
+            overflow: auto;
+            margin: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            opacity: 0.8;
+            text-align: center;
+            color: #43054E;
+        }
+    </style>
 </head>
 
 <body>
 
+    <div style="display:none;" id="icon-wait" class="icon-wait">
+        <div class="icon-wrapper">
+            <div class="icon-main">
+                <div class="spinner-border" style="width: 3rem; height: 3rem;" style="z-index:9999999999;"
+                    role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="auth-box overflow-hidden align-items-center d-flex">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '8' : '5' }} col-sm-8">
+                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '10' : '5' }} col-sm-8">
                     <div class="card p-4">
                         <div class="position-absolute top-0 end-0" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"
@@ -139,8 +184,9 @@
 
                     <p class="text-center text-muted mt-4 mb-0">
                         ©
-                        <script>document.write(new Date().getFullYear())</script> StageDesk Pro — by <span
-                            class="fw-semibold">Softring Solutions</span>
+                        <script>
+                            document.write(new Date().getFullYear())
+                        </script> StageDesk Pro — by <span class="fw-semibold">Softring Solutions</span>
                     </p>
                 </div>
             </div>

@@ -36,7 +36,7 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control required" placeholder="you@example.com"
+                        <input type="email" name="email" class="form-control required unique_email" placeholder="you@example.com"
                             value="{{ old('email') }}">
                     </div>
                 </div>

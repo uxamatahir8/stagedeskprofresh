@@ -23,7 +23,7 @@ jobs:
         run: |
           ssh ${{ secrets.STAG_USER }}@${{ secrets.STAG_HOST }} "
             cd ${{ secrets.STAG_DIR }} &&
-            git pull origin dev &&
+            git pull origin develop &&
             composer install --no-dev --optimize-autoloader &&
             php artisan migrate &&
             php artisan optimize:clear &&
