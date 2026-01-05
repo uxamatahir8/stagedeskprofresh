@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Cities;
@@ -24,8 +23,7 @@ class UserController extends Controller
     {
         //
         $title = 'Users';
-
-        $user = Auth::user();
+        $user  = Auth::user();
         $users = $user->role->role_key === 'master_admin'
             ? User::all()
             : User::companyUsers()->get();
@@ -40,9 +38,13 @@ class UserController extends Controller
     {
         //
         $title = 'Create User';
-        $roles = Role::all();
+
+        $roles = Auth::user()->role->name == 'Company Admin'
+            ? Role::whereIn('id', collect(config('arrays.company_admin_allowed_roles'))->pluck('id'))->get()
+            : Role::all();
+
         $companies = Company::all();
-        $mode = 'create';
+        $mode      = 'create';
         $countries = Countries::all();
 
         return view('dashboard.pages.users.manage', compact('title', 'roles', 'mode', 'companies', 'countries'));
@@ -54,10 +56,10 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'role_id' => 'required|exists:roles,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => [
+            'role_id'    => 'required|exists:roles,id',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => [
                 'required',
                 'min:10',
                 'regex:/[a-z]/',
@@ -65,28 +67,28 @@ class UserController extends Controller
                 'regex:/[0-9]/',
                 'regex:/[@$!%*?&]/',
             ],
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'zipcode' => 'required|string|max:10',
-            'about' => 'nullable|string|max:500',
+            'phone'      => 'required|string|max:20',
+            'address'    => 'required|string|max:255',
+            'zipcode'    => 'required|string|max:10',
+            'about'      => 'nullable|string|max:500',
             'country_id' => 'required|exists:countries,id',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
+            'state_id'   => 'required|exists:states,id',
+            'city_id'    => 'required|exists:cities,id',
             'company_id' => 'nullable|exists:companies,id',
-            'status' => 'nullable|in:active,inactive',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'status'     => 'nullable|in:active,inactive',
+            'logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ], [
             'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
         ]);
 
         // ✅ Create user
         $user = User::create([
-            'role_id' => $validated['role_id'],
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'role_id'    => $validated['role_id'],
+            'name'       => $validated['name'],
+            'email'      => $validated['email'],
+            'password'   => Hash::make($validated['password']),
             'company_id' => $validated['company_id'] ?? null,
-            'status' => $request->status === 'active' ? 'active' : 'inactive',
+            'status'     => $request->status === 'active' ? 'active' : 'inactive',
         ]);
 
         // ✅ Handle logo upload
@@ -99,20 +101,19 @@ class UserController extends Controller
         UserProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
-                'zipcode' => $validated['zipcode'],
-                'about' => $validated['about'] ?? null,
-                'country_id' => $validated['country_id'],
-                'state_id' => $validated['state_id'],
-                'city_id' => $validated['city_id'],
+                'phone'         => $validated['phone'],
+                'address'       => $validated['address'],
+                'zipcode'       => $validated['zipcode'],
+                'about'         => $validated['about'] ?? null,
+                'country_id'    => $validated['country_id'],
+                'state_id'      => $validated['state_id'],
+                'city_id'       => $validated['city_id'],
                 'profile_image' => $profileImagePath,
             ]
         );
 
         return redirect()->route('users')->with('success', 'User and profile saved successfully.');
     }
-
 
     /**
      * Display the specified resource.
@@ -128,10 +129,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         //
-        $title = 'Edit User';
-        $roles = Role::all();
+        $title     = 'Edit User';
+        $roles     = Auth::user()->role->name == 'Company Admin' ? config('arrays.company_admin_allowed_roles') : Role::all();
         $companies = Company::all();
-        $mode = 'edit';
+        $mode      = 'edit';
         $countries = Countries::all();
 
         return view('dashboard.pages.users.manage', compact('title', 'roles', 'mode', 'companies', 'user', 'countries'));
@@ -147,10 +148,10 @@ class UserController extends Controller
 
         // ✅ Validation rules
         $validated = $request->validate([
-            'role_id' => 'required|exists:roles,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => [
+            'role_id'    => 'required|exists:roles,id',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email,' . $user->id,
+            'password'   => [
                 'nullable',
                 'min:10',
                 'regex:/[a-z]/',
@@ -158,28 +159,28 @@ class UserController extends Controller
                 'regex:/[0-9]/',
                 'regex:/[@$!%*?&]/',
             ],
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'zipcode' => 'required|string|max:10',
-            'about' => 'nullable|string|max:500',
+            'phone'      => 'required|string|max:20',
+            'address'    => 'required|string|max:255',
+            'zipcode'    => 'required|string|max:10',
+            'about'      => 'nullable|string|max:500',
             'country_id' => 'required|exists:countries,id',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
+            'state_id'   => 'required|exists:states,id',
+            'city_id'    => 'required|exists:cities,id',
             'company_id' => 'nullable|exists:companies,id',
-            'status' => 'nullable|in:active,inactive',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'status'     => 'nullable|in:active,inactive',
+            'logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ], [
             'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
         ]);
 
         // ✅ Update user info
         $user->update([
-            'role_id' => $validated['role_id'],
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'role_id'    => $validated['role_id'],
+            'name'       => $validated['name'],
+            'email'      => $validated['email'],
             'company_id' => $validated['company_id'] ?? null,
-            'status' => $request->status === 'active' ? 'active' : 'inactive',
-            'password' => !empty($validated['password'])
+            'status'     => $request->status === 'active' ? 'active' : 'inactive',
+            'password'   => ! empty($validated['password'])
                 ? Hash::make($validated['password'])
                 : $user->password, // keep old password
         ]);
@@ -199,13 +200,13 @@ class UserController extends Controller
         UserProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
-                'zipcode' => $validated['zipcode'],
-                'about' => $validated['about'] ?? null,
-                'country_id' => $validated['country_id'],
-                'state_id' => $validated['state_id'],
-                'city_id' => $validated['city_id'],
+                'phone'         => $validated['phone'],
+                'address'       => $validated['address'],
+                'zipcode'       => $validated['zipcode'],
+                'about'         => $validated['about'] ?? null,
+                'country_id'    => $validated['country_id'],
+                'state_id'      => $validated['state_id'],
+                'city_id'       => $validated['city_id'],
                 'profile_image' => $profileImagePath,
             ]
         );
@@ -242,8 +243,6 @@ class UserController extends Controller
             return redirect()->route('users')->with('error', 'Failed to delete user. Please try again.');
         }
     }
-
-
 
     public function getStates($country_id)
     {
