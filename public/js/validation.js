@@ -37,13 +37,15 @@ const validateRequiredInput = (element) => {
             required = true;
         }
 
-        if (element.classList.contains('kvk_number')) {
+        if (element.classList.contains("kvk_number")) {
             if (element.value.trim() !== "") {
                 const vatRegex = /^NL\d{9}B\d{2}$/i; // NL + 9 digits + B + 2 digits
                 if (!vatRegex.test(element.value.trim())) {
                     element.classList.add("is-invalid");
                     element.classList.remove("is-valid");
-                    validationMessage.textContent = `${formatLabel(element.getAttribute("name"))} must be a valid Dutch VAT number (e.g., NL123456789B01)!`;
+                    validationMessage.textContent = `${formatLabel(
+                        element.getAttribute("name")
+                    )} must be a valid Dutch VAT number (e.g., NL123456789B01)!`;
                     validationMessage.classList.remove("d-none");
                 } else {
                     element.classList.remove("is-invalid");
@@ -152,6 +154,38 @@ const validateRequiredInput = (element) => {
                     validationMessage.classList.add("d-none");
                     validEmail = true;
                 }
+            }
+            if (classList.contains("unique_email")) {
+                const email = element.value.trim();
+
+                fetch(
+                    `/check-email-unique?email=${encodeURIComponent(email)}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                        },
+                    }
+                )
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (!data.isUnique) {
+                            element.classList.add("is-invalid");
+                            element.classList.remove("is-valid");
+                            validationMessage.textContent =
+                                "This email is already in use!";
+                            validationMessage.classList.remove("d-none");
+                        } else {
+                            if (validEmail !== false) {
+                                element.classList.remove("is-invalid");
+                                element.classList.add("is-valid");
+                                validationMessage.classList.add("d-none");
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Email uniqueness check failed:", error);
+                    });
             }
 
             if (element.classList.contains("phone")) {
