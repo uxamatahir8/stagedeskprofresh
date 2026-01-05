@@ -32,4 +32,12 @@ class BookingController extends Controller
         return view('dashboard.pages.bookings.index', compact('title', 'bookings'));
 
     }
+
+    public function create()
+    {
+        //
+        $title = 'Create Booking Request';
+        $mode = 'create';
+        return view('dashboard.pages.bookings.manage', compact('title', 'mode'));
+    }
 }

@@ -19,11 +19,18 @@
     </div>
 
     <div class="card">
-        <div class="card-header justify-content-between d-flex align-items-center">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('bookings.create') }}" class="btn btn-primary">
-                Request New Booking
-            </a>
+        <div class="card-header justify-content-between">
+            <h4 class="card-title">{{ $title }}</h4>
+            <a href="{{ route('bookings.index') }}" class="btn btn-primary">Bookings Requests</a>
+        </div>
+        <div class="card-body">
+            <form class="validate_form"
+                action="{{ $mode == 'edit' ? route('bookings.update', $booking) : route('bookings.store') }}" method="post">
+                @csrf
+                @if ($mode == 'edit')
+                    @method('PUT')
+                @endif
+            </form>
         </div>
     </div>
 @endsection
