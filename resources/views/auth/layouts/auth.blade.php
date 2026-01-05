@@ -66,7 +66,6 @@
             </div>
         </div>
     </div>
-
     <div class="auth-box overflow-hidden align-items-center d-flex">
         <div class="container">
             <div class="row justify-content-center">
