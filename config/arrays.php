@@ -19,6 +19,7 @@ return [
         'expired'  => 'warning',
         'canceled' => 'danger',
         'paused'   => 'info',
+        'inactive' => 'danger',
     ],
     'registerable_roles'          => [
         '2' => 'Company',
