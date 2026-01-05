@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class SupportTicket extends Model
 {
@@ -26,4 +27,10 @@ class SupportTicket extends Model
     {
         return $this->hasMany(SupportTicketAttachments::class);
     }
+
+    public function scopeUserTickets($query)
+    {
+        return $query->where('user_id', Auth::user()->id);
+    }
+
 }

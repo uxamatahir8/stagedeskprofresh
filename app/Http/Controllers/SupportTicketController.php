@@ -14,7 +14,7 @@ class SupportTicketController extends Controller
     public function index()
     {
         $title   = "Support Tickets";
-        $tickets = SupportTicket::all();
+        $tickets = Auth::user()->role->role_key == 'master_admin' ? SupportTicket::all() : SupportTicket::userTickets()->get();
         return view('dashboard.pages.support_tickets.index', compact('tickets', 'title'));
     }
 

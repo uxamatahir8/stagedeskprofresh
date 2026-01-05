@@ -67,13 +67,13 @@
                         </a>
 
                         <!-- Settings -->
-                        <a href="javascript:void(0);" class="dropdown-item">
+                        <a href="{{ route('settings') }}" class="dropdown-item">
                             <i class="ti ti-settings-2 me-2 fs-17 align-middle"></i>
                             <span class="align-middle">Account Settings</span>
                         </a>
 
                         <!-- Support -->
-                        <a href="javascript:void(0);" class="dropdown-item">
+                        <a href="{{ route('support.tickets') }}" class="dropdown-item">
                             <i class="ti ti-headset me-2 fs-17 align-middle"></i>
                             <span class="align-middle">Support Center</span>
                         </a>
