@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Company;
@@ -11,21 +10,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class CompanyController extends Controller
 {
     public function index()
     {
-        $title = 'Companies List';
+        $title     = 'Companies List';
         $companies = Company::all();
         return view('dashboard.pages.companies.index', compact('title', 'companies'));
     }
 
     public function create()
     {
-        $title = 'Create Company';
-        $mode = 'create';
+        $title     = 'Create Company';
+        $mode      = 'create';
         $countries = Countries::all(); // For admin country select
         return view('dashboard.pages.companies.manage', compact('title', 'mode', 'countries'));
     }
@@ -43,21 +41,21 @@ class CompanyController extends Controller
 
             // Company logo
             if ($request->hasFile('logo')) {
-                $path = $request->file('logo')->store('company_logos', 'public');
+                $path              = $request->file('logo')->store('company_logos', 'public');
                 $validated['logo'] = $path;
-                $uploadedFiles[] = $path;
+                $uploadedFiles[]   = $path;
             }
 
             $company = Company::create($validated);
 
             // Social links
             foreach ($request->input('social_links', []) as $handle => $url) {
-                if (!empty($url)) {
+                if (! empty($url)) {
                     SocialLink::create([
-                        'handle' => $handle,
-                        'url' => $url,
+                        'handle'     => $handle,
+                        'url'        => $url,
                         'company_id' => $company->id,
-                        'user_id' => null,
+                        'user_id'    => null,
                     ]);
                 }
             }
@@ -65,20 +63,20 @@ class CompanyController extends Controller
             // Handle company admin
             if ($request->boolean('is_admin')) {
                 $adminUser = User::create([
-                    'name' => $request->contact_name,
-                    'email' => $request->contact_email,
-                    'role_id' => 2,
+                    'name'       => $request->contact_name,
+                    'email'      => $request->contact_email,
+                    'role_id'    => 2,
                     'company_id' => $company->id,
-                    'password' => Hash::make($request->password),
+                    'password'   => Hash::make($request->password),
                 ]);
 
                 $profileData = [
-                    'user_id' => $adminUser->id,
-                    'phone' => $request->contact_phone,
-                    'address' => $request->admin_address,
+                    'user_id'    => $adminUser->id,
+                    'phone'      => $request->contact_phone,
+                    'address'    => $request->admin_address,
                     'country_id' => $request->admin_country_id,
-                    'state_id' => $request->admin_state_id,
-                    'city_id' => $request->admin_city_id,
+                    'state_id'   => $request->admin_state_id,
+                    'city_id'    => $request->admin_city_id,
                 ];
 
                 if ($request->hasFile('admin_profile_image')) {
@@ -86,7 +84,7 @@ class CompanyController extends Controller
                         ->store('profile_images', 'public');
 
                     $profileData['profile_image'] = $path;
-                    $uploadedFiles[] = $path;
+                    $uploadedFiles[]              = $path;
                 }
 
                 UserProfile::create($profileData);
@@ -116,8 +114,8 @@ class CompanyController extends Controller
 
     public function edit(Company $company)
     {
-        $title = 'Edit Company';
-        $mode = 'edit';
+        $title     = 'Edit Company';
+        $mode      = 'edit';
         $countries = Countries::all();
         return view('dashboard.pages.companies.manage', compact('title', 'mode', 'company', 'countries'));
     }
@@ -141,9 +139,9 @@ class CompanyController extends Controller
                     Storage::disk('public')->delete($company->logo);
                 }
 
-                $path = $request->file('logo')->store('company_logos', 'public');
+                $path              = $request->file('logo')->store('company_logos', 'public');
                 $validated['logo'] = $path;
-                $uploadedFiles[] = $path;
+                $uploadedFiles[]   = $path;
             }
 
             $company->update($validated);
@@ -153,15 +151,15 @@ class CompanyController extends Controller
             foreach ($socialLinks as $handle => $url) {
                 $link = $company->socialLinks()->where('handle', $handle)->first();
 
-                if (!empty($url)) {
+                if (! empty($url)) {
                     if ($link) {
                         $link->update(['url' => $url]);
                     } else {
                         SocialLink::create([
-                            'handle' => $handle,
-                            'url' => $url,
+                            'handle'     => $handle,
+                            'url'        => $url,
                             'company_id' => $company->id,
-                            'user_id' => null,
+                            'user_id'    => null,
                         ]);
                     }
                 } elseif ($link) {
@@ -175,18 +173,18 @@ class CompanyController extends Controller
                     ->where('role_id', 2)
                     ->first();
 
-                if (!$adminUser) {
+                if (! $adminUser) {
                     $adminUser = User::create([
-                        'name' => $request->contact_name,
-                        'email' => $request->contact_email,
-                        'role_id' => 2,
+                        'name'       => $request->contact_name,
+                        'email'      => $request->contact_email,
+                        'role_id'    => 2,
                         'company_id' => $company->id,
-                        'password' => Hash::make($request->password),
+                        'password'   => Hash::make($request->password),
                     ]);
                 } else {
                     $adminUser->update([
-                        'name' => $request->contact_name,
-                        'email' => $request->contact_email,
+                        'name'     => $request->contact_name,
+                        'email'    => $request->contact_email,
                         'password' => $request->filled('password')
                             ? Hash::make($request->password)
                             : $adminUser->password,
@@ -194,11 +192,11 @@ class CompanyController extends Controller
                 }
 
                 $profileData = [
-                    'phone' => $request->contact_phone,
-                    'address' => $request->admin_address,
+                    'phone'      => $request->contact_phone,
+                    'address'    => $request->admin_address,
                     'country_id' => $request->admin_country_id,
-                    'state_id' => $request->admin_state_id,
-                    'city_id' => $request->admin_city_id,
+                    'state_id'   => $request->admin_state_id,
+                    'city_id'    => $request->admin_city_id,
                 ];
 
                 if ($request->hasFile('admin_profile_image')) {
@@ -206,7 +204,7 @@ class CompanyController extends Controller
                         ->store('profile_images', 'public');
 
                     $profileData['profile_image'] = $path;
-                    $uploadedFiles[] = $path;
+                    $uploadedFiles[]              = $path;
                 }
 
                 if ($adminUser->profile) {
@@ -267,29 +265,33 @@ class CompanyController extends Controller
     public function getArr(Request $request): array
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string|max:20',
-            'website' => 'nullable|url',
-            'kvk_number' => 'nullable|string|max:50',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email',
-            'status' => 'nullable|string|in:active,inactive',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'social_links' => 'nullable|array',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email',
+            'phone'          => 'required|string|max:20',
+            'website'        => 'nullable|url',
+            'kvk_number'     => 'nullable|string|max:50',
+            'contact_name'   => 'nullable|string|max:255',
+            'contact_phone'  => 'nullable|string|max:20',
+            'contact_email'  => 'nullable|email',
+            'status'         => 'nullable|string|in:active,inactive',
+            'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'social_links'   => 'nullable|array',
             'social_links.*' => 'nullable|url',
-            'address' => 'nullable|string|max:255',
+            'address'        => 'nullable|string|max:255',
 
-            // Admin fields
-            'is_admin' => 'nullable|boolean',
-            'password' => 'required_if:is_admin,1|confirmed|min:6',
-            'admin_address' => 'nullable|string|max:255',
-            'admin_country_id' => 'nullable|exists:countries,id',
-            'admin_state_id' => 'nullable|exists:states,id',
-            'admin_city_id' => 'nullable|exists:cities,id',
-            'admin_profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        if ($request->has('is_admin') && $request->is_admin == 1) {
+            $validated = array_merge($validated, $request->validate([
+                'is_admin'            => 'nullable|boolean',
+                'password'            => 'required_if:is_admin,1|confirmed|min:6',
+                'admin_address'       => 'nullable|string|max:255',
+                'admin_country_id'    => 'nullable|exists:countries,id',
+                'admin_state_id'      => 'nullable|exists:states,id',
+                'admin_city_id'       => 'nullable|exists:cities,id',
+                'admin_profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ]));
+        }
 
         $validated['status'] = $request->has('status') ? 'active' : 'inactive';
         return $validated;
