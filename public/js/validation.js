@@ -155,21 +155,44 @@ const validateRequiredInput = (element) => {
                     validEmail = true;
                 }
             }
+            let emailCheckTimeout = null;
+            let activeRequestId = 0;
+
             if (element.classList.contains("unique_email")) {
                 const email = element.value.trim();
 
-                fetch(
-                    `/check-email-unique?email=${encodeURIComponent(email)}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                        },
-                    }
-                )
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (validEmail !== false) {
+                // Clear previous debounce
+                clearTimeout(emailCheckTimeout);
+
+                // Do not proceed if email format is invalid
+                if (validEmail === false || email === "") {
+                    hideWait();
+                    element.classList.remove("is-valid", "is-invalid");
+                    validationMessage.classList.add("d-none");
+                    return;
+                }
+
+                // Debounce API call
+                emailCheckTimeout = setTimeout(() => {
+                    const requestId = ++activeRequestId;
+                    showWait();
+
+                    fetch(
+                        `/check-email-unique?email=${encodeURIComponent(
+                            email
+                        )}`,
+                        {
+                            method: "GET",
+                            headers: { Accept: "application/json" },
+                        }
+                    )
+                        .then((response) => response.json())
+                        .then((data) => {
+                            // Ignore outdated responses
+                            if (requestId !== activeRequestId) return;
+
+                            hideWait();
+
                             if (data.isUnique) {
                                 element.classList.add("is-invalid");
                                 element.classList.remove("is-valid");
@@ -181,11 +204,17 @@ const validateRequiredInput = (element) => {
                                 element.classList.add("is-valid");
                                 validationMessage.classList.add("d-none");
                             }
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Email uniqueness check failed:", error);
-                    });
+                        })
+                        .catch((error) => {
+                            if (requestId === activeRequestId) {
+                                hideWait();
+                            }
+                            console.error(
+                                "Email uniqueness check failed:",
+                                error
+                            );
+                        });
+                }, 400); // delay after user stops typing
             }
 
             if (element.classList.contains("phone")) {
@@ -254,3 +283,11 @@ form?.addEventListener("submit", (e) => {
         invalidInputs[0].focus();
     }
 });
+
+const showWait = (endPoint = "") => {
+    document.querySelector("#icon-wait").style.display = "block";
+};
+
+const hideWait = (endPoint = "") => {
+    document.querySelector("#icon-wait").style.display = "none";
+};
