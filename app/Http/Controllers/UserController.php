@@ -129,8 +129,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         //
-        $title     = 'Edit User';
-        $roles     = Auth::user()->role->name == 'Company Admin' ? config('arrays.company_admin_allowed_roles') : Role::all();
+        $title = 'Edit User';
+        $roles = Auth::user()->role->name == 'Company Admin'
+            ? Role::whereIn('id', collect(config('arrays.company_admin_allowed_roles'))->pluck('id'))->get()
+            : Role::all();
         $companies = Company::all();
         $mode      = 'edit';
         $countries = Countries::all();
