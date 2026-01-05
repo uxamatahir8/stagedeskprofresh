@@ -230,10 +230,9 @@
                                     accept="image/*">
 
                                 <div class="mt-3 position-relative" id="logo-preview-container">
-                                    @if (isset($user) && $user->profile->profile_image)
-                                        <img src="{{ asset('storage/' . $user->profile->profile_image) }}"
-                                            alt="Profile Picture" id="logo-preview" class="img-fluid rounded"
-                                            style="max-height: 120px;">
+                                    @if(isset($user) && isset($user->profile) && $user->profile->profile_image)
+                                        <img src="{{ asset('storage/' . $user->profile->profile_image) }}" alt="Profile Picture"
+                                            id="logo-preview" class="img-fluid rounded" style="max-height: 120px;">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
                                             id="remove-logo-btn">&times;</button>
                                     @else
