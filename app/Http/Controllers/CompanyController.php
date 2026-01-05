@@ -293,7 +293,7 @@ class CompanyController extends Controller
             ]));
         }
 
-        $validated['status'] = $request->has('status') ? 'active' : 'inactive';
+        $validated['status'] = $request->has('status') ? $validated['status'] : 'inactive';
         return $validated;
     }
 }
