@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
@@ -37,7 +38,12 @@ class BookingController extends Controller
     {
         //
         $title = 'Create Booking Request';
-        $mode = 'create';
-        return view('dashboard.pages.bookings.manage', compact('title', 'mode'));
+        $mode  = 'create';
+
+        $customers = Auth::user()->role->role_key == 'company_admin'
+            ? User::companyCustomers()->get()
+            : User::allCustomers()->get();
+
+        return view('dashboard.pages.bookings.manage', compact('title', 'mode', 'customers'));
     }
 }

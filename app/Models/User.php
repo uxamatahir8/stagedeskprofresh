@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -46,7 +45,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
@@ -60,10 +59,31 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
-
     public function scopeCompanyUsers($query)
     {
         return $query->where('company_id', Auth::user()->company_id);
+    }
+
+    public function scopeCompanyCustomers($query)
+    {
+        return $query->where('company_id', Auth::user()->company_id)
+            ->whereHas('role', function ($q) {
+                $q->where('role_key', 'customer');
+            });
+    }
+
+    public function scopeCompanyArtists($query)
+    {
+        return $query->whereHas('role', function ($q) {
+            $q->where('role_key', 'artist');
+        })->where('company_id', Auth::user()->company_id);
+    }
+
+    public function scopeAllCustomers($query)
+    {
+        return $query->whereHas('role', function ($q) {
+            $q->where('role_key', 'customer');
+        });
     }
 
     public function blogs()
