@@ -14,7 +14,7 @@ return new class extends Migration
         //
         Schema::table("booking_requests", function (Blueprint $table) {
             // Remove Unused fields
-            $table->dropColumn(['start_time', 'end_time']);
+            $table->dropColumn(['start_time', 'end_time', 'wedding_location']);
 
             // Add wedding related fields
             $table->text('opening_songs')->nullable()->after('event_date');
