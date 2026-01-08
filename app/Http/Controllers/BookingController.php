@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingRequest;
+use App\Models\EventType;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,10 +41,13 @@ class BookingController extends Controller
             default         => User::allCustomers()->get(),
         };
 
+        $event_types = EventType::all();
+
         return view('dashboard.pages.bookings.manage', compact(
             'title',
             'mode',
-            'customers'
+            'customers',
+            'event_types'
         ));
     }
 

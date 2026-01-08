@@ -44,8 +44,15 @@
                     {{-- EVENT TYPE --}}
                     <div class="col-lg-6 mb-2">
                         <label class="col-form-label">Event Type</label>
-                        <input type="text" name="event_type" class="form-control required"
-                            value="{{ old('event_type', $booking->event_type ?? '') }}" required>
+                        <select name="event_type_id" class="form-control form-select required" required>
+                            <option value="">Select Event Type</option>
+                            @foreach ($event_types as $event_type)
+                                <option value="{{ $event_type->id }}"
+                                    {{ old('event_type_id', $booking->event_type_id ?? '') == $event_type->id ? 'selected' : '' }}>
+                                    {{ $event_type->event_type }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- NAME --}}
@@ -65,14 +72,16 @@
                     {{-- DOB --}}
                     <div class="col-lg-6 mb-2">
                         <label class="col-form-label">Date of Birth</label>
-                        <input type="text" name="date_of_birth" class="form-control required"
+                        <input type="text" name="date_of_birth" class="form-control required" data-provider="flatpickr"
+                                data-date-format="d M, Y"
+                                data-maxDate="{{ now()->subDays(5)->format('d M, Y') }}"
                             value="{{ old('date_of_birth', $booking->date_of_birth ?? '') }}" required>
                     </div>
 
                     {{-- PHONE --}}
                     <div class="col-lg-6 mb-2">
                         <label class="col-form-label">Phone</label>
-                        <input type="text" name="phone" class="form-control required"
+                        <input type="text" name="phone" class="form-control required phone"
                             value="{{ old('phone', $booking->phone ?? '') }}" required>
                     </div>
 
@@ -90,8 +99,16 @@
                             value="{{ old('address', $booking->address ?? '') }}" required>
                     </div>
 
+                    {{-- Event Date --}}
+                    <div class="col-lg-4 mb-2">
+                        <label class="col-form-label">Event Date</label>
+                        <input type="text" name="event_date" class="form-control required"
+                            value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('Y-m-d\TH:i') : '') }}"
+                            required>
+                    </div>
+
                     {{-- START TIME --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-4 mb-2">
                         <label class="col-form-label">Start Time</label>
                         <input type="text" name="start_time" class="form-control required"
                             value="{{ old('start_time', isset($booking) ? \Carbon\Carbon::parse($booking->start_time)->format('Y-m-d\TH:i') : '') }}"
@@ -99,7 +116,7 @@
                     </div>
 
                     {{-- END TIME --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-4 mb-2">
                         <label class="col-form-label">End Time</label>
                         <input type="text" name="end_time" class="form-control required"
                             value="{{ old('end_time', isset($booking) ? \Carbon\Carbon::parse($booking->end_time)->format('Y-m-d\TH:i') : '') }}"

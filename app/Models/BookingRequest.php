@@ -16,6 +16,7 @@ class BookingRequest extends Model
         'address',
         'phone',
         'email',
+        'event_date',
         'start_time',
         'end_time',
         'dos',
