@@ -8,10 +8,20 @@ return [
         // roles omitted → visible to all
     ],
     [
-        'title' => 'Bookings',
-        'icon'  => 'calendar',
-        'route' => 'bookings.index',
-        'roles' => ['master_admin', 'company_admin', 'customer'],
+        'title'   => 'Booking',
+        'icon'    => 'calendar-check',
+        'submenu' => [
+            [
+                'title' => 'Bookings Requests',
+                'route' => 'bookings.index',
+                'roles' => ['master_admin', 'company_admin', 'customer'],
+            ],
+            [
+                'title' => 'Event Types',
+                'route' => 'event-types',
+                'roles' => ['master_admin'],
+            ],
+        ],
     ],
     [
         'title' => 'Packages',
