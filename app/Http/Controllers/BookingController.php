@@ -13,37 +13,38 @@ class BookingController extends Controller
     {
         $title = 'Booking Requests';
 
-        $user_role = Auth::user()->role->role_key;
+        $roleKey = Auth::user()->role->role_key;
 
-        switch ($user_role) {
-            case 'master_admin':
-                $bookings = BookingRequest::all();
-                break;
-            case 'company_admin':
-                $bookings = BookingRequest::companyBookings()->get();
-                break;
-            case 'customer':
-                $bookings = BookingRequest::userBookings()->get();
-                break;
-            default:
-                $bookings = collect(); // empty collection for unauthorized roles
-                break;
-        }
+        $bookingResolvers = [
+            'master_admin'  => fn()  => BookingRequest::query(),
+            'company_admin' => fn() => BookingRequest::companyBookings(),
+            'customer'      => fn()      => BookingRequest::userBookings(),
+        ];
+
+        $bookings = isset($bookingResolvers[$roleKey])
+            ? $bookingResolvers[$roleKey]()->get()
+            : collect();
 
         return view('dashboard.pages.bookings.index', compact('title', 'bookings'));
-
     }
 
     public function create()
     {
-        //
         $title = 'Create Booking Request';
         $mode  = 'create';
 
-        $customers = Auth::user()->role->role_key == 'company_admin'
-            ? User::companyCustomers()->get()
-            : User::allCustomers()->get();
+        $roleKey = Auth::user()->role->role_key;
 
-        return view('dashboard.pages.bookings.manage', compact('title', 'mode', 'customers'));
+        $customers = match ($roleKey) {
+            'company_admin' => User::companyCustomers()->get(),
+            default         => User::allCustomers()->get(),
+        };
+
+        return view('dashboard.pages.bookings.manage', compact(
+            'title',
+            'mode',
+            'customers'
+        ));
     }
+
 }
