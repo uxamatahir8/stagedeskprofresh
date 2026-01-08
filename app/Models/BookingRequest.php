@@ -54,4 +54,9 @@ class BookingRequest extends Model
         });
     }
 
+    public function eventType()
+    {
+        return $this->belongsTo(EventType::class, 'event_type_id');
+    }
+
 }
