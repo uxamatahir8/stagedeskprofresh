@@ -73,8 +73,7 @@
                     <div class="col-lg-6 mb-2">
                         <label class="col-form-label">Date of Birth</label>
                         <input type="text" name="date_of_birth" class="form-control required" data-provider="flatpickr"
-                                data-date-format="d M, Y"
-                                data-maxDate="{{ now()->subDays(5)->format('d M, Y') }}"
+                            data-date-format="d M, Y" data-maxDate="{{ now()->subDays(5)->format('d M, Y') }}"
                             value="{{ old('date_of_birth', $booking->date_of_birth ?? '') }}" required>
                     </div>
 
@@ -102,24 +101,27 @@
                     {{-- Event Date --}}
                     <div class="col-lg-4 mb-2">
                         <label class="col-form-label">Event Date</label>
-                        <input type="text" name="event_date" class="form-control required"
-                            value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('Y-m-d\TH:i') : '') }}"
+                        <input type="text" name="event_date" class="form-control required" data-provider="flatpickr"
+                            data-date-format="d M, Y" data-minDate="{{ now()->addDays(1)->format('d M, Y') }}"
+                            value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('d M, Y') : '') }}"
                             required>
                     </div>
 
                     {{-- START TIME --}}
                     <div class="col-lg-4 mb-2">
                         <label class="col-form-label">Start Time</label>
-                        <input type="text" name="start_time" class="form-control required"
-                            value="{{ old('start_time', isset($booking) ? \Carbon\Carbon::parse($booking->start_time)->format('Y-m-d\TH:i') : '') }}"
+                        <input type="text" name="start_time" class="form-control required" data-provider="timepickr"
+                            data-time-basic="true"
+                            value="{{ old('start_time', isset($booking) ? \Carbon\Carbon::parse($booking->start_time)->format('TH:i') : '') }}"
                             required>
                     </div>
 
                     {{-- END TIME --}}
                     <div class="col-lg-4 mb-2">
                         <label class="col-form-label">End Time</label>
-                        <input type="text" name="end_time" class="form-control required"
-                            value="{{ old('end_time', isset($booking) ? \Carbon\Carbon::parse($booking->end_time)->format('Y-m-d\TH:i') : '') }}"
+                        <input type="text" name="end_time" class="form-control required" data-provider="timepickr"
+                            data-time-basic="true"
+                            value="{{ old('end_time', isset($booking) ? \Carbon\Carbon::parse($booking->end_time)->format('TH:i') : '') }}"
                             required>
                     </div>
 
@@ -152,13 +154,16 @@
                     {{-- WEDDING DETAILS --}}
                     <div class="col-lg-4 mb-2">
                         <label class="col-form-label">Wedding Date</label>
-                        <input type="text" name="wedding_date" class="form-control"
+                        <input type="text" name="wedding_date" class="form-control" data-provider="flatpickr"
+                            data-date-format="d M, Y" data-minDate="{{ now()->addDays(1)->format('d M, Y') }}"
                             value="{{ old('wedding_date', $booking->wedding_date ?? '') }}">
                     </div>
 
                     <div class="col-lg-4 mb-2">
                         <label class="col-form-label">Wedding Time</label>
-                        <input type="text" name="wedding_time" class="form-control"
+                        <input type="text" name="wedding_time" class="form-control" data-provider="timepickr"
+                            data-time-basic="true"
+                            value="{{ old('start_time', isset($booking) ? \Carbon\Carbon::parse($booking->start_time)->format('TH:i') : '') }}"
                             value="{{ old('wedding_time', $booking->wedding_time ?? '') }}">
                     </div>
 

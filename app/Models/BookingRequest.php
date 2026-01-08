@@ -17,15 +17,14 @@ class BookingRequest extends Model
         'phone',
         'email',
         'event_date',
-        'start_time',
-        'end_time',
+        'opening_songs',
+        'special_moments',
         'dos',
         'donts',
         'playlist_spotify',
         'additional_notes',
         'wedding_date',
         'wedding_time',
-        'wedding_location',
         'partner_name',
     ];
 
