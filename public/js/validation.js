@@ -18,10 +18,11 @@ const validateRequiredInput = (element) => {
             validationMessage.textContent = `${requiredElement} is required`; // Default validation message
             element.parentNode.appendChild(validationMessage);
         }
-
+        let value = element.value;
+        if (typeof value !== "string") value = "";
         if (
             element.classList.contains("required") &&
-            element.value.trim() === ""
+            value.trim() === ""
         ) {
             element.classList.add("is-invalid");
             element.classList.remove("is-valid");
