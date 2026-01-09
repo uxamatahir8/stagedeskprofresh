@@ -87,7 +87,7 @@ class UserController extends Controller
             'name'       => $validated['name'],
             'email'      => $validated['email'],
             'password'   => Hash::make($validated['password']),
-            'company_id' => $validated['company_id'] ?? null,
+            'company_id' => Auth::user()->role->role_key == 'master_admin' ? $validated['company_id'] ?? null : Auth::user()->company_id,
             'status'     => $request->status === 'active' ? 'active' : 'inactive',
         ]);
 

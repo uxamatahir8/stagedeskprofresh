@@ -46,7 +46,10 @@
                         data-bs-offset="0,24" type="button" data-bs-auto-close="outside" aria-haspopup="false"
                         aria-expanded="false">
                         <i data-lucide="bell" class="fs-xxl"></i>
-                        <span class="badge text-bg-danger badge-circle topbar-badge">1</span>
+                        @if ($unreadNotificationCount > 0)
+                            <span
+                                class="badge text-bg-danger badge-circle topbar-badge">{{ $unreadNotificationCount }}</span>
+                        @endif
                     </button>
 
                     <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg">
@@ -63,29 +66,32 @@
                         </div>
 
                         <div style="max-height: 300px;" data-simplebar>
-                            <!-- Notification 1 -->
-                            <div class="dropdown-item notification-item py-2 text-wrap" id="message-1">
-                                <span class="d-flex align-items-center gap-3">
-                                    <span class="flex-shrink-0 position-relative">
-                                        <img src="{{ asset('images/users/user-4.jpg') }}"
-                                            class="avatar-md rounded-circle" alt="User Avatar">
-                                        <span class="position-absolute rounded-pill bg-success notification-badge">
-                                            <i class="ti ti-bell align-middle"></i>
-                                            <span class="visually-hidden">unread notification</span>
+                            @foreach ($topbarNotifications as $notification)
+                                <!-- Notification 1 -->
+                                <div class="dropdown-item notification-item py-2 text-wrap" id="message-1">
+                                    <span class="d-flex align-items-center gap-3">
+                                        <span class="flex-shrink-0 position-relative">
+                                            <img src="{{ asset('images/users/user-4.jpg') }}"
+                                                class="avatar-md rounded-circle" alt="User Avatar">
+                                            <span class="position-absolute rounded-pill bg-success notification-badge">
+                                                <i class="ti ti-bell align-middle"></i>
+                                                <span class="visually-hidden">unread notification</span>
+                                            </span>
                                         </span>
+                                        <span class="flex-grow-1 text-muted">
+                                            <span class="fw-medium text-body">Emily Johnson</span> commented on a
+                                            task in <span class="fw-medium text-body">Design Sprint</span><br>
+                                            <span class="fs-xs">12 minutes ago</span>
+                                        </span>
+                                        <button type="button"
+                                            class="flex-shrink-0 text-muted btn btn-link p-0 position-absolute end-0 me-2 d-none noti-close-btn"
+                                            data-dismissible="#message-1">
+                                            <i class="ti ti-xbox-x-filled fs-xxl"></i>
+                                        </button>
                                     </span>
-                                    <span class="flex-grow-1 text-muted">
-                                        <span class="fw-medium text-body">Emily Johnson</span> commented on a
-                                        task in <span class="fw-medium text-body">Design Sprint</span><br>
-                                        <span class="fs-xs">12 minutes ago</span>
-                                    </span>
-                                    <button type="button"
-                                        class="flex-shrink-0 text-muted btn btn-link p-0 position-absolute end-0 me-2 d-none noti-close-btn"
-                                        data-dismissible="#message-1">
-                                        <i class="ti ti-xbox-x-filled fs-xxl"></i>
-                                    </button>
-                                </span>
-                            </div>
+                                </div>
+                            @endforeach
+
                         </div>
 
 

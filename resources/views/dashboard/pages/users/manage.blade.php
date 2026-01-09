@@ -250,7 +250,7 @@
                 <hr>
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-{{ $mode == 'edit' ? 'warning' : 'primary' }}">
-                        {{ $mode == 'edit' ? 'Update' : 'Save' }} Company
+                        {{ $mode == 'edit' ? 'Update' : 'Save' }} User
                     </button>
                 </div>
             </form>
