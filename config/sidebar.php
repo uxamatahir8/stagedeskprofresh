@@ -3,37 +3,53 @@
 return [
     [
         'title' => 'Dashboard',
-        'icon' => 'earth',
+        'icon'  => 'earth',
         'route' => 'dashboard',
         // roles omitted → visible to all
     ],
     [
+        'title'   => 'Booking',
+        'icon'    => 'calendar-check',
+        'submenu' => [
+            [
+                'title' => 'Bookings Requests',
+                'route' => 'bookings.index',
+                'roles' => ['master_admin', 'company_admin', 'customer'],
+            ],
+            [
+                'title' => 'Event Types',
+                'route' => 'event-types',
+                'roles' => ['master_admin'],
+            ],
+        ],
+    ],
+    [
         'title' => 'Packages',
-        'icon' => 'package-open',
+        'icon'  => 'package-open',
         'route' => 'packages',
         'roles' => ['master_admin'],
     ],
     [
         'title' => 'Companies',
-        'icon' => 'building',
+        'icon'  => 'building',
         'route' => 'companies',
         'roles' => ['master_admin'],
     ],
     [
         'title' => 'Testimonials',
-        'icon' => 'star',
+        'icon'  => 'star',
         'route' => 'testimonials',
         'roles' => ['master_admin'],
     ],
     [
         'title' => 'Users',
-        'icon' => 'users',
+        'icon'  => 'users',
         'route' => 'users',
         'roles' => ['master_admin', 'company_admin'],
     ],
     [
-        'title' => 'Blogs CMS',
-        'icon' => 'life-buoy',
+        'title'   => 'Blogs CMS',
+        'icon'    => 'life-buoy',
         'submenu' => [
             [
                 'title' => 'Blog Categories',
@@ -50,13 +66,13 @@ return [
         ],
     ],
     [
-        'title'=> 'Support Center',
-        'icon'=> 'headset',
+        'title' => 'Support Center',
+        'icon'  => 'headset',
         'route' => 'support.tickets',
     ],
     [
         'title' => 'Settings',
-        'icon' => 'cog',
+        'icon'  => 'cog',
         'route' => 'settings',
         'roles' => ['master_admin'],
     ],
