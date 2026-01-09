@@ -26,11 +26,11 @@
                 <div class="row">
                     {{-- Event Date --}}
                     <div class="col-lg-4 mb-2">
-                        <label class="col-form-label required">Event Date <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Event Date <span class="text-danger">*</span></label>
                         <input type="text" name="event_date" class="form-control required" data-provider="flatpickr"
-                            data-date-format="d M, Y" data-minDate="{{ now()->addDays(1)->format('d M, Y') }}"
+                            data-date-format="Y-m-d" data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}"
                             placeholder="Select event date"
-                            value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('d M, Y') : '') }}">
+                            value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('Y-m-d') : '') }}">
                     </div>
                 </div>
 
@@ -38,7 +38,7 @@
                     {{-- USER (Company Admin only) --}}
                     @if (auth()->user()->role->role_key === 'company_admin' || auth()->user()->role->role_key === 'master_admin')
                         <div class="col-lg-6 mb-2">
-                            <label class="col-form-label required">Customer <span class="text-danger">*</span></label>
+                            <label class="col-form-label">Customer <span class="text-danger">*</span></label>
                             <select name="user_id" class="form-control form-select required">
                                 <option value="">Select Customer</option>
                                 @foreach ($customers as $customer)
@@ -53,7 +53,7 @@
 
                     {{-- EVENT TYPE --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Event Type <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Event Type <span class="text-danger">*</span></label>
                         <select name="event_type_id" class="form-control form-select required">
                             <option value="">Select Event Type</option>
                             @foreach ($event_types as $event_type)
@@ -67,14 +67,14 @@
 
                     {{-- NAME --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Name <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control required" placeholder="Enter first name"
                             value="{{ old('name', $booking->name ?? '') }}">
                     </div>
 
                     {{-- SURNAME --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Surname <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Surname <span class="text-danger">*</span></label>
                         <input type="text" name="surname" class="form-control required" placeholder="Enter surname"
                             value="{{ old('surname', $booking->surname ?? '') }}">
                     </div>
@@ -91,8 +91,8 @@
                         <div class="col-lg-4 mb-2">
                             <label class="col-form-label wedding-label">Wedding Date</label>
                             <input type="text" name="wedding_date" class="form-control wedding-field"
-                                data-provider="flatpickr" data-date-format="d M, Y"
-                                data-minDate="{{ now()->addDays(1)->format('d M, Y') }}" placeholder="Select wedding date"
+                                data-provider="flatpickr" data-date-format="Y-m-d"
+                                data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}" placeholder="Select wedding date"
                                 value="{{ old('wedding_date', $booking->wedding_date ?? '') }}">
                         </div>
 
@@ -106,30 +106,30 @@
 
                     {{-- DOB --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Date of Birth <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Date of Birth <span class="text-danger">*</span></label>
                         <input type="text" name="date_of_birth" class="form-control required" data-provider="flatpickr"
-                            data-date-format="d M, Y" data-maxDate="{{ now()->subDays(5)->format('d M, Y') }}"
+                            data-date-format="Y-m-d" data-maxDate="{{ now()->subDays(5)->format('Y-m-d') }}"
                             placeholder="Select date of birth"
                             value="{{ old('date_of_birth', $booking->date_of_birth ?? '') }}">
                     </div>
 
                     {{-- PHONE --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Phone <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Phone <span class="text-danger">*</span></label>
                         <input type="text" name="phone" class="form-control required phone"
                             placeholder="Enter phone number" value="{{ old('phone', $booking->phone ?? '') }}">
                     </div>
 
                     {{-- EMAIL --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Email <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control required" placeholder="Enter email"
                             value="{{ old('email', $booking->email ?? '') }}">
                     </div>
 
                     {{-- ADDRESS --}}
                     <div class="col-lg-6 mb-2">
-                        <label class="col-form-label required">Address <span class="text-danger">*</span></label>
+                        <label class="col-form-label">Address <span class="text-danger">*</span></label>
                         <input type="text" name="address" class="form-control required" placeholder="Enter address"
                             value="{{ old('address', $booking->address ?? '') }}">
                     </div>
