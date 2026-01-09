@@ -1,7 +1,9 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Events\UserRegistered;
+use App\Mail\WelcomeMail;
+use App\Models\Company;
 use App\Models\Countries;
 use App\Models\Role;
 use App\Models\User;
@@ -10,11 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeMail;
-use App\Models\Company;
 
 class AuthController extends Controller
 {
@@ -28,7 +28,7 @@ class AuthController extends Controller
 
     public function register()
     {
-        $title = 'Register';
+        $title     = 'Register';
         $countries = Countries::all();
 
         return view('auth.pages.register', compact('title', 'countries'));
@@ -54,10 +54,10 @@ class AuthController extends Controller
 
         DB::table('password_reset_tokens')->updateOrInsert(
             [
-                'email' => $request->email
+                'email' => $request->email,
             ],
             [
-                'token' => $token,
+                'token'      => $token,
                 'created_at' => now(),
             ]
         );
@@ -72,38 +72,35 @@ class AuthController extends Controller
         return redirect()->route('user_login')->with('success', 'Password reset link sent to your email.');
     }
 
-
     public function resetPassword(Request $request)
     {
         $title = 'Reset Password';
 
-        if (!$request->has('token') || !$request->has('email')) {
+        if (! $request->has('token') || ! $request->has('email')) {
             return redirect()->route('login')->with('error', 'Invalid password reset link.');
         }
 
-
         return view('auth.pages.reset-password', compact('title'));
     }
-
 
     public function userResetPassword(Request $request)
     {
         // ✅ Validate input
         $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
-            'token' => ['required'],
+            'email'    => ['required', 'email', 'exists:users,email'],
+            'token'    => ['required'],
             'password' => [
                 'required',
                 'string',
-                'min:10', // secure minimum
-                'regex:/[a-z]/',      // lowercase
-                'regex:/[A-Z]/',      // uppercase
-                'regex:/[0-9]/',      // number
-                'regex:/[@$!%*?&]/',  // special character
-                'confirmed'           // must match password_confirmation
+                'min:10',            // secure minimum
+                'regex:/[a-z]/',     // lowercase
+                'regex:/[A-Z]/',     // uppercase
+                'regex:/[0-9]/',     // number
+                'regex:/[@$!%*?&]/', // special character
+                'confirmed',         // must match password_confirmation
             ],
         ], [
-            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.'
+            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
         ]);
 
         // ✅ Find record in password_reset_tokens
@@ -112,7 +109,7 @@ class AuthController extends Controller
             ->where('token', $request->token)
             ->first();
 
-        if (!$tokenData) {
+        if (! $tokenData) {
             return redirect()->back()->with('error', 'Invalid or expired reset token.');
         }
 
@@ -122,7 +119,7 @@ class AuthController extends Controller
         }
 
         // ✅ Update user password
-        $user = User::where('email', $request->email)->first();
+        $user           = User::where('email', $request->email)->first();
         $user->password = Hash::make($request->password);
         $user->setRememberToken(Str::random(60)); // Optional: invalidate existing sessions
         $user->save();
@@ -140,11 +137,10 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Your password has been successfully reset. You can now log in.');
     }
 
-
     public function userLogin(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -167,14 +163,13 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
-
     public function userRegister(Request $request)
     {
         $validated = $request->validate([
             'register_as' => 'required',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|confirmed|min:8',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email',
+            'password'    => 'required|confirmed|min:8',
         ]);
 
         $role = Role::where('id', $request->register_as)->first();
@@ -182,21 +177,21 @@ class AuthController extends Controller
         DB::beginTransaction();
         try {
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
+                'name'     => $request->name,
+                'email'    => $request->email,
                 'password' => Hash::make($request->password),
-                'status' => 'active',
-                'role_id' => $role->id
+                'status'   => 'active',
+                'role_id'  => $role->id,
             ]);
 
             // Save profile
             $profile = new UserProfile([
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'zipcode' => $request->zipcode,
+                'phone'      => $request->phone,
+                'address'    => $request->address,
+                'zipcode'    => $request->zipcode,
                 'country_id' => $request->country_id,
-                'state_id' => $request->state_id,
-                'city_id' => $request->city_id
+                'state_id'   => $request->state_id,
+                'city_id'    => $request->city_id,
             ]);
 
             if ($request->hasFile('profile_image')) {
@@ -208,16 +203,16 @@ class AuthController extends Controller
             // If registering as company
             if ($role->role_key === 'company_admin') {
                 $company = Company::create([
-                    'name' => $request->company_name,
-                    'website' => $request->company_website,
-                    'kvk_number' => $request->kvk_number,
-                    'email' => $request->company_email,
-                    'phone' => $request->company_phone,
-                    'address' => $request->company_address,
-                    'contact_name' => $request->name,
+                    'name'          => $request->company_name,
+                    'website'       => $request->company_website,
+                    'kvk_number'    => $request->kvk_number,
+                    'email'         => $request->company_email,
+                    'phone'         => $request->company_phone,
+                    'address'       => $request->company_address,
+                    'contact_name'  => $request->name,
                     'contact_email' => $request->email,
                     'contact_phone' => $request->phone,
-                    'status' => 'active',
+                    'status'        => 'active',
                 ]);
 
                 if ($request->hasFile('company_logo')) {
@@ -230,7 +225,7 @@ class AuthController extends Controller
 
             // Send welcome email
             Mail::to($user->email)->send(new WelcomeMail($user));
-
+            event(new UserRegistered($user));
             DB::commit();
             return redirect()->route('login')->with('success', 'Registration successful! You can now log in.');
         } catch (\Exception $e) {
@@ -238,7 +233,6 @@ class AuthController extends Controller
             return back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-
 
     public function logout()
     {
