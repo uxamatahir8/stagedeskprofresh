@@ -70,4 +70,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Blog::class);
     }
+
+    public function notifications(){
+        return $this->hasMany(Notification::class);
+    }
 }
