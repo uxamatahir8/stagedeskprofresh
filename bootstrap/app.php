@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'company.scope' => \App\Http\Middleware\CompanyScopeMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
