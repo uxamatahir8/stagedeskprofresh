@@ -25,6 +25,12 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
+        'locked_until',
+        'failed_login_attempts',
+        'last_login_at',
+        'last_login_ip',
+        'password_changed_at',
+        'force_password_change',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -46,6 +52,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'locked_until'      => 'datetime',
+            'last_login_at'     => 'datetime',
+            'password_changed_at' => 'datetime',
+            'force_password_change' => 'boolean',
         ];
     }
 
@@ -89,5 +99,35 @@ class User extends Authenticatable
     public function blogs()
     {
         return $this->hasMany(Blog::class);
+    }
+
+    public function twoFactorAuth()
+    {
+        return $this->hasOne(TwoFactorAuth::class);
+    }
+
+    public function loginAttempts()
+    {
+        return $this->hasMany(LoginAttempt::class);
+    }
+
+    public function securityLogs()
+    {
+        return $this->hasMany(SecurityLog::class);
+    }
+
+    public function passwordHistory()
+    {
+        return $this->hasMany(PasswordHistory::class);
+    }
+
+    public function artist()
+    {
+        return $this->hasOne(Artist::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

@@ -256,22 +256,28 @@ class ArtistPortalController extends Controller
 
         DB::beginTransaction();
         try {
+            // When artist rejects, booking goes back to pending state with no artist assigned
+            // This allows company to reassign to another artist
             $booking->update([
-                'status' => 'rejected',
+                'status' => 'pending',
                 'assigned_artist_id' => null,
-                'company_notes' => ($booking->company_notes ?? '') . "\n\nArtist rejection reason: " . $request->reason
+                'confirmed_at' => null,
+                'company_notes' => ($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Artist rejection: " . $request->reason
             ]);
 
             ActivityLog::log(
                 'updated',
                 $booking,
-                'Booking rejected by artist',
+                'Booking rejected by artist - returned to pending for reassignment',
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id, 'reason' => $request->reason]
             );
 
+            // TODO: Send notification to company admin about rejection
+            // Notification::send($booking->company->admins, new ArtistRejectedBooking($booking, $request->reason));
+
             DB::commit();
 
-            return back()->with('success', 'Booking rejected successfully');
+            return back()->with('success', 'Booking rejected. The company can now reassign it to another artist.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to reject booking: ' . $e->getMessage());

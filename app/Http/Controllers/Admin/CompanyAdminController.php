@@ -183,7 +183,7 @@ class CompanyAdminController extends Controller
     }
 
     /**
-     * Assign Artist to Booking
+     * Assign Artist to Booking (with reassignment support)
      */
     public function assignArtistToBooking(Request $request, BookingRequest $booking)
     {
@@ -199,30 +199,50 @@ class CompanyAdminController extends Controller
             'company_notes' => 'nullable|string|max:1000'
         ]);
 
-        // Verify artist belongs to company
+        // Verify artist belongs to company or is shared with company
         $artist = Artist::where('id', $request->artist_id)
-            ->where('company_id', $companyId)
+            ->where(function($q) use ($companyId) {
+                $q->where('company_id', $companyId)
+                  ->orWhereHas('sharedWithCompanies', function($sq) use ($companyId) {
+                      $sq->where('shared_with_company_id', $companyId)
+                         ->where('status', 'accepted');
+                  });
+            })
             ->firstOrFail();
+
+        $isReassignment = $booking->assigned_artist_id !== null;
+        $previousArtistId = $booking->assigned_artist_id;
 
         DB::beginTransaction();
         try {
+            // Update booking with new artist
             $booking->update([
                 'assigned_artist_id' => $artist->id,
-                'status' => 'confirmed',
-                'confirmed_at' => now(),
+                'status' => 'pending', // Reset to pending for artist to accept
+                'confirmed_at' => null,
                 'company_notes' => $request->company_notes
             ]);
 
+            $action = $isReassignment ? 'Artist reassigned to booking' : 'Artist assigned to booking';
             ActivityLog::log(
                 'updated',
                 $booking,
-                'Artist assigned to booking by company admin',
-                ['artist_id' => $artist->id, 'booking_id' => $booking->id]
+                $action . ' by company admin',
+                [
+                    'artist_id' => $artist->id,
+                    'booking_id' => $booking->id,
+                    'previous_artist_id' => $previousArtistId,
+                    'is_reassignment' => $isReassignment
+                ]
             );
 
             DB::commit();
 
-            return back()->with('success', 'Artist assigned successfully!');
+            $message = $isReassignment
+                ? 'Artist reassigned successfully! The new artist must accept the booking.'
+                : 'Artist assigned successfully! Waiting for artist acceptance.';
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to assign artist: ' . $e->getMessage());

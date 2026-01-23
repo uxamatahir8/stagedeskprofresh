@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\MasterAdminController;
 use App\Http\Controllers\Admin\CompanyAdminController;
+use App\Http\Controllers\Admin\ArtistSharingController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -47,4 +48,11 @@ Route::middleware(['auth', 'role:company_admin', 'company.scope'])->prefix('comp
     // Company Settings
     Route::get('/settings', [CompanyAdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [CompanyAdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Artist Sharing
+    Route::get('/artist-sharing', [ArtistSharingController::class, 'index'])->name('artist-sharing');
+    Route::post('/artist-sharing/share', [ArtistSharingController::class, 'shareArtist'])->name('artist-sharing.share');
+    Route::post('/artist-sharing/{sharedArtist}/accept', [ArtistSharingController::class, 'acceptShare'])->name('artist-sharing.accept');
+    Route::post('/artist-sharing/{sharedArtist}/reject', [ArtistSharingController::class, 'rejectShare'])->name('artist-sharing.reject');
+    Route::post('/artist-sharing/{sharedArtist}/revoke', [ArtistSharingController::class, 'revokeShare'])->name('artist-sharing.revoke');
 });
