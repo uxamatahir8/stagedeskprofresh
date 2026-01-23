@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class RoleMiddleware
 {
@@ -37,7 +38,7 @@ class RoleMiddleware
         }
 
         // Log unauthorized access attempt
-        \Log::warning('Unauthorized access attempt', [
+        Log::warning('Unauthorized access attempt', [
             'user_id' => $user->id,
             'user_role' => $roleKey,
             'required_roles' => $roles,

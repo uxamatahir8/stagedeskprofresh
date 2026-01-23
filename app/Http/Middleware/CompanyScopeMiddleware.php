@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class CompanyScopeMiddleware
 {
@@ -77,7 +78,7 @@ class CompanyScopeMiddleware
 
         // Validate company scope
         if ($resourceCompanyId && $resourceCompanyId !== $user->company_id) {
-            \Log::warning('Company scope violation attempt', [
+            Log::warning('Company scope violation attempt', [
                 'user_id' => $user->id,
                 'user_company_id' => $user->company_id,
                 'resource_company_id' => $resourceCompanyId,

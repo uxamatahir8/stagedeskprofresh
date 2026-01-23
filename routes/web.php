@@ -61,3 +61,9 @@ require __DIR__ . '/blogs.php';
 require __DIR__ . '/settings.php';
 require __DIR__ . '/reviews.php';
 require __DIR__ . '/activity_logs.php';
+
+// Portal route files
+require __DIR__ . '/admin.php';
+require __DIR__ . '/customer.php';
+require __DIR__ . '/artist.php';
+require __DIR__ . '/affiliate.php';
