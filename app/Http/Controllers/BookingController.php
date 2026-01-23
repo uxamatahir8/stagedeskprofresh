@@ -11,6 +11,7 @@ use App\Events\BookingCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -205,7 +206,7 @@ class BookingController extends Controller
 
             // Send booking confirmation email to customer
             if ($booking->customer && $booking->customer->email) {
-                \Mail::to($booking->customer->email)->send(new \App\Mail\BookingCreated($booking));
+                Mail::to($booking->customer->email)->send(new \App\Mail\BookingCreated($booking));
             }
 
             // Fire booking created event if company is assigned

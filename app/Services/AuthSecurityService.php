@@ -6,6 +6,7 @@ use App\Models\LoginAttempt;
 use App\Models\SecurityLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class AuthSecurityService
@@ -58,7 +59,7 @@ class AuthSecurityService
     /**
      * Increment failed login attempts and lock if necessary
      */
-    protected function incrementFailedAttempts($userId)
+    public function incrementFailedAttempts($userId)
     {
         $user = User::find($userId);
         if (!$user) return;
@@ -78,7 +79,7 @@ class AuthSecurityService
             );
 
             // Send security alert email
-            \Mail::to($user->email)->send(
+            Mail::to($user->email)->send(
                 new \App\Mail\SecurityAlert(
                     $user,
                     'account_locked',
@@ -178,7 +179,7 @@ class AuthSecurityService
             );
 
             // Send security alert email
-            \Mail::to($user->email)->send(
+            Mail::to($user->email)->send(
                 new \App\Mail\SecurityAlert(
                     $user,
                     'suspicious_activity',
