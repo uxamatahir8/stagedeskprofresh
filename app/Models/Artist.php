@@ -47,6 +47,18 @@ class Artist extends Model
         return $this->hasMany(BookingRequest::class, 'assigned_artist_id');
     }
 
+    public function sharedWith()
+    {
+        return $this->hasMany(SharedArtist::class, 'artist_id');
+    }
+
+    public function sharedWithCompanies()
+    {
+        return $this->belongsToMany(Company::class, 'shared_artists', 'artist_id', 'shared_with_company_id')
+            ->withPivot('status', 'notes', 'shared_at', 'accepted_at', 'revoked_at')
+            ->withTimestamps();
+    }
+
     public function scopeCompanyArtists($query)
     {
         return $query->where('company_id', Auth::user()->company_id);
