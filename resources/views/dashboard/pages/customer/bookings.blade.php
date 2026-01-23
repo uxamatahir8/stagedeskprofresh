@@ -69,10 +69,10 @@
                                 <td>{{ $booking->company->name ?? 'N/A' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y h:i A') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ 
-                                        $booking->status === 'confirmed' ? 'success' : 
-                                        ($booking->status === 'pending' ? 'warning' : 
-                                        ($booking->status === 'completed' ? 'info' : 'danger')) 
+                                    <span class="badge bg-{{
+                                        $booking->status === 'confirmed' ? 'success' :
+                                        ($booking->status === 'pending' ? 'warning' :
+                                        ($booking->status === 'completed' ? 'info' : 'danger'))
                                     }}">
                                         {{ ucfirst($booking->status) }}
                                     </span>

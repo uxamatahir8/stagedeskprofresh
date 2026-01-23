@@ -38,10 +38,10 @@
                         </div>
                         <div class="col-md-6">
                             <p class="text-muted mb-1">Status</p>
-                            <span class="badge bg-{{ 
-                                $booking->status === 'confirmed' ? 'success' : 
-                                ($booking->status === 'pending' ? 'warning' : 
-                                ($booking->status === 'completed' ? 'info' : 'danger')) 
+                            <span class="badge bg-{{
+                                $booking->status === 'confirmed' ? 'success' :
+                                ($booking->status === 'pending' ? 'warning' :
+                                ($booking->status === 'completed' ? 'info' : 'danger'))
                             }}">
                                 {{ ucfirst($booking->status) }}
                             </span>
@@ -113,7 +113,7 @@
                         @csrf
                         <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                         <input type="hidden" name="artist_id" value="{{ $booking->assigned_artist_id }}">
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Rating <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2">
@@ -125,12 +125,12 @@
                                 @endfor
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Your Review <span class="text-danger">*</span></label>
                             <textarea name="comment" class="form-control" rows="4" required></textarea>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i data-lucide="send"></i> Submit Review
                         </button>
