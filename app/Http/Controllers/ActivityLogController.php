@@ -46,7 +46,6 @@ class ActivityLogController extends Controller
 
         return view('dashboard.pages.activity-logs.index', compact('title', 'logs', 'actions'));
     }
-
     /**
      * Display the specified activity log
      */
