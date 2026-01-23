@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 if (!function_exists('hasRole')) {
     /**
      * Check if the current user has any of the specified roles
-     * 
+     *
      * @param string ...$roles Role keys to check (e.g., 'master_admin', 'company_admin')
      * @return bool
      */
@@ -23,7 +23,7 @@ if (!function_exists('hasRole')) {
 if (!function_exists('isMasterAdmin')) {
     /**
      * Check if the current user is a Master Admin
-     * 
+     *
      * @return bool
      */
     function isMasterAdmin(): bool
@@ -35,7 +35,7 @@ if (!function_exists('isMasterAdmin')) {
 if (!function_exists('isCompanyAdmin')) {
     /**
      * Check if the current user is a Company Admin
-     * 
+     *
      * @return bool
      */
     function isCompanyAdmin(): bool
@@ -47,7 +47,7 @@ if (!function_exists('isCompanyAdmin')) {
 if (!function_exists('isArtist')) {
     /**
      * Check if the current user is an Artist
-     * 
+     *
      * @return bool
      */
     function isArtist(): bool
@@ -59,7 +59,7 @@ if (!function_exists('isArtist')) {
 if (!function_exists('isCustomer')) {
     /**
      * Check if the current user is a Customer
-     * 
+     *
      * @return bool
      */
     function isCustomer(): bool
@@ -71,7 +71,7 @@ if (!function_exists('isCustomer')) {
 if (!function_exists('isAffiliate')) {
     /**
      * Check if the current user is an Affiliate
-     * 
+     *
      * @return bool
      */
     function isAffiliate(): bool
@@ -83,7 +83,7 @@ if (!function_exists('isAffiliate')) {
 if (!function_exists('canAccessCompanyResource')) {
     /**
      * Check if the current user can access a resource from a specific company
-     * 
+     *
      * @param int $companyId Company ID to check
      * @return bool
      */
@@ -92,7 +92,7 @@ if (!function_exists('canAccessCompanyResource')) {
         if (isMasterAdmin()) {
             return true; // Master admin has access to all companies
         }
-        
+
         $user = Auth::user();
         return $user && $user->company_id === $companyId;
     }
@@ -101,7 +101,7 @@ if (!function_exists('canAccessCompanyResource')) {
 if (!function_exists('getCurrentUserCompanyId')) {
     /**
      * Get the current user's company ID
-     * 
+     *
      * @return int|null
      */
     function getCurrentUserCompanyId(): ?int

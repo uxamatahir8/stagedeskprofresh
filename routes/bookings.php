@@ -22,6 +22,23 @@ Route::middleware('auth')->group(function () {
     // Update a specific booking
     Route::put('/bookings/{booking}', [BookingController::class, 'update'])->name('bookings.update');
 
-    // Delete a specific booking
-    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
+    // Delete a specific booking (Admin only)
+    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])
+        ->name('bookings.destroy')
+        ->middleware('role:master_admin,company_admin');
+
+    // Assign artist to booking (Admin only)
+    Route::post('/bookings/{booking}/assign-artist', [BookingController::class, 'assignArtist'])
+        ->name('bookings.assign-artist')
+        ->middleware('role:master_admin,company_admin');
+
+    // Mark booking as completed
+    Route::post('/bookings/{booking}/mark-completed', [BookingController::class, 'markCompleted'])
+        ->name('bookings.mark-completed')
+        ->middleware('role:master_admin,company_admin,artist');
+
+    // Cancel booking
+    Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])
+        ->name('bookings.cancel')
+        ->middleware('role:master_admin,company_admin,customer');
 });

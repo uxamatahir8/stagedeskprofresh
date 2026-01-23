@@ -56,8 +56,8 @@ class CompanyScopeMiddleware
         }
 
         // Get resource from route parameters
-        $resource = $request->route('artist') 
-                    ?? $request->route('booking') 
+        $resource = $request->route('artist')
+                    ?? $request->route('booking')
                     ?? $request->route('user')
                     ?? $request->route('company')
                     ?? null;
@@ -68,7 +68,7 @@ class CompanyScopeMiddleware
 
         // Get company_id from the resource
         $resourceCompanyId = null;
-        
+
         if (isset($resource->company_id)) {
             $resourceCompanyId = $resource->company_id;
         } elseif (method_exists($resource, 'company') && $resource->company) {
