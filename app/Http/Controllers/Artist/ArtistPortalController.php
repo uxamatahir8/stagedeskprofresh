@@ -213,6 +213,7 @@ class ArtistPortalController extends Controller
 
         DB::beginTransaction();
         try {
+            $oldStatus = $booking->status;
             $booking->update([
                 'status' => 'confirmed',
                 'confirmed_at' => now()
@@ -224,6 +225,13 @@ class ArtistPortalController extends Controller
                 'Booking accepted by artist',
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id]
             );
+
+            // Send email to customer about booking confirmation
+            if ($booking->customer && $booking->customer->email) {
+                \Mail::to($booking->customer->email)->send(
+                    new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
+                );
+            }
 
             DB::commit();
 
@@ -258,6 +266,7 @@ class ArtistPortalController extends Controller
         try {
             // When artist rejects, booking goes back to pending state with no artist assigned
             // This allows company to reassign to another artist
+            $oldStatus = $booking->status;
             $booking->update([
                 'status' => 'pending',
                 'assigned_artist_id' => null,
@@ -272,8 +281,28 @@ class ArtistPortalController extends Controller
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id, 'reason' => $request->reason]
             );
 
-            // TODO: Send notification to company admin about rejection
-            // Notification::send($booking->company->admins, new ArtistRejectedBooking($booking, $request->reason));
+            // Send email to customer about booking status change
+            if ($booking->customer && $booking->customer->email) {
+                \Mail::to($booking->customer->email)->send(
+                    new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
+                );
+            }
+
+            // Send email to company admin about rejection
+            if ($booking->company && $booking->company->user && $booking->company->user->email) {
+                \Mail::to($booking->company->user->email)->send(
+                    new \App\Mail\SecurityAlert(
+                        $booking->company->user,
+                        'booking_rejection',
+                        [
+                            'booking_id' => $booking->booking_id,
+                            'artist_name' => $artist->user->name,
+                            'reason' => $request->reason,
+                            'time' => now()->format('F d, Y h:i A')
+                        ]
+                    )
+                );
+            }
 
             DB::commit();
 

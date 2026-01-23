@@ -31,6 +31,8 @@ class User extends Authenticatable
         'last_login_ip',
         'password_changed_at',
         'force_password_change',
+        'email_verified_at',
+        'verification_token',
     ];
     /**
      * The attributes that should be hidden for serialization.

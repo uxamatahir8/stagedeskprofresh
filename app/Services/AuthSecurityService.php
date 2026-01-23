@@ -76,6 +76,20 @@ class AuthSecurityService
                 $userId,
                 ['ip_address' => request()->ip(), 'attempts' => $attempts]
             );
+
+            // Send security alert email
+            \Mail::to($user->email)->send(
+                new \App\Mail\SecurityAlert(
+                    $user,
+                    'account_locked',
+                    [
+                        'failed_attempts' => $attempts,
+                        'lock_duration' => self::LOCKOUT_DURATION,
+                        'ip_address' => request()->ip(),
+                        'time' => now()->format('F d, Y h:i A')
+                    ]
+                )
+            );
         }
 
         $user->update($updates);
@@ -162,6 +176,21 @@ class AuthSecurityService
                 $user->id,
                 ['ip_count' => $recentIps]
             );
+
+            // Send security alert email
+            \Mail::to($user->email)->send(
+                new \App\Mail\SecurityAlert(
+                    $user,
+                    'suspicious_activity',
+                    [
+                        'activity_type' => 'Multiple IP addresses detected',
+                        'ip_address' => request()->ip(),
+                        'location' => 'Unknown', // Could integrate with IP geolocation service
+                        'time' => now()->format('F d, Y h:i A')
+                    ]
+                )
+            );
+
             return true;
         }
 

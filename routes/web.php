@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ValidationController;
@@ -21,6 +22,11 @@ Route::post('/blogs/{slug}/comment', [BlogController::class, 'postComment'])->na
 
 
 Route::get('/check-email-unique', [ValidationController::class, 'checkEmailUnique'])->name('check.email.unique');
+
+// Email verification routes
+Route::get('/verify-email/{token}', [EmailVerificationController::class, 'verify'])->name('verify-email');
+Route::post('/resend-verification', [EmailVerificationController::class, 'resend'])->name('resend-verification');
+
 // add guests routes with guest middleware
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -29,6 +35,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
 
     Route::post('/login', [AuthController::class, 'userLogin'])->name('user_login');
+    Route::post('/send-login-code', [AuthController::class, 'sendLoginCode'])->name('send-login-code');
+    Route::post('/login-with-code', [AuthController::class, 'loginWithCode'])->name('login-with-code');
     Route::post('/register', [AuthController::class, 'userRegister'])->name('user_register');
     Route::post('/forgot-password', [AuthController::class, 'userForgotPassword'])->name('user.forgot-password');
     Route::post('/reset-password', [AuthController::class, 'userResetPassword'])->name('user.reset-password');

@@ -236,6 +236,20 @@ class CompanyAdminController extends Controller
                 ]
             );
 
+            // Send email to customer about artist assignment
+            if ($booking->customer && $booking->customer->email) {
+                \Mail::to($booking->customer->email)->send(
+                    new \App\Mail\ArtistAssigned($booking->fresh(), $isReassignment)
+                );
+            }
+
+            // Send email to artist about new booking
+            if ($artist->user && $artist->user->email) {
+                \Mail::to($artist->user->email)->send(
+                    new \App\Mail\NewBookingForArtist($booking->fresh())
+                );
+            }
+
             DB::commit();
 
             $message = $isReassignment

@@ -3,11 +3,14 @@ namespace App\Http\Controllers;
 
 use App\Events\UserRegistered;
 use App\Mail\WelcomeMail;
+use App\Mail\VerifyEmail;
+use App\Mail\LoginCode as LoginCodeMail;
 use App\Models\Company;
 use App\Models\Countries;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\LoginCode;
 use App\Services\AuthSecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -186,6 +189,15 @@ class AuthController extends Controller
             ])->onlyInput('email');
         }
 
+        // Check if email is verified
+        if ($user && !$user->email_verified_at) {
+            $this->authSecurity->recordLoginAttempt($credentials['email'], false, $user->id, 'Email not verified');
+
+            return back()->withErrors([
+                'email' => 'Please verify your email address before logging in. Check your inbox for the verification link.',
+            ])->with('email_not_verified', true)->onlyInput('email');
+        }
+
         // Attempt authentication
         if (Auth::attempt($credentials)) {
             // Clear rate limiter on successful login
@@ -219,6 +231,122 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
+    /**
+     * Send login code to email
+     */
+    public function sendLoginCode(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        // Check if email is verified
+        if (!$user->email_verified_at) {
+            return back()->withErrors([
+                'email' => 'Please verify your email address first.',
+            ])->onlyInput('email');
+        }
+
+        // Check if account is locked
+        if ($this->authSecurity->isAccountLocked($user)) {
+            $minutes = $user->locked_until->diffInMinutes(now());
+            return back()->withErrors([
+                'email' => "Your account is locked. Please try again in {$minutes} minutes.",
+            ])->onlyInput('email');
+        }
+
+        // Check rate limiting for code generation
+        $rateLimitKey = 'login-code:' . $request->email;
+        $rateLimit = $this->authSecurity->checkRateLimit($rateLimitKey, 3, 15); // 3 codes per 15 minutes
+
+        if ($rateLimit['limited']) {
+            return back()->withErrors([
+                'email' => 'Too many code requests. Please try again in ' . ceil($rateLimit['retry_after'] / 60) . ' minutes.',
+            ])->onlyInput('email');
+        }
+
+        // Generate 6-digit code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store code in database
+        LoginCode::create([
+            'email' => $request->email,
+            'code' => $code,
+            'expires_at' => now()->addMinutes(10),
+            'ip_address' => $request->ip(),
+        ]);
+
+        // Send email
+        Mail::to($user->email)->send(new LoginCodeMail($code, $user->email, 10));
+
+        return back()->with('code_sent', true)->with('success', 'Login code sent to your email!')->onlyInput('email');
+    }
+
+    /**
+     * Login with code
+     */
+    public function loginWithCode(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        // Find user
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'code' => 'Invalid email or code.',
+            ])->onlyInput('email');
+        }
+
+        // Check if account is locked
+        if ($this->authSecurity->isAccountLocked($user)) {
+            $minutes = $user->locked_until->diffInMinutes(now());
+            return back()->withErrors([
+                'code' => "Your account is locked. Please try again in {$minutes} minutes.",
+            ])->onlyInput('email');
+        }
+
+        // Find valid code
+        $loginCode = LoginCode::where('email', $request->email)
+            ->where('code', $request->code)
+            ->valid()
+            ->first();
+
+        if (!$loginCode) {
+            // Increment failed attempts
+            $this->authSecurity->incrementFailedAttempts($user);
+            $this->authSecurity->recordLoginAttempt($request->email, false, $user->id, 'Invalid login code');
+
+            return back()->withErrors([
+                'code' => 'Invalid or expired code.',
+            ])->onlyInput('email');
+        }
+
+        // Mark code as used
+        $loginCode->markAsUsed();
+
+        // Log the user in
+        Auth::login($user);
+
+        // Reset failed attempts
+        $this->authSecurity->resetFailedAttempts($user);
+
+        // Detect suspicious activity
+        $this->authSecurity->detectSuspiciousActivity($user);
+
+        // Record successful login
+        $this->authSecurity->recordLoginAttempt($request->email, true, $user->id);
+
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')->with('success', 'Login successful!');
+    }
+
     public function userRegister(Request $request)
     {
         $validated = $request->validate([
@@ -232,12 +360,16 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try {
+            // Generate verification token
+            $verificationToken = Str::random(64);
+
             $user = User::create([
                 'name'     => $request->name,
                 'email'    => $request->email,
                 'password' => Hash::make($request->password),
                 'status'   => 'active',
                 'role_id'  => $role->id,
+                'verification_token' => $verificationToken,
             ]);
 
             // Save profile
@@ -279,11 +411,13 @@ class AuthController extends Controller
                 $user->update(['company_id' => $company->id]);
             }
 
-            // Send welcome email
-            Mail::to($user->email)->send(new WelcomeMail($user));
+            // Send verification email
+            $verificationUrl = url('/verify-email/' . $verificationToken);
+            Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+
             event(new UserRegistered($user));
             DB::commit();
-            return redirect()->route('login')->with('success', 'Registration successful! You can now log in.');
+            return redirect()->route('login')->with('success', 'Registration successful! Please check your email to verify your account before logging in.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);

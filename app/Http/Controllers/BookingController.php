@@ -203,6 +203,11 @@ class BookingController extends Controller
                 ['booking_id' => $booking->id, 'status' => $booking->status]
             );
 
+            // Send booking confirmation email to customer
+            if ($booking->customer && $booking->customer->email) {
+                \Mail::to($booking->customer->email)->send(new \App\Mail\BookingCreated($booking));
+            }
+
             // Fire booking created event if company is assigned
             if ($booking->company_id && $booking->company) {
                 event(new BookingCreated($booking, $booking->company));

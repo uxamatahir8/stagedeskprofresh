@@ -103,6 +103,14 @@ class ArtistSharingController extends Controller
                 ]
             );
 
+            // Send email to recipient company
+            $recipientCompany = \App\Models\Company::find($request->company_id);
+            if ($recipientCompany && $recipientCompany->user && $recipientCompany->user->email) {
+                \Mail::to($recipientCompany->user->email)->send(
+                    new \App\Mail\ArtistShareRequest($shared->fresh())
+                );
+            }
+
             DB::commit();
 
             return back()->with('success', 'Artist sharing request sent successfully!');
