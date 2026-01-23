@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Providers;
 
 use App\Models\Notification;
@@ -25,21 +24,23 @@ class ViewServiceProvider extends ServiceProvider
         //
         View::composer('*', function ($view) {
 
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
-            $notifications = Notification::where('user_id', Auth::id())
-                ->latest()
-                ->take(10)
+            $userId = Auth::user()->id;
+
+            $notifications = Notification::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
                 ->get();
 
-            $unreadCount = Notification::where('user_id', Auth::id())
+            $unreadCount = Notification::where('user_id', $userId)
                 ->where('is_read', false)
                 ->count();
 
             $view->with([
-                'topbarNotifications' => $notifications,
+                'topbarNotifications'     => $notifications,
                 'unreadNotificationCount' => $unreadCount,
             ]);
         });

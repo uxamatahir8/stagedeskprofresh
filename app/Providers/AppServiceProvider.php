@@ -22,11 +22,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
-        if (Schema::hasTable('settings')) {
-
-            $settings = Settings::query()->pluck('value', 'key')->toArray();
-            View::share('share', $settings);
+        try {
+            if (Schema::hasTable('settings')) {
+                $settings = Settings::query()->pluck('value', 'key')->toArray();
+                View::share('share', $settings);
+            }
+        } catch (\Exception $e) {
+            // Silently fail if database is not available or settings table doesn't exist
+            // This prevents errors during migrations, testing, or initial setup
         }
     }
 }

@@ -74,6 +74,70 @@ class CompanySubscriptionController extends Controller
             ]);
         });
 
-        return redirect()->route('subscriptions')->with('success', 'Subscription created successfully.');
+        return redirect()->route('subscriptions.index')->with('success', 'Subscription created successfully.');
+    }
+
+    public function show(CompanySubscription $subscription)
+    {
+        $title = 'Subscription Details';
+        $subscription->load('company', 'package');
+
+        return view('dashboard.pages.subscriptions.show', compact('title', 'subscription'));
+    }
+
+    public function edit(CompanySubscription $subscription)
+    {
+        $title = 'Edit Subscription';
+        $companies = Company::all();
+        $packages = Package::all();
+
+        return view('dashboard.pages.subscriptions.manage', compact('title', 'subscription', 'companies', 'packages'));
+    }
+
+    public function update(Request $request, CompanySubscription $subscription)
+    {
+        $request->validate([
+            'company_id' => 'required|exists:companies,id',
+            'package_id' => 'required|exists:packages,id',
+            'auto_renew'  => 'boolean',
+        ]);
+
+        DB::transaction(function () use ($request, $subscription) {
+            // Get the selected package details
+            $package = Package::findOrFail($request->package_id);
+
+            $startDate = $subscription->start_date;
+
+            // Calculate end date based on duration type
+            switch (strtolower($package->duration_type)) {
+                case 'weekly':
+                    $endDate = $startDate->copy()->addWeek();
+                    break;
+                case 'monthly':
+                    $endDate = $startDate->copy()->addMonth();
+                    break;
+                case 'yearly':
+                    $endDate = $startDate->copy()->addYear();
+                    break;
+                default:
+                    throw new \Exception('Invalid package duration type');
+            }
+
+            $subscription->update([
+                'company_id' => $request->company_id,
+                'package_id' => $request->package_id,
+                'end_date' => $endDate,
+                'auto_renew' => $request->boolean('auto_renew'),
+            ]);
+        });
+
+        return redirect()->route('subscriptions.index')->with('success', 'Subscription updated successfully.');
+    }
+
+    public function destroy(CompanySubscription $subscription)
+    {
+        $subscription->update(['status' => 'canceled']);
+
+        return redirect()->route('subscriptions.index')->with('success', 'Subscription canceled successfully.');
     }
 }

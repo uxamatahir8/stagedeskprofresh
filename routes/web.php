@@ -43,3 +43,21 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 });
+
+// Include route files
+require __DIR__ . '/artists.php';
+require __DIR__ . '/notifications.php';
+require __DIR__ . '/payments.php';
+require __DIR__ . '/bookings.php';
+require __DIR__ . '/users.php';
+require __DIR__ . '/companies.php';
+require __DIR__ . '/categories.php';
+require __DIR__ . '/event_types.php';
+require __DIR__ . '/packages.php';
+require __DIR__ . '/subscriptions.php';
+require __DIR__ . '/support_tickets.php';
+require __DIR__ . '/testimonials.php';
+require __DIR__ . '/blogs.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/reviews.php';
+require __DIR__ . '/activity_logs.php';

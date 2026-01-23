@@ -14,7 +14,7 @@
                     </a>
                 </li>
 
-                <li class="breadcrumb-item"><a href="{{ route('companies') }}">Companies</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('subscriptions.index') }}">Subscriptions</a></li>
 
                 <li class="breadcrumb-item active">{{ $title }}</li>
             </ol>
@@ -24,8 +24,8 @@
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
             <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('subscription.create') }}" class="btn btn-primary">
-                Add Subscription
+            <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
+                <i class="ti ti-plus"></i> Add Subscription
             </a>
         </div>
         <div class="card-body">
@@ -33,37 +33,54 @@
                 <table data-tables="export-data-dropdown" class="table table-striped align-middle mb-0">
                     <thead class="thead-sm text-uppercase fs-xxs">
                         <tr>
-                            <th>#</th>
+                            <th>ID</th>
                             <th>Company Name</th>
                             <th>Package Name</th>
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Auto Renewal</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $c = 1;
-                        @endphp
                         @foreach ($companySubscription as $subscription)
                             <tr>
-                                <td>{{ $c }}</td>
-                                <td>{{ $subscription->company->name }}</td>
-                                <td>{{ $subscription->package->name }}</td>
-                                <td>{{ date('D, d M Y', strtotime($subscription->start_date)) }}</td>
-                                <td>{{ date('D, d M Y', strtotime($subscription->end_date)) }}</td>
-                                <td>{{ $subscription->auto_renew == 1 ? 'Yes' : 'No' }}</td>
+                                <td>#{{ $subscription->id }}</td>
+                                <td>{{ $subscription->company->company_name }}</td>
+                                <td>{{ $subscription->package->package_name }}</td>
+                                <td>{{ $subscription->start_date->format('D, d M Y') }}</td>
+                                <td>{{ $subscription->end_date->format('D, d M Y') }}</td>
                                 <td>
-                                    <span
-                                        class="badge badge-label badge-soft-{{ config('arrays.status_colors')[$subscription->status]  }}">
+                                    <span class="badge badge-{{ $subscription->auto_renew ? 'success' : 'secondary' }}">
+                                        {{ $subscription->auto_renew ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ $subscription->status === 'active' ? 'success' : ($subscription->status === 'pending' ? 'warning' : 'danger') }}">
                                         {{ ucfirst($subscription->status) }}
                                     </span>
                                 </td>
+                                <td>
+                                    <div class="action-icon-btn gap-2 d-flex">
+                                        <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-sm btn-info" title="View">
+                                            <i class="ti ti-eye"></i>
+                                        </a>
+                                        @if($subscription->status === 'active')
+                                            <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="ti ti-pencil"></i>
+                                            </a>
+                                            <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Cancel" onclick="return confirm('Are you sure?')">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
                             </tr>
-                            @php
-                                $c++;
-                            @endphp
                         @endforeach
                     </tbody>
                 </table>
