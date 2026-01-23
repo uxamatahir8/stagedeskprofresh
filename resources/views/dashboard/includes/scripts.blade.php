@@ -5,9 +5,10 @@
 <script src="{{ asset('js/app.js') }}"></script>
 
 {{-- Validation JS --}}
-
 <script src="{{ asset('js/validation.js') }}"></script>
 
+{{-- Notifications JS --}}
+<script src="{{ asset('js/notifications.js') }}"></script>
 
 <!-- Jquery for Datatables-->
 <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>

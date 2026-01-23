@@ -28,13 +28,14 @@ class ViewServiceProvider extends ServiceProvider
                 return;
             }
 
-            $notifications = Notification::all()
-                ->take(10);
+            $userId = Auth::user()->id;
 
-                $notification_array = $notifications->toArray();
+            $notifications = Notification::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
 
-
-            $unreadCount = Notification::all()
+            $unreadCount = Notification::where('user_id', $userId)
                 ->where('is_read', false)
                 ->count();
 

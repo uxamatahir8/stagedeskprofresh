@@ -11,20 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('artist_services', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('artist_id');
-            $table->foreign('artist_id')->references('id')->on('artists')->onDelete('cascade');
-
-            $table->string('service_name');
-            $table->string('service_description');
-
-            $table->string('price');
-
-            $table->string('duration');
-
-            $table->timestamps();
-        });
+        Schema::dropIfExists('artist_services');
     }
 
     /**
@@ -32,6 +19,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('artist_services');
+        Schema::create('artist_services', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('artist_id');
+            $table->foreign('artist_id')->references('id')->on('artists')->onDelete('cascade');
+            $table->string('service_name');
+            $table->string('service_description');
+            $table->string('price');
+            $table->string('duration');
+            $table->timestamps();
+        });
     }
 };
