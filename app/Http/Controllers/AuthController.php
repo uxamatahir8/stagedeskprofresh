@@ -8,6 +8,7 @@ use App\Models\Countries;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Services\AuthSecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,13 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    protected $authSecurity;
+
+    public function __construct(AuthSecurityService $authSecurity)
+    {
+        $this->authSecurity = $authSecurity;
+    }
+
     //
     public function login()
     {
@@ -119,10 +127,21 @@ class AuthController extends Controller
         }
 
         // ✅ Update user password
-        $user           = User::where('email', $request->email)->first();
-        $user->password = Hash::make($request->password);
+        $user = User::where('email', $request->email)->first();
+
+        // Check if password was recently used
+        if ($this->authSecurity->isPasswordReused($user, $request->password)) {
+            return redirect()->back()->with('error', 'Please choose a password you have not used recently.');
+        }
+
+        $newPasswordHash = Hash::make($request->password);
+        $user->password = $newPasswordHash;
+        $user->password_changed_at = now();
         $user->setRememberToken(Str::random(60)); // Optional: invalidate existing sessions
         $user->save();
+
+        // Save to password history
+        $this->authSecurity->savePasswordHistory($user, $newPasswordHash);
 
         // ✅ Delete used token
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
@@ -144,7 +163,40 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // Check rate limiting
+        $rateLimitKey = 'login-attempt:' . $request->ip();
+        $rateLimit = $this->authSecurity->checkRateLimit($rateLimitKey, 5, 1);
+
+        if ($rateLimit['limited']) {
+            return back()->withErrors([
+                'email' => 'Too many login attempts. Please try again in ' . $rateLimit['retry_after'] . ' seconds.',
+            ])->onlyInput('email');
+        }
+
+        // Find user
+        $user = User::where('email', $credentials['email'])->first();
+
+        // Check if account is locked
+        if ($user && $this->authSecurity->isAccountLocked($user)) {
+            $minutes = $user->locked_until->diffInMinutes(now());
+            $this->authSecurity->recordLoginAttempt($credentials['email'], false, $user->id, 'Account locked');
+
+            return back()->withErrors([
+                'email' => "Your account is locked due to multiple failed login attempts. Please try again in {$minutes} minutes.",
+            ])->onlyInput('email');
+        }
+
+        // Attempt authentication
         if (Auth::attempt($credentials)) {
+            // Clear rate limiter on successful login
+            $this->authSecurity->clearRateLimit($rateLimitKey);
+
+            // Reset failed attempts
+            $this->authSecurity->resetFailedAttempts($user);
+
+            // Detect suspicious activity
+            $this->authSecurity->detectSuspiciousActivity($user);
+
             $request->session()->regenerate();
 
             $previous = url()->previous();
@@ -157,6 +209,10 @@ class AuthController extends Controller
             // Default redirect to dashboard
             return redirect()->route('dashboard')->with('success', 'Login successful!');
         }
+
+        // Record failed attempt
+        $userId = $user ? $user->id : null;
+        $this->authSecurity->recordLoginAttempt($credentials['email'], false, $userId, 'Invalid credentials');
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
