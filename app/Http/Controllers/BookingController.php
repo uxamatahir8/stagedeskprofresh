@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 use App\Models\BookingRequest;
 use App\Models\EventType;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
+    public function show(BookingRequest $booking)
+    {
+        $title = 'Booking Details';
+        return view('dashboard.pages.bookings.show', compact('title', 'booking'));
+    }
+
     //
 
     public function index()
@@ -52,6 +58,29 @@ class BookingController extends Controller
         ));
     }
 
+    public function edit(BookingRequest $booking)
+    {
+        $title = 'Edit Booking Request';
+        $mode  = 'edit';
+
+        $roleKey = Auth::user()->role->role_key;
+
+        $customers = match ($roleKey) {
+            'company_admin' => User::companyCustomers()->get(),
+            default         => User::allCustomers()->get(),
+        };
+
+        $event_types = EventType::all();
+
+        return view('dashboard.pages.bookings.manage', compact(
+            'title',
+            'mode',
+            'customers',
+            'event_types',
+            'booking'
+        ));
+    }
+
     public function store(Request $request)
     {
         $eventType = EventType::find($request->event_type_id);
@@ -63,7 +92,7 @@ class BookingController extends Controller
             'event_type_id'    => 'required|exists:event_types,id',
             'name'             => 'required|string|max:255',
             'surname'          => 'required|string|max:255',
-            'date_of_birth'    => 'required|date|before:'.now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'    => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
             'phone'            => 'required|string|max:20',
             'email'            => 'required|email|max:255',
             'address'          => 'required|string|max:255',
@@ -92,7 +121,7 @@ class BookingController extends Controller
             'event_type_id'    => 'required|exists:event_types,id',
             'name'             => 'required|string|max:255',
             'surname'          => 'required|string|max:255',
-            'date_of_birth'    => 'required|date|before:'.now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'    => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
             'phone'            => 'required|string|max:20',
             'email'            => 'required|email|max:255',
             'address'          => 'required|string|max:255',
@@ -108,6 +137,12 @@ class BookingController extends Controller
         $booking->update($validated);
 
         return redirect()->route('bookings.index')->with('success', 'Booking updated successfully.');
+    }
+
+    public function destroy(BookingRequest $booking)
+    {
+        $booking->delete();
+        return redirect()->route('bookings.index')->with('success', 'Booking deleted successfully.');
     }
 
 }

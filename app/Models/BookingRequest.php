@@ -9,7 +9,7 @@ class BookingRequest extends Model
     //
     protected $fillable = [
         'user_id',
-        'event_type',
+        'event_type_id',
         'name',
         'surname',
         'date_of_birth',
