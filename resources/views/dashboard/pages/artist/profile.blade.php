@@ -90,11 +90,43 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                         <button type="submit" class="btn btn-primary">
-                            <i data-lucide="save"></i> Save Changes
+                            <i data-lucide="save" class="me-1"></i> Save Changes
                         </button>
                         <a href="{{ route('artist.dashboard') }}" class="btn btn-light ms-2">
-                            <i data-lucide="x"></i> Cancel
+                            <i data-lucide="x" class="me-1"></i> Cancel
                         </a>
+                    </div>
+                </div>
+
+                <!-- Password Change Section -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0"><i data-lucide="lock" class="me-2"></i>Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info border-0">
+                            <i data-lucide="info" class="me-2"></i>
+                            Leave these fields blank if you don't want to change your password
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Current Password</label>
+                                <input type="password" name="current_password" class="form-control" placeholder="Enter current password">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">New Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Enter new password">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Confirm New Password</label>
+                                <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="shield-check" class="me-1"></i> Update Password
+                        </button>
                     </div>
                 </div>
             </form>
