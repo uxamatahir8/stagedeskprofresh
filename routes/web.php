@@ -62,6 +62,7 @@ require __DIR__ . '/companies.php';
 require __DIR__ . '/categories.php';
 require __DIR__ . '/event_types.php';
 require __DIR__ . '/packages.php';
+require __DIR__ . '/subscription.php';
 require __DIR__ . '/subscriptions.php';
 require __DIR__ . '/support_tickets.php';
 require __DIR__ . '/testimonials.php';

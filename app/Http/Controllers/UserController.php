@@ -120,7 +120,46 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $title = $user->name . ' - Profile';
+
+        // Load relationships
+        $user->load(['role', 'company', 'profile', 'artist']);
+
+        // Fetch user-specific stats based on role
+        $stats = [];
+
+        if ($user->role->role_key === 'customer') {
+            $stats = [
+                'total_bookings' => $user->bookingRequests()->count(),
+                'completed_bookings' => $user->bookingRequests()->where('status', 'completed')->count(),
+                'pending_bookings' => $user->bookingRequests()->where('status', 'pending')->count(),
+                'total_spent' => $user->bookingRequests()
+                    ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
+                    ->sum('total_amount'),
+            ];
+            $recentBookings = $user->bookingRequests()->latest()->take(5)->get();
+            $recentActivity = $user->activityLogs()->latest()->take(10)->get();
+        } elseif ($user->role->role_key === 'artist' && $user->artist) {
+            $stats = [
+                'total_bookings' => $user->artist->assignedBookings()->count(),
+                'completed_bookings' => $user->artist->assignedBookings()->where('status', 'completed')->count(),
+                'avg_rating' => $user->artist->reviews()->avg('rating') ?? 0,
+                'total_earnings' => $user->artist->assignedBookings()
+                    ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
+                    ->sum('total_amount'),
+            ];
+            $recentBookings = $user->artist->assignedBookings()->latest()->take(5)->get();
+            $recentActivity = $user->activityLogs()->latest()->take(10)->get();
+        } else {
+            $stats = [
+                'login_count' => 0,
+                'last_login' => $user->last_login_at,
+            ];
+            $recentBookings = collect();
+            $recentActivity = $user->activityLogs()->latest()->take(10)->get();
+        }
+
+        return view('dashboard.pages.users.show', compact('title', 'user', 'stats', 'recentBookings', 'recentActivity'));
     }
 
     /**

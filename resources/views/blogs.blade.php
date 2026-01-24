@@ -70,23 +70,65 @@
                                 @foreach ($blogs as $blog)
                                     <div class="col-lg-6 col-md-6">
                                         <div class="blog-inner-boxarea">
-                                            <div class="images">
-                                                <img src="{{ asset('storage/' . $blog->feature_image ?? '') }}"
-                                                    alt="">
+                                            <div class="images position-relative">
+                                                <img src="{{ asset('storage/' . ($blog->feature_image ?? $blog->image ?? '')) }}"
+                                                    alt="{{ $blog->title }}" style="width: 100%; height: 300px; object-fit: cover;">
+
+                                                @if($blog->is_featured)
+                                                    <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">
+                                                        <i class="fa-solid fa-star"></i> Featured
+                                                    </span>
+                                                @endif
                                             </div>
                                             <div class="space24"></div>
                                             <div class="content tags">
-                                                <a href="{{ url('blogs/' . strtolower($blog->category->name)) }}"
-                                                    class="text-decoration-none">
-                                                    <span>{{ $blog->category->name }}</span>
-                                                </a>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <a href="{{ url('blogs?category=' . $blog->blog_category_id) }}"
+                                                        class="text-decoration-none">
+                                                        <span>{{ $blog->category->name }}</span>
+                                                    </a>
+                                                    <small class="text-muted">
+                                                        @if($blog->reading_time)
+                                                            <i class="fa-solid fa-clock"></i> {{ $blog->reading_time }} min read
+                                                        @endif
+                                                    </small>
+                                                </div>
+
+                                                <div class="space8"></div>
+                                                <a href="{{ route('blog.show', $blog->slug) }}">{{ $blog->title }}</a>
+
+                                                @if($blog->excerpt)
+                                                    <div class="space16"></div>
+                                                    <p>{{ Str::limit($blog->excerpt, 120) }}</p>
+                                                @else
+                                                    <div class="space16"></div>
+                                                    <p>{!! Str::words(strip_tags($blog->content), 15, '...') !!}</p>
+                                                @endif
 
                                                 <div class="space16"></div>
-                                                <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
-                                                <div class="space16"></div>
-                                                <p>{!! Str::words($blog->content, 11, '...') !!}</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="text-muted small">
+                                                        <i class="fa-solid fa-eye"></i> {{ $blog->views_count ?? 0 }} views
+                                                        <span class="mx-2">|</span>
+                                                        <i class="fa-solid fa-comment"></i> {{ $blog->approvedComments->count() }} comments
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        <i class="fa-solid fa-calendar"></i>
+                                                        {{ $blog->published_at ? \Carbon\Carbon::parse($blog->published_at)->format('M d, Y') : \Carbon\Carbon::parse($blog->created_at)->format('M d, Y') }}
+                                                    </small>
+                                                </div>
+
+                                                @if($blog->tags && count($blog->tags) > 0)
+                                                    <div class="space16"></div>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        @foreach(array_slice($blog->tags, 0, 3) as $tag)
+                                                            <span class="badge bg-secondary">{{ $tag }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+
                                                 <div class="space24"></div>
-                                                <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Learn
+                                                <a href="{{ route('blog.show', $blog->slug) }}" class="readmore">Learn
                                                     More <i class="fa-solid fa-arrow-right"></i></a>
                                             </div>
                                         </div>
