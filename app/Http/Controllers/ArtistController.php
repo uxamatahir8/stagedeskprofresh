@@ -82,7 +82,32 @@ class ArtistController extends Controller
     {
         $title = 'Artist Details';
 
-        return view('dashboard.pages.artists.show', compact('title', 'artist'));
+        // Fetch artist stats
+        $stats = [
+            'total_bookings' => $artist->assignedBookings()->count(),
+            'completed_bookings' => $artist->assignedBookings()->where('status', 'completed')->count(),
+            'avg_rating' => $artist->reviews()->avg('rating') ?? 0,
+            'total_earnings' => $artist->assignedBookings()
+                ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
+                ->sum('total_amount'),
+            'reviews_count' => $artist->reviews()->count(),
+        ];
+
+        // Recent bookings
+        $recentBookings = $artist->assignedBookings()
+            ->with(['eventType', 'company'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Recent reviews
+        $recentReviews = $artist->reviews()
+            ->with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('dashboard.pages.artists.show', compact('title', 'artist', 'stats', 'recentBookings', 'recentReviews'));
     }
 
     public function edit(Artist $artist)

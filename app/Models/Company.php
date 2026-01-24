@@ -53,6 +53,11 @@ class Company extends Model
         return $this->hasMany(BookingRequest::class);
     }
 
+    public function bookingRequests()
+    {
+        return $this->hasMany(BookingRequest::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -61,6 +66,16 @@ class Company extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'subject');
     }
 
     /**

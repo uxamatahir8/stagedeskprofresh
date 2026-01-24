@@ -62,6 +62,17 @@
 
                         <div class="row g-lg-4 g-2 mb-2">
                             <div class="col-lg-4">
+                                <label for="excerpt" class="col-form-label">Excerpt</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <textarea id="excerpt" name="excerpt" class="form-control" rows="3"
+                                    placeholder="Short summary of the blog post">{{ old('excerpt', $blog->excerpt ?? '') }}</textarea>
+                                <small class="text-muted">Brief description shown in blog listings</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-lg-4 g-2 mb-2">
+                            <div class="col-lg-4">
                                 <label for="blog_category_id" class="col-form-label">Category</label>
                             </div>
                             <div class="col-lg-8">
@@ -78,11 +89,36 @@
 
                         <div class="row g-lg-4 g-2 mb-2">
                             <div class="col-lg-4">
+                                <label for="tags" class="col-form-label">Tags</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <input type="text" id="tags" name="tags" class="form-control"
+                                    value="{{ old('tags', isset($blog->tags) ? implode(',', $blog->tags) : '') }}"
+                                    placeholder="e.g., Laravel, PHP, Web Development">
+                                <small class="text-muted">Separate tags with commas</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-lg-4 g-2 mb-2">
+                            <div class="col-lg-4">
                                 <label for="published_at" class="col-form-label">Publish Date</label>
                             </div>
                             <div class="col-lg-8">
                                 <input type="date" id="published_at" name="published_at" class="form-control"
                                     value="{{ old('published_at', isset($blog->published_at) ? \Carbon\Carbon::parse($blog->published_at)->format('Y-m-d') : '') }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-lg-4 g-2 mb-2">
+                            <div class="col-lg-4">
+                                <label for="is_featured" class="col-form-label">Featured Post</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-check form-switch form-check-warning fs-xxl">
+                                    <input type="checkbox" name="is_featured" value="1" class="form-check-input mt-1"
+                                        id="is_featured" {{ old('is_featured', $blog->is_featured ?? false) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_featured">Show on featured section</label>
+                                </div>
                             </div>
                         </div>
 
@@ -94,6 +130,7 @@
                                 <div class="form-check form-switch form-check-secondary fs-xxl">
                                     <input type="checkbox" name="status" value="active" class="form-check-input mt-1"
                                         id="status" {{ ($mode == 'edit' && $blog->status == 'active') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="status">Publish immediately</label>
                                 </div>
                             </div>
                         </div>
@@ -148,6 +185,34 @@
                     <div class="col-12">
                         <textarea name="blog_content" id="content-editor" class="form-control"
                             rows="10">{{ old('content', $blog->content ?? '') }}</textarea>
+                    </div>
+                </div>
+
+                <hr class="mt-4">
+                <h4 class="fw-bold">SEO Settings</h4>
+                <hr>
+
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <label for="meta_title" class="form-label">Meta Title</label>
+                        <input type="text" id="meta_title" name="meta_title" class="form-control"
+                            value="{{ old('meta_title', $blog->meta_title ?? '') }}"
+                            placeholder="SEO optimized title (max 60 chars)" maxlength="60">
+                        <small class="text-muted">Leave empty to use blog title</small>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <label for="reading_time" class="form-label">Reading Time (minutes)</label>
+                        <input type="number" id="reading_time" name="reading_time" class="form-control"
+                            value="{{ old('reading_time', $blog->reading_time ?? '') }}"
+                            placeholder="Auto-calculated if left empty" min="1">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="meta_description" class="form-label">Meta Description</label>
+                        <textarea id="meta_description" name="meta_description" class="form-control" rows="3"
+                            placeholder="SEO optimized description (max 160 chars)" maxlength="160">{{ old('meta_description', $blog->meta_description ?? '') }}</textarea>
+                        <small class="text-muted">Leave empty to use excerpt</small>
                     </div>
                 </div>
 

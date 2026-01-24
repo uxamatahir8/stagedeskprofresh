@@ -47,6 +47,11 @@ class Artist extends Model
         return $this->hasMany(BookingRequest::class, 'assigned_artist_id');
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(BookingRequest::class, 'assigned_artist_id');
+    }
+
     public function sharedWith()
     {
         return $this->hasMany(SharedArtist::class, 'artist_id');

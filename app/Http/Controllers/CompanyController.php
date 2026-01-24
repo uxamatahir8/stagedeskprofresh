@@ -13,11 +13,54 @@ use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $title     = 'Companies List';
-        $companies = Company::all();
-        return view('dashboard.pages.companies.index', compact('title', 'companies'));
+        $title = 'Companies List';
+
+        // Get stats for quick overview
+        $stats = [
+            'total' => Company::count(),
+            'active' => Company::where('status', 'active')->count(),
+            'inactive' => Company::where('status', 'inactive')->count(),
+            'with_subscription' => Company::whereHas('activeSubscription')->count(),
+        ];
+
+        // Query builder
+        $query = Company::query()->withCount(['artists', 'bookings']);
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('kvk_number', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by subscription
+        if ($request->filled('subscription')) {
+            if ($request->subscription === 'active') {
+                $query->whereHas('activeSubscription');
+            } elseif ($request->subscription === 'inactive') {
+                $query->whereDoesntHave('activeSubscription');
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $companies = $query->paginate(15)->withQueryString();
+
+        return view('dashboard.pages.companies.index', compact('title', 'companies', 'stats'));
     }
 
     public function create()
@@ -109,7 +152,49 @@ class CompanyController extends Controller
     public function show(Company $company)
     {
         $title = $company->name;
-        return view('dashboard.pages.companies.show', compact('title', 'company'));
+
+        // Fetch company stats
+        $stats = [
+            'total_artists' => $company->artists()->count(),
+            'total_bookings' => $company->bookingRequests()->count(),
+            'avg_rating' => $company->reviews()->avg('rating') ?? 0,
+            'total_revenue' => $company->bookingRequests()
+                ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
+                ->sum('total_amount'),
+        ];
+
+        // Fetch artists with booking counts
+        $artists = $company->artists()
+            ->with('user')
+            ->withCount('bookings')
+            ->get();
+
+        // Fetch recent bookings
+        $bookings = $company->bookingRequests()
+            ->with(['eventType', 'assignedArtist.user'])
+            ->latest()
+            ->paginate(10);
+
+        // Fetch active subscription
+        $subscription = $company->activeSubscription()
+            ->with('package')
+            ->first();
+
+        // Fetch recent activity logs
+        $activityLogs = $company->activityLogs()
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('dashboard.pages.companies.show', compact(
+            'title',
+            'company',
+            'stats',
+            'artists',
+            'bookings',
+            'subscription',
+            'activityLogs'
+        ));
     }
 
     public function edit(Company $company)

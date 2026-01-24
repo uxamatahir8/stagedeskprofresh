@@ -47,7 +47,7 @@
                             </div>
                         @endif
                     </div>
-                    
+
                     <div class="border-top pt-3">
                         <div class="d-flex align-items-center mb-2">
                             <i data-lucide="building-2" class="text-muted me-2" style="width: 16px;"></i>
@@ -230,10 +230,10 @@
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->company->name ?? 'N/A' }}</td>
                                         <td>
-                                            <span class="badge bg-{{ 
-                                                $booking->status === 'confirmed' ? 'success' : 
-                                                ($booking->status === 'pending' ? 'warning' : 
-                                                ($booking->status === 'completed' ? 'info' : 'danger')) 
+                                            <span class="badge bg-{{
+                                                $booking->status === 'confirmed' ? 'success' :
+                                                ($booking->status === 'pending' ? 'warning' :
+                                                ($booking->status === 'completed' ? 'info' : 'danger'))
                                             }}">
                                                 {{ ucfirst($booking->status) }}
                                             </span>

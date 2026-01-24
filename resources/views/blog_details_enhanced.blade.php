@@ -42,7 +42,7 @@
                         <img src="{{ asset('storage/' . $blog->image) }}" class="card-img-top rounded-top" alt="{{ $blog->title }}"
                              style="max-height: 450px; object-fit: cover;">
                     @endif
-                    
+
                     <div class="card-body p-4">
                         @if($blog->excerpt)
                             <div class="alert alert-info mb-4">
@@ -69,14 +69,14 @@
                 <!-- Comments Section -->
                 <div class="mb-5">
                     <h4 class="mb-4">
-                        <i class="bi bi-chat-left-text"></i> 
+                        <i class="bi bi-chat-left-text"></i>
                         Comments ({{ $blog->approvedComments->count() }})
                     </h4>
 
                     <!-- Show Login Prompt if Not Auth -->
                     @guest
                         <div class="alert alert-info">
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a> or 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a> or
                             <a href="{{ route('artist.register') }}">Register</a> to post a comment.
                         </div>
                     @endguest
@@ -88,7 +88,7 @@
                                 <form action="{{ route('comment.store') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="blog_id" value="{{ $blog->id }}">
-                                    <textarea name="content" rows="3" class="form-control mb-3" 
+                                    <textarea name="content" rows="3" class="form-control mb-3"
                                               placeholder="Write a comment..." required></textarea>
                                     <button class="btn btn-primary">
                                         <i class="bi bi-send"></i> Post Comment
@@ -103,7 +103,7 @@
                         <div class="comment-item mb-4 p-3 shadow-sm rounded bg-light border" id="comment-{{ $comment->id }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <img src="{{ $comment->user->avatar ?? asset('images/default-avatar.png') }}" 
+                                    <img src="{{ $comment->user->avatar ?? asset('images/default-avatar.png') }}"
                                          class="rounded-circle" alt="{{ $comment->user->name }}"
                                          style="width: 50px; height: 50px; object-fit: cover;">
                                 </div>
@@ -117,9 +117,9 @@
                                             </small>
                                         </div>
                                         <div>
-                                            <button class="btn btn-sm btn-outline-primary like-btn" 
+                                            <button class="btn btn-sm btn-outline-primary like-btn"
                                                     data-comment-id="{{ $comment->id }}">
-                                                <i class="bi bi-hand-thumbs-up"></i> 
+                                                <i class="bi bi-hand-thumbs-up"></i>
                                                 <span class="like-count">{{ $comment->likes_count ?? 0 }}</span>
                                             </button>
                                         </div>
@@ -136,7 +136,7 @@
                                             @csrf
                                             <input type="hidden" name="blog_id" value="{{ $blog->id }}">
                                             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
-                                            <textarea name="content" rows="2" class="form-control mb-2" 
+                                            <textarea name="content" rows="2" class="form-control mb-2"
                                                       placeholder="Write a reply..." required></textarea>
                                             <button class="btn btn-sm btn-primary">
                                                 <i class="bi bi-send"></i> Post Reply
@@ -151,7 +151,7 @@
                                                 <div class="reply-item ms-4 mt-3 p-3 border-start border-primary border-3 bg-white rounded">
                                                     <div class="d-flex">
                                                         <div class="flex-shrink-0">
-                                                            <img src="{{ $reply->user->avatar ?? asset('images/default-avatar.png') }}" 
+                                                            <img src="{{ $reply->user->avatar ?? asset('images/default-avatar.png') }}"
                                                                  class="rounded-circle" alt="{{ $reply->user->name }}"
                                                                  style="width: 40px; height: 40px; object-fit: cover;">
                                                         </div>
@@ -165,9 +165,9 @@
                                                                     </small>
                                                                 </div>
                                                                 <div>
-                                                                    <button class="btn btn-sm btn-outline-primary like-btn" 
+                                                                    <button class="btn btn-sm btn-outline-primary like-btn"
                                                                             data-comment-id="{{ $reply->id }}">
-                                                                        <i class="bi bi-hand-thumbs-up"></i> 
+                                                                        <i class="bi bi-hand-thumbs-up"></i>
                                                                         <span class="like-count">{{ $reply->likes_count ?? 0 }}</span>
                                                                     </button>
                                                                 </div>
@@ -197,7 +197,7 @@
                 @if($blog->user)
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body text-center">
-                        <img src="{{ $blog->user->avatar ?? asset('images/default-avatar.png') }}" 
+                        <img src="{{ $blog->user->avatar ?? asset('images/default-avatar.png') }}"
                              class="rounded-circle mb-3" alt="{{ $blog->user->name }}"
                              style="width: 80px; height: 80px; object-fit: cover;">
                         <h5 class="mb-1">{{ $blog->user->name }}</h5>
@@ -241,7 +241,7 @@
                                     </a>
                                     <br>
                                     <small class="text-muted">
-                                        <i class="bi bi-calendar"></i> 
+                                        <i class="bi bi-calendar"></i>
                                         {{ \Carbon\Carbon::parse($recent->created_at)->format('M d, Y') }}
                                     </small>
                                 </div>
@@ -344,7 +344,7 @@
             btn.addEventListener('click', function() {
                 const commentId = this.getAttribute('data-comment-id');
                 const likeCountSpan = this.querySelector('.like-count');
-                
+
                 fetch(`/comment/like/${commentId}`, {
                     method: 'POST',
                     headers: {
