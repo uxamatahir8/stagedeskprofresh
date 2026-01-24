@@ -6,6 +6,19 @@
         <div class="flex-grow-1">
             <h4 class="fs-xl fw-bold m-0">{{ $title }}</h4>
         </div>
+        <div class="text-end">
+            <ol class="breadcrumb m-0 py-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard') }}">
+                        <i class="ti ti-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ route('bookings.index') }}">Bookings</a>
+                </li>
+                <li class="breadcrumb-item active">{{ $title }}</li>
+            </ol>
+        </div>
     </div>
 
     <div class="card">
@@ -25,7 +38,7 @@
 
                 <div class="row">
                     {{-- Event Date --}}
-                    <div class="col-lg-4 mb-2">
+                    <div class="col-lg-4 mb-3">
                         <label class="col-form-label">Event Date <span class="text-danger">*</span></label>
                         <input type="text" name="event_date" class="form-control required" data-provider="flatpickr"
                             data-date-format="Y-m-d" data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}"
@@ -37,7 +50,7 @@
                 <div class="row">
                     {{-- USER (Company Admin only) --}}
                     @if (auth()->user()->role->role_key === 'company_admin' || auth()->user()->role->role_key === 'master_admin')
-                        <div class="col-lg-6 mb-2">
+                        <div class="col-lg-6 mb-3">
                             <label class="col-form-label">Customer <span class="text-danger">*</span></label>
                             <select name="user_id" class="form-control form-select required">
                                 <option value="">Select Customer</option>
@@ -52,7 +65,7 @@
                     @endif
 
                     {{-- EVENT TYPE --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Event Type <span class="text-danger">*</span></label>
                         <select name="event_type_id" class="form-control form-select required">
                             <option value="">Select Event Type</option>
@@ -66,46 +79,21 @@
                     </div>
 
                     {{-- NAME --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control required" placeholder="Enter first name"
                             value="{{ old('name', $booking->name ?? '') }}">
                     </div>
 
                     {{-- SURNAME --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Surname <span class="text-danger">*</span></label>
                         <input type="text" name="surname" class="form-control required" placeholder="Enter surname"
                             value="{{ old('surname', $booking->surname ?? '') }}">
                     </div>
 
-                    {{-- WEDDING FIELDS --}}
-                    <div style="display: none; gap: 10px;" id="wedding_fields">
-                        <div class="col-lg-4 mb-2">
-                            <label class="col-form-label wedding-label">Partner Name</label>
-                            <input type="text" name="partner_name" class="form-control wedding-field"
-                                placeholder="Enter partner name"
-                                value="{{ old('partner_name', $booking->partner_name ?? '') }}">
-                        </div>
-
-                        <div class="col-lg-4 mb-2">
-                            <label class="col-form-label wedding-label">Wedding Date</label>
-                            <input type="text" name="wedding_date" class="form-control wedding-field"
-                                data-provider="flatpickr" data-date-format="Y-m-d"
-                                data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}" placeholder="Select wedding date"
-                                value="{{ old('wedding_date', $booking->wedding_date ?? '') }}">
-                        </div>
-
-                        <div class="col-lg-4 mb-2">
-                            <label class="col-form-label wedding-label">Wedding Time</label>
-                            <input type="text" name="wedding_time" class="form-control wedding-field"
-                                data-provider="timepickr" data-time-basic="true" placeholder="Select wedding time"
-                                value="{{ old('wedding_time', $booking->wedding_time ?? '') }}">
-                        </div>
-                    </div>
-
                     {{-- DOB --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Date of Birth <span class="text-danger">*</span></label>
                         <input type="text" name="date_of_birth" class="form-control required" data-provider="flatpickr"
                             data-date-format="Y-m-d" data-maxDate="{{ now()->subDays(5)->format('Y-m-d') }}"
@@ -114,46 +102,71 @@
                     </div>
 
                     {{-- PHONE --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Phone <span class="text-danger">*</span></label>
                         <input type="text" name="phone" class="form-control required phone"
                             placeholder="Enter phone number" value="{{ old('phone', $booking->phone ?? '') }}">
                     </div>
 
                     {{-- EMAIL --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control required" placeholder="Enter email"
                             value="{{ old('email', $booking->email ?? '') }}">
                     </div>
 
                     {{-- ADDRESS --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Address <span class="text-danger">*</span></label>
                         <input type="text" name="address" class="form-control required" placeholder="Enter address"
                             value="{{ old('address', $booking->address ?? '') }}">
                     </div>
 
+                    {{-- WEDDING FIELDS --}}
+                    <div style="display: none; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));" id="wedding_fields">
+                        <div class="col-lg-4 mb-3">
+                            <label class="col-form-label wedding-label">Partner Name</label>
+                            <input type="text" name="partner_name" class="form-control wedding-field"
+                                placeholder="Enter partner name"
+                                value="{{ old('partner_name', $booking->partner_name ?? '') }}">
+                        </div>
+
+                        <div class="col-lg-4 mb-3">
+                            <label class="col-form-label wedding-label">Wedding Date</label>
+                            <input type="text" name="wedding_date" class="form-control wedding-field"
+                                data-provider="flatpickr" data-date-format="Y-m-d"
+                                data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}" placeholder="Select wedding date"
+                                value="{{ old('wedding_date', $booking->wedding_date ?? '') }}">
+                        </div>
+
+                        <div class="col-lg-4 mb-3">
+                            <label class="col-form-label wedding-label">Wedding Time</label>
+                            <input type="text" name="wedding_time" class="form-control wedding-field"
+                                data-provider="timepickr" data-time-basic="true" placeholder="Select wedding time"
+                                value="{{ old('wedding_time', $booking->wedding_time ?? '') }}">
+                        </div>
+                    </div>
+
                     {{-- DOs --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Do's</label>
                         <textarea name="dos" class="form-control" rows="3" placeholder="Enter Do's">{{ old('dos', $booking->dos ?? '') }}</textarea>
                     </div>
 
                     {{-- DON'Ts --}}
-                    <div class="col-lg-6 mb-2">
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Don'ts</label>
                         <textarea name="donts" class="form-control" rows="3" placeholder="Enter Don'ts">{{ old('donts', $booking->donts ?? '') }}</textarea>
                     </div>
 
                     {{-- PLAYLIST --}}
-                    <div class="col-lg-12 mb-2">
+                    <div class="col-lg-12 mb-3">
                         <label class="col-form-label">Spotify Playlist</label>
                         <textarea name="playlist_spotify" class="form-control" rows="2" placeholder="Enter Spotify playlist">{{ old('playlist_spotify', $booking->playlist_spotify ?? '') }}</textarea>
                     </div>
 
                     {{-- NOTES --}}
-                    <div class="col-lg-12 mb-2">
+                    <div class="col-lg-12 mb-3">
                         <label class="col-form-label">Additional Notes</label>
                         <textarea name="additional_notes" class="form-control" rows="3" placeholder="Enter additional notes">{{ old('additional_notes', $booking->additional_notes ?? '') }}</textarea>
                     </div>
@@ -162,8 +175,12 @@
 
                 <hr>
 
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ route('bookings.index') }}" class="btn btn-secondary">
+                        Cancel
+                    </a>
                     <button type="submit" class="btn btn-{{ $mode === 'edit' ? 'warning' : 'primary' }}">
+                        <i class="ti ti-{{ $mode === 'edit' ? 'pencil' : 'plus' }}"></i>
                         {{ $mode === 'edit' ? 'Update' : 'Save' }} Booking
                     </button>
                 </div>
@@ -186,7 +203,7 @@
                 const isWedding = selectedText.includes('wedding');
 
                 if (isWedding) {
-                    weddingFields.style.display = 'flex';
+                    weddingFields.style.display = 'grid';
                     weddingInputs.forEach(input => input.classList.add('required'));
                     weddingLabels.forEach(label => {
                         if (!label.querySelector('.text-danger')) {

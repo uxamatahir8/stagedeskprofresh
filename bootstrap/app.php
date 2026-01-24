@@ -27,10 +27,19 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Global middleware
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
+        $middleware->append(\App\Http\Middleware\SuspiciousActivityDetector::class);
+
+        // Route middleware aliases
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'company.scope' => \App\Http\Middleware\CompanyScopeMiddleware::class,
+            'account.lock' => \App\Http\Middleware\CheckAccountLock::class,
         ]);
+
+        // Add account lock check to web middleware group
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckAccountLock::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

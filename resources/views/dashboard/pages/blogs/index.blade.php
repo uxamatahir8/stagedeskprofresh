@@ -18,14 +18,100 @@
         </div>
     </div>
 
+    {{-- Stats Cards --}}
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-sm-6">
+            <div class="card card-shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm">
+                                <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-3">
+                                    <i data-lucide="file-text"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-xs text-muted mb-1">Total Blogs</p>
+                            <h4 class="mb-0">{{ $stats['total'] ?? 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card card-shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm">
+                                <span class="avatar-title bg-success-subtle text-success rounded-circle fs-3">
+                                    <i data-lucide="check-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-xs text-muted mb-1">Published</p>
+                            <h4 class="mb-0">{{ $stats['published'] ?? 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card card-shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm">
+                                <span class="avatar-title bg-warning-subtle text-warning rounded-circle fs-3">
+                                    <i data-lucide="edit"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-xs text-muted mb-1">Drafts</p>
+                            <h4 class="mb-0">{{ $stats['draft'] ?? 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card card-shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm">
+                                <span class="avatar-title bg-info-subtle text-info rounded-circle fs-3">
+                                    <i data-lucide="message-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-uppercase fw-semibold fs-xs text-muted mb-1">Unapproved Comments</p>
+                            <h4 class="mb-0">{{ $stats['unapproved'] ?? 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
             <div class="title">
                 <h4 class="card-title mb-0">{{ $title }}</h4>
             </div>
-            <div class="action-btns">
+            <div class="action-btns d-flex gap-2">
+                <a href="{{ route('comments.index') }}" class="btn btn-outline-primary">
+                    <i data-lucide="message-circle" class="icon-sm me-1"></i> Manage Comments
+                </a>
                 <a href="{{ route('blog.create') }}" class="btn btn-primary">
-                    Add Blog
+                    <i data-lucide="plus" class="icon-sm me-1"></i> Add Blog
                 </a>
             </div>
         </div>
@@ -37,36 +123,59 @@
                         <tr>
                             <th>#</th>
                             <th>Title</th>
-                            <th>Slug</th>
                             <th>Category</th>
                             <th>Author</th>
+                            <th>Stats</th>
                             <th>Image</th>
-                            <th>Feature Image</th>
                             <th>Status</th>
                             <th>Published At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($blogs as $index => $blog)
+                        @forelse ($blogs as $index => $blog)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $blog->title }}</td>
-                                <td>{{ $blog->slug }}</td>
-                                <td>{{ optional($blog->category)->name ?? 'N/A' }}</td>
-                                <td>{{ optional($blog->user)->name ?? 'N/A' }}</td>
+                                <td>{{ $blogs->firstItem() + $index }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if($blog->is_featured)
+                                            <span class="badge bg-warning-subtle text-warning" title="Featured">
+                                                <i data-lucide="star" class="icon-xs"></i>
+                                            </span>
+                                        @endif
+                                        <div>
+                                            <strong>{{ Str::limit($blog->title, 50) }}</strong>
+                                            @if($blog->excerpt)
+                                                <br><small class="text-muted">{{ Str::limit($blog->excerpt, 60) }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ optional($blog->category)->name ?? 'Uncategorized' }}
+                                    </span>
+                                </td>
+                                <td>{{ optional($blog->user)->name ?? 'Unknown' }}</td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge bg-info-subtle text-info" title="Views">
+                                            <i data-lucide="eye" class="icon-xs"></i> {{ $blog->views_count ?? 0 }}
+                                        </span>
+                                        <span class="badge bg-success-subtle text-success" title="Comments">
+                                            <i data-lucide="message-circle" class="icon-xs"></i> {{ $blog->comments_count ?? 0 }}
+                                        </span>
+                                        @if($blog->reading_time)
+                                            <span class="badge bg-secondary-subtle text-secondary" title="Reading Time">
+                                                <i data-lucide="clock" class="icon-xs"></i> {{ $blog->reading_time }} min
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>
                                     @if ($blog->image)
                                         <img src="{{ asset('storage/' . $blog->image) }}" alt="Image" width="60" height="60"
                                             class="rounded">
-                                    @else
-                                        <span class="text-muted">No Image</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($blog->feature_image)
-                                        <img src="{{ asset('storage/' . $blog->feature_image) }}" alt="Feature" width="60"
-                                            height="60" class="rounded">
                                     @else
                                         <span class="text-muted">No Image</span>
                                     @endif
@@ -79,25 +188,62 @@
                                 </td>
                                 <td>{{ $blog->published_at ? \Carbon\Carbon::parse($blog->published_at)->format('d M, Y') : '—' }}
                                 </td>
-                                <td class="d-flex gap-2">
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('blog.show', $blog->slug) }}" class="btn btn-success btn-sm"
+                                           title="View" target="_blank">
+                                            <i data-lucide="eye"></i>
+                                        </a>
 
+                                        <a href="{{ route('blog.comments', $blog->id) }}" class="btn btn-info btn-sm"
+                                           title="Comments">
+                                            <i data-lucide="message-circle"></i>
+                                        </a>
 
-                                    <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-info btn-sm" title="Edit">
-                                        <i data-lucide="pencil"></i>
-                                    </a>
+                                        <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-warning btn-sm"
+                                           title="Edit">
+                                            <i data-lucide="pencil"></i>
+                                        </a>
 
-                                    <form action="{{ route('blog.destroy', $blog->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this blog?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                            <i data-lucide="trash-2"></i>
-                                        </button>
-                                    </form>
+                                        <form action="{{ route('blog.destroy', $blog->id) }}" method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this blog?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i data-lucide="file-text" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                                        <p class="text-muted mb-0">No blogs found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
+                </table>
+            </div>
+
+            {{-- Pagination --}}
+            @if($blogs->hasPages())
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Showing {{ $blogs->firstItem() }} to {{ $blogs->lastItem() }} of {{ $blogs->total() }} blogs
+                    </div>
+                    <div>
+                        {{ $blogs->links() }}
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+@endsection
                 </table>
             </div>
         </div>

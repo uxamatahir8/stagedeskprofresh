@@ -66,39 +66,45 @@
                         </div>
 
                         <div style="max-height: 300px;" data-simplebar>
-                            @foreach ($topbarNotifications as $notification)
-                                <!-- Notification 1 -->
-                                <div class="dropdown-item notification-item py-2 text-wrap" id="message-1">
-                                    <span class="d-flex align-items-center gap-3">
+                            @forelse ($topbarNotifications as $notification)
+                                <!-- Notification Item -->
+                                <div class="dropdown-item notification-item py-2 text-wrap {{ !$notification->is_read ? 'bg-light' : '' }}" id="notification-{{ $notification->id }}">
+                                    <span class="d-flex align-items-center gap-2">
                                         <span class="flex-shrink-0 position-relative">
-                                            <img src="{{ asset('images/users/user-4.jpg') }}"
-                                                class="avatar-md rounded-circle" alt="User Avatar">
-                                            <span class="position-absolute rounded-pill bg-success notification-badge">
-                                                <i class="ti ti-bell align-middle"></i>
-                                                <span class="visually-hidden">unread notification</span>
-                                            </span>
+                                            <div class="avatar-sm rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center">
+                                                <i class="ti ti-bell text-primary"></i>
+                                            </div>
+                                            @if(!$notification->is_read)
+                                                <span class="position-absolute rounded-pill bg-danger notification-badge" style="width: 8px; height: 8px; bottom: 0; right: 0;"></span>
+                                            @endif
                                         </span>
-                                        <span class="flex-grow-1 text-muted">
-                                            <span class="fw-medium text-body">Emily Johnson</span> commented on a
-                                            task in <span class="fw-medium text-body">Design Sprint</span><br>
-                                            <span class="fs-xs">12 minutes ago</span>
+                                        <span class="flex-grow-1">
+                                            <span class="fw-medium text-body d-block">{{ $notification->title }}</span>
+                                            <span class="text-muted small">{{ Str::limit($notification->message, 40) }}</span><br>
+                                            <span class="fs-xs text-muted"><i class="ti ti-clock"></i> {{ $notification->created_at->diffForHumans() }}</span>
                                         </span>
-                                        <button type="button"
-                                            class="flex-shrink-0 text-muted btn btn-link p-0 position-absolute end-0 me-2 d-none noti-close-btn"
-                                            data-dismissible="#message-1">
-                                            <i class="ti ti-xbox-x-filled fs-xxl"></i>
-                                        </button>
+                                        @if(!$notification->is_read)
+                                            <form action="{{ route('notifications.read', $notification) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="flex-shrink-0 text-muted btn btn-link p-0" title="Mark as read">
+                                                    <i class="ti ti-check fs-md"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </span>
                                 </div>
-                            @endforeach
-
+                            @empty
+                                <div class="dropdown-item py-3 text-center text-muted">
+                                    <p class="mb-0 small">No notifications</p>
+                                </div>
+                            @endforelse
                         </div>
 
 
-                        <!-- All-->
-                        <a href="javascript:void(0);"
+                        <!-- All Notifications Link-->
+                        <a href="{{ route('notifications.index') }}"
                             class="dropdown-item text-center text-reset text-decoration-underline link-offset-2 fw-bold notify-item border-top border-light py-2">
-                            Read All Messages
+                            View All Notifications
                         </a>
 
                     </div> <!-- End dropdown-menu -->

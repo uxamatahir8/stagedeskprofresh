@@ -17,8 +17,16 @@ class BlogController extends Controller
     public function index()
     {
         $title = 'Blogs';
-        $blogs = Blog::with('category')->get();
-        return view('dashboard.pages.blogs.index', compact('title', 'blogs'));
+        $blogs = Blog::with(['category', 'user'])->withCount('allComments')->latest()->paginate(15);
+
+        $stats = [
+            'total' => Blog::count(),
+            'published' => Blog::where('status', 'published')->count(),
+            'draft' => Blog::where('status', 'draft')->count(),
+            'unapproved' => Blog::where('status', 'unapproved')->count(),
+        ];
+
+        return view('dashboard.pages.blogs.index', compact('title', 'blogs', 'stats'));
     }
 
     public function create()
@@ -60,7 +68,12 @@ class BlogController extends Controller
             'title'             => 'required|string|max:255',
             'slug'              => 'nullable|string|max:255|unique:blogs,slug',
             'blog_category_id'  => 'required|exists:blog_categories,id',
-            'blog_content'           => 'required|string',
+            'blog_content'      => 'required|string',
+            'excerpt'           => 'nullable|string|max:500',
+            'tags'              => 'nullable|string',
+            'meta_title'        => 'nullable|string|max:60',
+            'meta_description'  => 'nullable|string|max:160',
+            'reading_time'      => 'nullable|integer|min:1',
             'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'feature_image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'published_at'      => 'nullable|date',
@@ -81,9 +94,26 @@ class BlogController extends Controller
         $blog->slug = $slug;
         $blog->blog_category_id = $request->blog_category_id;
         $blog->content = $request->blog_content;
+        $blog->excerpt = $request->excerpt;
         $blog->published_at = $request->published_at;
         $blog->user_id = Auth::user()->id;
-        $blog->status = Auth::user()->role->role_key == 'master_admin' ? 'published' : 'unapproved';
+        $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+        $blog->is_featured = $request->has('is_featured') ? true : false;
+        $blog->meta_title = $request->meta_title ?? $request->title;
+        $blog->meta_description = $request->meta_description ?? $request->excerpt;
+
+        // Handle tags
+        if ($request->tags) {
+            $blog->tags = array_map('trim', explode(',', $request->tags));
+        }
+
+        // Calculate reading time if not provided
+        if ($request->reading_time) {
+            $blog->reading_time = $request->reading_time;
+        } else {
+            $wordCount = str_word_count(strip_tags($request->blog_content));
+            $blog->reading_time = max(1, ceil($wordCount / 200)); // 200 words per minute
+        }
 
         // ✅ Handle thumbnail
         if ($request->hasFile('image')) {
@@ -113,7 +143,12 @@ class BlogController extends Controller
             'title'             => 'required|string|max:255',
             'slug'              => 'nullable|string|max:255|unique:blogs,slug,' . $blog->id,
             'blog_category_id'  => 'required|exists:blog_categories,id',
-            'blog_content'           => 'required|string',
+            'blog_content'      => 'required|string',
+            'excerpt'           => 'nullable|string|max:500',
+            'tags'              => 'nullable|string',
+            'meta_title'        => 'nullable|string|max:60',
+            'meta_description'  => 'nullable|string|max:160',
+            'reading_time'      => 'nullable|integer|min:1',
             'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'feature_image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'published_at'      => 'nullable|date',
@@ -133,9 +168,26 @@ class BlogController extends Controller
         $blog->slug = $slug;
         $blog->blog_category_id = $request->blog_category_id;
         $blog->content = $request->blog_content;
+        $blog->excerpt = $request->excerpt;
         $blog->published_at = $request->published_at;
         $blog->user_id = Auth::user()->id;
-        $blog->status = Auth::user()->role->role_key == 'master_admin' ? 'published' : 'unapproved';
+        $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+        $blog->is_featured = $request->has('is_featured') ? true : false;
+        $blog->meta_title = $request->meta_title ?? $request->title;
+        $blog->meta_description = $request->meta_description ?? $request->excerpt;
+
+        // Handle tags
+        if ($request->tags) {
+            $blog->tags = array_map('trim', explode(',', $request->tags));
+        }
+
+        // Calculate reading time if not provided
+        if ($request->reading_time) {
+            $blog->reading_time = $request->reading_time;
+        } else {
+            $wordCount = str_word_count(strip_tags($request->blog_content));
+            $blog->reading_time = max(1, ceil($wordCount / 200)); // 200 words per minute
+        }
 
         // ✅ Handle thumbnail update
         if ($request->hasFile('image')) {
@@ -173,21 +225,45 @@ class BlogController extends Controller
         return redirect()->route('blogs')->with('success', 'Blog deleted successfully!');
     }
 
+    public function showDashboard($id)
+    {
+        $blog = Blog::with(['category', 'user', 'allComments.user', 'allComments.allReplies.user'])
+            ->withCount('allComments')
+            ->findOrFail($id);
+
+        $totalComments = $blog->allComments->count();
+        $approvedComments = $blog->allComments->where('status', 'published')->count();
+        $pendingComments = $blog->allComments->where('status', 'unapproved')->count();
+
+        return view('dashboard.pages.blogs.show', compact('blog', 'totalComments', 'approvedComments', 'pendingComments'));
+    }
+
     public function show($slug)
     {
-        $blog = Blog::with(['category', 'comments.user', 'comments.replies.user'])->where('slug', $slug)->firstOrFail();
+        $blog = Blog::with(['category', 'user', 'comments.user', 'comments.replies.user'])->where('slug', $slug)->firstOrFail();
+
+        // Increment views
+        $blog->incrementViews();
 
         $categories = BlogCategory::all();
         $title = $blog->title;
 
         // Other blogs from the same category
-        $relatedBlogs = Blog::where('blog_category_id', $blog->category_id)
+        $relatedBlogs = Blog::where('blog_category_id', $blog->blog_category_id)
             ->where('id', '!=', $blog->id)
+            ->where('status', 'published')
             ->latest()
             ->take(3)
             ->get();
 
-        return view('blog_details', compact('blog', 'categories', 'relatedBlogs', 'title'));
+        // Recent blogs
+        $recentBlogs = Blog::where('status', 'published')
+            ->where('id', '!=', $blog->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('blog_details', compact('blog', 'categories', 'relatedBlogs', 'recentBlogs', 'title'));
     }
 
     public function postComment(Request $request, $slug)
