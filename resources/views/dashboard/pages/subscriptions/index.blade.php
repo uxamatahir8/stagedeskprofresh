@@ -23,10 +23,14 @@
     </div>
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
-                <i class="ti ti-plus"></i> Add Subscription
-            </a>
+            <div class="title">
+                <h4 class="card-title mb-0">{{ $title }}</h4>
+            </div>
+            <div class="action-btns">
+                <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
+                    <i class="ti ti-plus"></i> Add Subscription
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -62,19 +66,23 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="action-icon-btn gap-2 d-flex">
-                                        <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-sm btn-info" title="View">
+                                    <div class="action-btn">
+                                        <a href="{{ route('subscriptions.show', $subscription) }}"
+                                            class="btn btn-sm btn-primary" title="View">
                                             <i class="ti ti-eye"></i>
                                         </a>
                                         @if($subscription->status === 'active')
-                                            <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-sm btn-warning" title="Edit">
+                                            <a href="{{ route('subscriptions.edit', $subscription) }}"
+                                                class="btn btn-sm btn-info" title="Edit">
                                                 <i class="ti ti-pencil"></i>
                                             </a>
-                                            <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST"
+                                                style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Cancel" onclick="return confirm('Are you sure?')">
-                                                    <i class="ti ti-trash"></i>
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Cancel"
+                                                    onclick="return confirm('Are you sure?')">
+                                                    <i class="ti ti-trash text-white"></i>
                                                 </button>
                                             </form>
                                         @endif

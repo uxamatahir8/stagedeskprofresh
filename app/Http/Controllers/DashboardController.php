@@ -40,13 +40,19 @@ class DashboardController extends Controller
         // Get event type counts
         $eventTypeCounts = $this->getEventTypeCounts($roleKey);
 
-        return view('dashboard.pages.index', compact(
+        // Get unread notifications count
+        $unreadNotifications = \App\Models\Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->count();
+
+        return view('dashboard.pages.index_enhanced', compact(
             'title',
             'stats',
             'statistics',
             'recentBookings',
             'bookingStats',
-            'eventTypeCounts'
+            'eventTypeCounts',
+            'unreadNotifications'
         ));
     }
 
@@ -56,22 +62,64 @@ class DashboardController extends Controller
 
         if ($roleKey === 'master_admin') {
             $stats['total_bookings'] = BookingRequest::count();
+            $stats['pending_bookings'] = BookingRequest::whereNull('status')->orWhere('status', 'pending')->count();
+            $stats['completed_bookings'] = BookingRequest::where('status', 'completed')->count();
             $stats['total_users'] = User::count();
             $stats['total_companies'] = Company::count();
+            $stats['active_companies'] = Company::where('status', 'active')->count();
             $stats['total_event_types'] = EventType::count();
+            $stats['total_revenue'] = \App\Models\Payment::where('status', 'completed')->sum('amount');
+            $stats['monthly_revenue'] = \App\Models\Payment::where('status', 'completed')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount');
         } elseif ($roleKey === 'company_admin') {
             $company_id = Auth::user()->company_id;
-            $stats['total_bookings'] = BookingRequest::whereHas('user', function ($q) use ($company_id) {
-                $q->where('company_id', $company_id);
-            })->count();
+            $stats['total_bookings'] = BookingRequest::where('company_id', $company_id)->count();
+            $stats['pending_bookings'] = BookingRequest::where('company_id', $company_id)
+                ->where(function($q) {
+                    $q->whereNull('status')->orWhere('status', 'pending');
+                })->count();
+            $stats['completed_bookings'] = BookingRequest::where('company_id', $company_id)
+                ->where('status', 'completed')->count();
             $stats['total_users'] = User::where('company_id', $company_id)
                 ->whereHas('role', function ($q) {
                     $q->where('role_key', 'customer');
                 })->count();
+            $stats['total_artists'] = \App\Models\Artist::where('company_id', $company_id)->count();
+            $stats['active_artists'] = \App\Models\Artist::where('company_id', $company_id)
+                ->whereHas('user', function($q) {
+                    $q->whereNotNull('email_verified_at');
+                })->count();
             $stats['total_companies'] = 1;
             $stats['total_event_types'] = EventType::count();
+        } elseif ($roleKey === 'dj') {
+            $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
+            if ($artist) {
+                $stats['total_bookings'] = BookingRequest::whereHas('bookedServices', function($q) use ($artist) {
+                    $q->where('artist_id', $artist->id);
+                })->count();
+                $stats['pending_bookings'] = \App\Models\ArtistRequest::where('artist_id', $artist->id)
+                    ->where('status', 'pending')->count();
+                $stats['completed_bookings'] = BookingRequest::whereHas('bookedServices', function($q) use ($artist) {
+                    $q->where('artist_id', $artist->id);
+                })->where('status', 'completed')->count();
+                $stats['total_services'] = $artist->services()->count();
+                $stats['average_rating'] = round($artist->rating ?? 0, 1);
+            }
+            $stats['total_users'] = 1;
+            $stats['total_companies'] = 0;
+            $stats['total_event_types'] = 0;
         } else {
             $stats['total_bookings'] = BookingRequest::where('user_id', Auth::user()->id)->count();
+            $stats['pending_bookings'] = BookingRequest::where('user_id', Auth::user()->id)
+                ->where(function($q) {
+                    $q->whereNull('status')->orWhere('status', 'pending');
+                })->count();
+            $stats['completed_bookings'] = BookingRequest::where('user_id', Auth::user()->id)
+                ->where('status', 'completed')->count();
+            $stats['cancelled_bookings'] = BookingRequest::where('user_id', Auth::user()->id)
+                ->where('status', 'cancelled')->count();
             $stats['total_users'] = 1;
             $stats['total_companies'] = 0;
             $stats['total_event_types'] = 0;
