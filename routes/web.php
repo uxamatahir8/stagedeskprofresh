@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/blog-details/{slug}', [BlogController::class, 'show'])->name('blog.details');
+Route::get('/blog-details/{slug}', [BlogController::class, 'show'])->name('blog-front.details');
 
 Route::get('/states/{country_id}', [UserController::class, 'getStates']);
 Route::get('/cities/{state_id}', [UserController::class, 'getCities']);
