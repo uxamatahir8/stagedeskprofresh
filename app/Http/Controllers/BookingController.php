@@ -151,9 +151,10 @@ class BookingController extends Controller
         $eventType = EventType::find($request->event_type_id);
         $isWedding = $eventType && str_contains(strtolower($eventType->event_type), 'wedding');
 
+        // Modified validation - user_id is optional for admins creating bookings
         $validated = $request->validate([
             'event_date'          => 'required|date|after:today',
-            'user_id'             => 'required|exists:users,id',
+            'user_id'             => in_array($roleKey, ['master_admin', 'company_admin']) ? 'nullable' : 'required|exists:users,id',
             'event_type_id'       => 'required|exists:event_types,id',
             'company_id'          => 'nullable|exists:companies,id',
             'assigned_artist_id'  => 'nullable|exists:artists,id',
@@ -171,6 +172,7 @@ class BookingController extends Controller
             'playlist_spotify'    => 'nullable|string',
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
+            'create_customer_account' => 'nullable|boolean', // New field for creating customer account
         ]);
 
         // Auto-assign company for company admins
@@ -183,30 +185,88 @@ class BookingController extends Controller
             $validated['user_id'] = $user->id;
         }
 
-        // Set initial status
-        $validated['status'] = 'pending';
-
-        // If artist is assigned immediately, update status
-        if (!empty($validated['assigned_artist_id'])) {
-            $validated['status'] = 'confirmed';
-            $validated['confirmed_at'] = now();
-        }
-
         DB::beginTransaction();
         try {
+            $newCustomerCreated = false;
+            $generatedPassword = null;
+            $customerUser = null;
+
+            // Handle customer creation for admin users
+            if (in_array($roleKey, ['master_admin', 'company_admin']) && empty($validated['user_id'])) {
+                // Check if customer account should be created
+                if ($request->has('create_customer_account') && $request->create_customer_account) {
+                    // Check if user already exists with this email
+                    $existingUser = User::where('email', $validated['email'])->first();
+
+                    if ($existingUser) {
+                        // Use existing user
+                        $validated['user_id'] = $existingUser->id;
+                        $customerUser = $existingUser;
+                    } else {
+                        // Create new customer user
+                        $generatedPassword = $this->generateSecurePassword();
+                        $customerRole = \App\Models\Role::where('role_key', 'customer')->first();
+
+                        if (!$customerRole) {
+                            throw new \Exception('Customer role not found in system');
+                        }
+
+                        $customerUser = User::create([
+                            'name' => $validated['name'] . ' ' . $validated['surname'],
+                            'email' => $validated['email'],
+                            'password' => bcrypt($generatedPassword),
+                            'role_id' => $customerRole->id,
+                            'company_id' => $validated['company_id'] ?? $user->company_id,
+                            'email_verified_at' => now(), // Auto-verify since created by admin
+                        ]);
+
+                        $validated['user_id'] = $customerUser->id;
+                        $newCustomerCreated = true;
+
+                        // Log customer creation
+                        ActivityLog::log(
+                            'created',
+                            $customerUser,
+                            'Customer account created via booking creation by ' . $user->name,
+                            ['created_by' => $user->id, 'customer_id' => $customerUser->id]
+                        );
+                    }
+                } else {
+                    // No user selected and not creating account - validation error
+                    DB::rollBack();
+                    return back()->withInput()->with('error', 'Please select a customer or enable "Create Customer Account" option.');
+                }
+            }
+
+            // Set initial status
+            $validated['status'] = 'pending';
+
+            // If artist is assigned immediately, update status
+            if (!empty($validated['assigned_artist_id'])) {
+                $validated['status'] = 'confirmed';
+                $validated['confirmed_at'] = now();
+            }
+
+            // Remove the create_customer_account flag before creating booking
+            unset($validated['create_customer_account']);
+
             $booking = BookingRequest::create($validated);
 
-            // Log activity
+            // Log booking creation
             ActivityLog::log(
                 'created',
                 $booking,
                 'Created new booking request for ' . $booking->name . ' ' . $booking->surname,
-                ['booking_id' => $booking->id, 'status' => $booking->status]
+                ['booking_id' => $booking->id, 'status' => $booking->status, 'new_customer' => $newCustomerCreated]
             );
 
-            // Send booking confirmation email to customer
-            if ($booking->customer && $booking->customer->email) {
-                Mail::to($booking->customer->email)->send(new \App\Mail\BookingCreated($booking));
+            // Send appropriate emails
+            if ($newCustomerCreated && $customerUser && $generatedPassword) {
+                // Send account creation email with credentials
+                Mail::to($customerUser->email)->send(new \App\Mail\CustomerAccountCreated($customerUser, $generatedPassword, $booking));
+            } elseif ($booking->user && $booking->user->email) {
+                // Send standard booking confirmation to existing customer
+                Mail::to($booking->user->email)->send(new \App\Mail\BookingCreated($booking));
             }
 
             // Fire booking created event if company is assigned
@@ -216,11 +276,44 @@ class BookingController extends Controller
 
             DB::commit();
 
-            return redirect()->route('bookings.index')->with('success', 'Booking created successfully!');
+            $successMessage = 'Booking created successfully!';
+            if ($newCustomerCreated) {
+                $successMessage .= ' A new customer account has been created and login credentials have been sent to ' . $customerUser->email;
+            }
+
+            return redirect()->route('bookings.index')->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Failed to create booking: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Generate a secure random password
+     */
+    private function generateSecurePassword($length = 12)
+    {
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $special = '!@#$%^&*';
+
+        $allChars = $uppercase . $lowercase . $numbers . $special;
+
+        // Ensure at least one of each type
+        $password = '';
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+
+        // Fill the rest randomly
+        for ($i = 4; $i < $length; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+
+        // Shuffle the password
+        return str_shuffle($password);
     }
 
     public function update(Request $request, BookingRequest $booking)

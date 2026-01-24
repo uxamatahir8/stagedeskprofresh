@@ -51,16 +51,32 @@
                     {{-- USER (Company Admin only) --}}
                     @if (auth()->user()->role->role_key === 'company_admin' || auth()->user()->role->role_key === 'master_admin')
                         <div class="col-lg-6 mb-3">
-                            <label class="col-form-label">Customer <span class="text-danger">*</span></label>
-                            <select name="user_id" class="form-control form-select required">
-                                <option value="">Select Customer</option>
+                            <label class="col-form-label">Customer</label>
+                            <select name="user_id" id="customer_select" class="form-control form-select">
+                                <option value="">Select Existing Customer (or create new below)</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}"
                                         {{ old('user_id', $booking->user_id ?? '') == $customer->id ? 'selected' : '' }}>
-                                        {{ $customer->name }}
+                                        {{ $customer->name }} ({{ $customer->email }})
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted">Leave empty to create a new customer account</small>
+                        </div>
+
+                        {{-- CREATE CUSTOMER ACCOUNT CHECKBOX --}}
+                        <div class="col-lg-6 mb-3" id="create_customer_container">
+                            <label class="col-form-label d-block">&nbsp;</label>
+                            <div class="form-check form-switch" style="margin-top: 8px;">
+                                <input class="form-check-input" type="checkbox" name="create_customer_account"
+                                    id="create_customer_account" value="1"
+                                    {{ old('create_customer_account') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="create_customer_account">
+                                    <strong>Create Customer Account</strong>
+                                    <br>
+                                    <small class="text-muted">Generate login credentials and send email to customer</small>
+                                </label>
+                            </div>
                         </div>
                     @endif
 
@@ -195,6 +211,33 @@
             const weddingFields = document.getElementById('wedding_fields');
             const weddingInputs = weddingFields.querySelectorAll('.wedding-field');
             const weddingLabels = weddingFields.querySelectorAll('.wedding-label');
+
+            // Customer selection and create account logic
+            const customerSelect = document.getElementById('customer_select');
+            const createCustomerCheckbox = document.getElementById('create_customer_account');
+            const createCustomerContainer = document.getElementById('create_customer_container');
+
+            if (customerSelect && createCustomerCheckbox) {
+                // Toggle create customer checkbox based on customer selection
+                customerSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        // Customer selected, hide create account option
+                        createCustomerContainer.style.display = 'none';
+                        createCustomerCheckbox.checked = false;
+                    } else {
+                        // No customer selected, show create account option
+                        createCustomerContainer.style.display = 'block';
+                    }
+                });
+
+                // Trigger on page load
+                if (customerSelect.value) {
+                    createCustomerContainer.style.display = 'none';
+                    createCustomerCheckbox.checked = false;
+                } else {
+                    createCustomerContainer.style.display = 'block';
+                }
+            }
 
             function toggleWeddingFields() {
                 // Get the selected option's text and convert to lowercase

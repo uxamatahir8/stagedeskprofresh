@@ -14,7 +14,7 @@
                 <i data-lucide="credit-card" class="me-1"></i>Manage Subscriptions
             </a>
             <a href="{{ route('company.create') }}" class="btn btn-primary btn-sm">
-                <i data-lucide="plus" class="me-1"></i>Add Company
+                <i class="ti ti-plus"></i> Add Company
             </a>
         </div>
     </div>
@@ -226,22 +226,26 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('subscription.create', $company) }}" class="btn btn-warning btn-sm" title="Manage Subscription">
-                                            <i data-lucide="settings" style="width: 14px;"></i>
+                                    <div class="action-btn">
+                                        <a href="{{ route('subscription.create', $company) }}"
+                                            class="btn btn-warning btn-sm" title="Manage Subscription">
+                                            <i class="ti ti-settings"></i>
                                         </a>
-                                        <a href="{{ route('company.show', $company) }}" class="btn btn-dark btn-sm" title="View Details">
-                                            <i data-lucide="eye" style="width: 14px;"></i>
+                                        <a href="{{ route('company.show', $company) }}"
+                                            class="btn btn-sm btn-primary" title="View Details">
+                                            <i class="ti ti-eye"></i>
                                         </a>
-                                        <a href="{{ route('company.edit', $company) }}" class="btn btn-info btn-sm" title="Edit">
-                                            <i data-lucide="pencil" style="width: 14px;"></i>
+                                        <a href="{{ route('company.edit', $company) }}"
+                                            class="btn btn-sm btn-info" title="Edit">
+                                            <i class="ti ti-pencil"></i>
                                         </a>
-                                        <form action="{{ route('company.destroy', $company) }}" method="POST" class="d-inline"
+                                        <form action="{{ route('company.destroy', $company) }}" method="POST"
+                                            style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this company?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                                                <i class="ti ti-trash text-white"></i>
                                             </button>
                                         </form>
                                     </div>

@@ -80,18 +80,22 @@
                                     </td>
                                     <td>
                                         <div class="action-btn">
-                                            <a href="{{ route('payments.show', $payment) }}" class="action-icon" title="View">
+                                            <a href="{{ route('payments.show', $payment) }}"
+                                                class="btn btn-sm btn-primary" title="View">
                                                 <i class="ti ti-eye"></i>
                                             </a>
                                             @if($payment->status === 'pending')
-                                                <a href="{{ route('payments.edit', $payment) }}" class="action-icon" title="Edit">
+                                                <a href="{{ route('payments.edit', $payment) }}"
+                                                    class="btn btn-sm btn-info" title="Edit">
                                                     <i class="ti ti-pencil"></i>
                                                 </a>
-                                                <form action="{{ route('payments.destroy', $payment) }}" method="POST" style="display: inline;">
+                                                <form action="{{ route('payments.destroy', $payment) }}" method="POST"
+                                                    style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="action-icon" title="Delete" onclick="return confirm('Are you sure?')">
-                                                        <i class="ti ti-trash text-danger"></i>
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"
+                                                        onclick="return confirm('Are you sure?')">
+                                                        <i class="ti ti-trash text-white"></i>
                                                     </button>
                                                 </form>
                                             @endif

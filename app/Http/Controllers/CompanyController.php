@@ -60,7 +60,7 @@ class CompanyController extends Controller
 
         $companies = $query->paginate(15)->withQueryString();
 
-        return view('dashboard.pages.companies.index', compact('title', 'companies', 'stats'));
+        return view('dashboard.pages.companies.index_enhanced', compact('title', 'companies', 'stats'));
     }
 
     public function create()
@@ -156,37 +156,41 @@ class CompanyController extends Controller
         // Fetch company stats
         $stats = [
             'total_artists' => $company->artists()->count(),
-            'total_bookings' => $company->bookingRequests()->count(),
-            'avg_rating' => $company->reviews()->avg('rating') ?? 0,
-            'total_revenue' => $company->bookingRequests()
-                ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
-                ->sum('total_amount'),
+            'total_bookings' => \App\Models\BookingRequest::where('company_id', $company->id)->count(),
+            'avg_rating' => round($company->artists()->avg('rating') ?? 0, 1),
+            'total_revenue' => \App\Models\Payment::whereHas('bookingRequest', function($q) use ($company) {
+                $q->where('company_id', $company->id);
+            })->where('status', 'completed')->sum('amount'),
         ];
 
         // Fetch artists with booking counts
         $artists = $company->artists()
             ->with('user')
-            ->withCount('bookings')
             ->get();
 
         // Fetch recent bookings
-        $bookings = $company->bookingRequests()
-            ->with(['eventType', 'assignedArtist.user'])
+        $bookings = \App\Models\BookingRequest::where('company_id', $company->id)
+            ->with(['eventType', 'user'])
             ->latest()
             ->paginate(10);
 
         // Fetch active subscription
-        $subscription = $company->activeSubscription()
-            ->with('package')
+        $subscription = \App\Models\CompanySubscription::where('company_id', $company->id)
+            ->where('status', 'active')
+            ->with('package.packageFeatures')
+            ->orderBy('end_date', 'desc')
             ->first();
 
         // Fetch recent activity logs
-        $activityLogs = $company->activityLogs()
+        $activityLogs = \App\Models\ActivityLog::whereHas('user', function($q) use ($company) {
+                $q->where('company_id', $company->id);
+            })
+            ->with('user')
             ->latest()
             ->take(10)
             ->get();
 
-        return view('dashboard.pages.companies.show', compact(
+        return view('dashboard.pages.companies.show_enhanced', compact(
             'title',
             'company',
             'stats',

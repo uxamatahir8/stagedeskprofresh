@@ -20,10 +20,14 @@
 
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('package.create') }}" class="btn btn-primary">
-                Add Package
-            </a>
+            <div class="title">
+                <h4 class="card-title mb-0">{{ $title }}</h4>
+            </div>
+            <div class="action-btns">
+                <a href="{{ route('package.create') }}" class="btn btn-primary">
+                    <i class="ti ti-plus"></i> Add Package
+                </a>
+            </div>
         </div>
 
         <div class="card-body">
@@ -58,21 +62,21 @@
                                     {{ ucfirst($package->status) }}
                                 </span>
                             </td>
-                            <td class="d-flex gap-2">
-                                <!-- Edit Button -->
-                                <a href="{{ route('package.edit', $package) }}" class="btn btn-info btn-sm" title="Edit">
-                                    <i data-lucide="pencil"></i>
-                                </a>
-
-                                <!-- Delete Button -->
-                                <form action="{{ route('package.destroy', $package) }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to delete this package?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                        <i data-lucide="trash-2"></i>
-                                    </button>
-                                </form>
+                            <td>
+                                <div class="action-btn">
+                                    <a href="{{ route('package.edit', $package) }}" class="btn btn-info btn-sm" title="Edit">
+                                        <i class="ti ti-pencil"></i>
+                                    </a>
+                                    <form action="{{ route('package.destroy', $package) }}" method="POST"
+                                        style="display: inline;"
+                                        onsubmit="return confirm('Are you sure you want to delete this package?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="ti ti-trash text-white"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @php $c++; @endphp
