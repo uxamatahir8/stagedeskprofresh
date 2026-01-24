@@ -97,17 +97,21 @@
                                     </td>
                                     <td>
                                         <div class="action-btn">
-                                            <a href="{{ route('artists.show', $artist) }}" class="action-icon" title="View">
+                                            <a href="{{ route('artists.show', $artist) }}"
+                                                class="btn btn-sm btn-primary" title="View">
                                                 <i class="ti ti-eye"></i>
                                             </a>
-                                            <a href="{{ route('artists.edit', $artist) }}" class="action-icon" title="Edit">
+                                            <a href="{{ route('artists.edit', $artist) }}"
+                                                class="btn btn-sm btn-info" title="Edit">
                                                 <i class="ti ti-pencil"></i>
                                             </a>
-                                            <form action="{{ route('artists.destroy', $artist) }}" method="POST" style="display: inline;">
+                                            <form action="{{ route('artists.destroy', $artist) }}" method="POST"
+                                                style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-icon" title="Delete" onclick="return confirm('Are you sure?')">
-                                                    <i class="ti ti-trash text-danger"></i>
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete"
+                                                    onclick="return confirm('Are you sure?')">
+                                                    <i class="ti ti-trash text-white"></i>
                                                 </button>
                                             </form>
                                         </div>

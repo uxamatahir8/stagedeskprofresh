@@ -108,10 +108,10 @@
             </div>
             <div class="action-btns d-flex gap-2">
                 <a href="{{ route('comments.index') }}" class="btn btn-outline-primary">
-                    <i data-lucide="message-circle" class="icon-sm me-1"></i> Manage Comments
+                    <i class="ti ti-message-circle"></i> Manage Comments
                 </a>
                 <a href="{{ route('blog.create') }}" class="btn btn-primary">
-                    <i data-lucide="plus" class="icon-sm me-1"></i> Add Blog
+                    <i class="ti ti-plus"></i> Add Blog
                 </a>
             </div>
         </div>
@@ -189,28 +189,26 @@
                                 <td>{{ $blog->published_at ? \Carbon\Carbon::parse($blog->published_at)->format('d M, Y') : '—' }}
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('blog.show', $blog->slug) }}" class="btn btn-success btn-sm"
-                                           title="View" target="_blank">
-                                            <i data-lucide="eye"></i>
+                                    <div class="action-btn">
+                                        <a href="{{ route('blog.show', $blog->slug) }}"
+                                            class="btn btn-success btn-sm" title="View" target="_blank">
+                                            <i class="ti ti-eye"></i>
                                         </a>
-
-                                        <a href="{{ route('blog.comments', $blog->id) }}" class="btn btn-info btn-sm"
-                                           title="Comments">
-                                            <i data-lucide="message-circle"></i>
+                                        <a href="{{ route('blog.comments', $blog->id) }}"
+                                            class="btn btn-sm btn-primary" title="Comments">
+                                            <i class="ti ti-message-circle"></i>
                                         </a>
-
-                                        <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-warning btn-sm"
-                                           title="Edit">
-                                            <i data-lucide="pencil"></i>
+                                        <a href="{{ route('blog.edit', $blog->id) }}"
+                                            class="btn btn-sm btn-info" title="Edit">
+                                            <i class="ti ti-pencil"></i>
                                         </a>
-
                                         <form action="{{ route('blog.destroy', $blog->id) }}" method="POST"
+                                            style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this blog?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                <i data-lucide="trash-2"></i>
+                                                <i class="ti ti-trash text-white"></i>
                                             </button>
                                         </form>
                                     </div>
