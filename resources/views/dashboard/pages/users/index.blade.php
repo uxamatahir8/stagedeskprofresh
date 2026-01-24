@@ -21,10 +21,14 @@
     </div>
     <div class="card">
         <div class="card-header justify-content-between d-flex align-items-center">
-            <h4 class="card-title mb-0">{{ $title }}</h4>
-            <a href="{{ route('user.create') }}" class="btn btn-primary">
-                Add User
-            </a>
+            <div class="title">
+                <h4 class="card-title mb-0">{{ $title }}</h4>
+            </div>
+            <div class="action-btns">
+                <a href="{{ route('user.create') }}" class="btn btn-primary">
+                    <i class="ti ti-plus"></i> Add User
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -55,20 +59,23 @@
                                         {{ ucfirst($user->status) }}
                                     </span>
                                 </td>
-                                <td class="d-flex gap-2">
-                                    <a href="{{ route('user.edit', $user) }}" class="btn btn-primary btn-sm">
-                                        <i data-lucide="pencil"></i>
-                                    </a>
-                                    @if(Auth::user()->id != $user->id)
-                                        <form action="{{ route('user.destroy', $user) }}" method="POST"
-                                            onsubmit="return confirm('Are you sure you want to delete this User?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                <i data-lucide="trash-2"></i>
-                                            </button>
-                                        </form>
-                                    @endif
+                                <td>
+                                    <div class="action-btn">
+                                        <a href="{{ route('user.edit', $user) }}" class="btn btn-sm btn-info" title="Edit">
+                                            <i class="ti ti-pencil"></i>
+                                        </a>
+                                        @if(Auth::user()->id != $user->id)
+                                            <form action="{{ route('user.destroy', $user) }}" method="POST"
+                                                style="display: inline;"
+                                                onsubmit="return confirm('Are you sure you want to delete this User?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                    <i class="ti ti-trash text-white"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

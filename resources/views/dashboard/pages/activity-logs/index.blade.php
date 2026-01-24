@@ -103,9 +103,11 @@
                                 <td>{{ Str::limit($log->user_agent ?? 'N/A', 30) }}</td>
                                 <td>{{ $log->created_at->format('M d, Y h:i A') }}</td>
                                 <td>
-                                    <a href="{{ route('activity-logs.show', $log) }}" class="btn btn-info btn-sm" title="View Details">
-                                        <i data-lucide="eye"></i>
-                                    </a>
+                                    <div class="action-btn">
+                                        <a href="{{ route('activity-logs.show', $log) }}" class="btn btn-sm btn-primary" title="View Details">
+                                            <i class="ti ti-eye"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

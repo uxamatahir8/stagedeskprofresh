@@ -25,7 +25,7 @@
             </div>
             <div class="action-btns">
                 <a href="{{ route('testimonials.create') }}" class="btn btn-primary">
-                    Add Testimonial
+                    <i class="ti ti-plus"></i> Add Testimonial
                 </a>
             </div>
         </div>
@@ -63,19 +63,22 @@
                                 <td>{{ Str::limit($testimonial->testimonial, 60) }}</td>
                                 <td>{{ $testimonial->created_at->format('d M, Y') }}</td>
 
-                                <td class="d-flex gap-2">
-                                    <a href="{{ route('testimonials.edit', $testimonial->id) }}" class="btn btn-info btn-sm">
-                                        <i data-lucide="pencil"></i>
-                                    </a>
-
-                                    <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this testimonial?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                            <i data-lucide="trash-2"></i>
-                                        </button>
-                                    </form>
+                                <td>
+                                    <div class="action-btn">
+                                        <a href="{{ route('testimonials.edit', $testimonial->id) }}" class="btn btn-sm btn-info"
+                                            title="Edit">
+                                            <i class="ti ti-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this testimonial?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                <i class="ti ti-trash text-white"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
