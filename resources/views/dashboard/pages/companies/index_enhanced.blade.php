@@ -10,7 +10,7 @@
         </div>
 
         <div class="text-end">
-            <a href="{{ route('subscriptions') }}" class="btn btn-warning btn-sm me-2">
+            <a href="{{ route('subscriptions') }}"git  class="btn btn-warning btn-sm me-2">
                 <i data-lucide="credit-card" class="me-1"></i>Manage Subscriptions
             </a>
             <a href="{{ route('company.create') }}" class="btn btn-primary btn-sm">
