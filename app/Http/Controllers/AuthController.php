@@ -372,14 +372,37 @@ class AuthController extends Controller
 
     public function userRegister(Request $request)
     {
-        $validated = $request->validate([
+        // Base validation rules
+        $rules = [
             'register_as' => 'required',
             'name'        => 'required|string|max:255',
             'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|confirmed|min:8',
-        ]);
+            'phone'       => 'required|string',
+            'password'    => [
+                'required',
+                'confirmed',
+                'min:10',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/'
+            ],
+        ];
 
+        $messages = [
+            'password.min' => 'Password must be at least 10 characters.',
+            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+        ];
+
+        // Get role to check if it's company
         $role = Role::where('id', $request->register_as)->first();
+
+        // Add company-specific validation rules
+        if ($role && $role->role_key === 'company_admin') {
+            $rules['company_name'] = 'required|string|max:255';
+        }
+
+        $validated = $request->validate($rules, $messages);
 
         DB::beginTransaction();
         try {

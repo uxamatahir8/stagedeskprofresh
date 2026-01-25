@@ -147,43 +147,11 @@
 
     @push('styles')
     <style>
-        .notification-item {
-            transition: all 0.3s ease;
-        }
-        .notification-item:hover {
-            background-color: #f8f9fa !important;
-        }
-        .notification-item.unread {
-            border-left: 3px solid #6366f1;
-        }
-    </style>
-    @endpush
-@endsection
-                    <div>
-                        Showing {{ $notifications->firstItem() }} to {{ $notifications->lastItem() }} of {{ $notifications->total() }} notifications
-                    </div>
-                    <div>
-                        {{ $notifications->links() }}
-                    </div>
-                </div>
-            @else
-                <div class="alert alert-info mb-0">
-                    <i class="ti ti-info-circle"></i> No notifications yet. You're all caught up!
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <style>
         .notification-list {
             max-height: 600px;
             overflow-y: auto;
         }
 
-        .notification-item.unread {
-            border-left: 4px solid #0066cc;
-        }
-
         .notification-item {
             transition: all 0.3s ease;
         }
@@ -191,5 +159,10 @@
         .notification-item:hover {
             background-color: #f8f9fa !important;
         }
+
+        .notification-item.unread {
+            border-left: 4px solid #6366f1;
+        }
     </style>
+    @endpush
 @endsection
