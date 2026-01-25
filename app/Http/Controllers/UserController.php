@@ -55,7 +55,11 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Get role to check requirements
+        $role = Role::find($request->role_id);
+
+        // Base validation rules
+        $rules = [
             'role_id'    => 'required|exists:roles,id',
             'name'       => 'required|string|max:255',
             'email'      => 'required|email|unique:users,email',
@@ -74,12 +78,22 @@ class UserController extends Controller
             'country_id' => 'required|exists:countries,id',
             'state_id'   => 'required|exists:states,id',
             'city_id'    => 'required|exists:cities,id',
-            'company_id' => 'nullable|exists:companies,id',
             'status'     => 'nullable|in:active,inactive',
             'logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ], [
+        ];
+
+        // Add company_id validation for company_admin role
+        if ($role && $role->role_key === 'company_admin' && Auth::user()->role->role_key === 'master_admin') {
+            $rules['company_id'] = 'required|exists:companies,id';
+        }
+
+        $validated = $request->validate($rules, [
             'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+            'company_id.required' => 'Company selection is required for Company Admin role.',
         ]);
+
+        // ✅ Store temporary password before hashing
+        $temporaryPassword = $validated['password'];
 
         // ✅ Create user
         $user = User::create([
@@ -89,6 +103,7 @@ class UserController extends Controller
             'password'   => Hash::make($validated['password']),
             'company_id' => Auth::user()->role->role_key == 'master_admin' ? $validated['company_id'] ?? null : Auth::user()->company_id,
             'status'     => $request->status === 'active' ? 'active' : 'inactive',
+            'must_change_password' => 1, // Force password change on first login
         ]);
 
         // ✅ Handle logo upload
@@ -112,7 +127,17 @@ class UserController extends Controller
             ]
         );
 
-        return redirect()->route('users')->with('success', 'User and profile saved successfully.');
+        // ✅ Send credentials email to user
+        $loginUrl = url('/login');
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserCredentials($user, $temporaryPassword, $loginUrl));
+
+        // Check if the role is artist and redirect to artist creation page
+        if ($role && in_array($role->role_key, ['artist', 'dj'])) {
+            return redirect()->route('artists.create', ['user_id' => $user->id])
+                ->with('success', 'User created successfully! Credentials have been sent to their email. Now complete the artist profile.');
+        }
+
+        return redirect()->route('users')->with('success', 'User and profile saved successfully. Credentials have been sent to their email.');
     }
 
     /**
@@ -133,9 +158,10 @@ class UserController extends Controller
                 'total_bookings' => $user->bookingRequests()->count(),
                 'completed_bookings' => $user->bookingRequests()->where('status', 'completed')->count(),
                 'pending_bookings' => $user->bookingRequests()->where('status', 'pending')->count(),
-                'total_spent' => $user->bookingRequests()
-                    ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
-                    ->sum('total_amount'),
+                'total_spent' => \DB::table('payments')
+                    ->whereIn('booking_requests_id', $user->bookingRequests()->pluck('id'))
+                    ->where('status', 'completed')
+                    ->sum('amount'),
             ];
             $recentBookings = $user->bookingRequests()->latest()->take(5)->get();
             $recentActivity = $user->activityLogs()->latest()->take(10)->get();
@@ -144,9 +170,10 @@ class UserController extends Controller
                 'total_bookings' => $user->artist->assignedBookings()->count(),
                 'completed_bookings' => $user->artist->assignedBookings()->where('status', 'completed')->count(),
                 'avg_rating' => $user->artist->reviews()->avg('rating') ?? 0,
-                'total_earnings' => $user->artist->assignedBookings()
-                    ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
-                    ->sum('total_amount'),
+                'total_earnings' => \DB::table('payments')
+                    ->whereIn('booking_requests_id', $user->artist->assignedBookings()->pluck('id'))
+                    ->where('status', 'completed')
+                    ->sum('amount'),
             ];
             $recentBookings = $user->artist->assignedBookings()->latest()->take(5)->get();
             $recentActivity = $user->activityLogs()->latest()->take(10)->get();

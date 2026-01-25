@@ -14,11 +14,6 @@ use Illuminate\Support\Str;
 
 class AffiliatePortalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:affiliate');
-    }
-
     /**
      * Affiliate Dashboard
      */

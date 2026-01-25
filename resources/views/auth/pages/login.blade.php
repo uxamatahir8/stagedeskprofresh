@@ -47,6 +47,14 @@
                     </div>
                 </div>
 
+                @if(session('verification_sent'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="bx bx-envelope me-2"></i>
+                        <strong>Verification Email Sent!</strong> A new verification link has been sent to your email address. Please check your inbox and spam folder.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @if(session('email_not_verified'))
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
                         <i class="bx bx-info-circle me-2"></i>

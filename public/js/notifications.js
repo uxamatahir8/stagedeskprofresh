@@ -63,7 +63,6 @@
                     this.showToast('Notification marked as read', 'success');
                 }
             } catch (error) {
-                console.error('Error marking notification as read:', error);
                 this.showToast('Failed to mark notification as read', 'error');
             }
         },
@@ -91,7 +90,6 @@
                     this.showToast('All notifications marked as read', 'success');
                 }
             } catch (error) {
-                console.error('Error marking all notifications as read:', error);
                 this.showToast('Failed to mark all notifications as read', 'error');
             }
         },
@@ -111,14 +109,13 @@
                     window.location.reload();
                 }
             } catch (error) {
-                console.error('Error clearing notifications:', error);
                 this.showToast('Failed to clear notifications', 'error');
             }
         },
 
         async fetchUnreadNotifications() {
             try {
-                const response = await fetch('/notifications/unread', {
+                const response = await fetch('/notifications/refresh', {
                     headers: {
                         'Accept': 'application/json'
                     }
@@ -126,16 +123,17 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    this.updateNotificationDropdown(data.notifications);
-                    this.updateBadgeCount(data.count);
+                    if (data.success) {
+                        // this.updateNotificationDropdown(data.notifications);
+                        this.updateBadgeCount(data.count);
+                    }
                 }
             } catch (error) {
-                console.error('Error fetching notifications:', error);
             }
         },
 
         updateNotificationDropdown(notifications) {
-            const dropdown = document.querySelector('.notification-dropdown-content');
+            const dropdown = document.querySelector('[data-simplebar]');
             if (!dropdown) return;
 
             if (notifications.length === 0) {
@@ -152,21 +150,30 @@
                     <span class="d-flex align-items-center gap-2">
                         <span class="flex-shrink-0 position-relative">
                             <div class="avatar-sm rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center">
-                                <i class="ti ti-bell text-primary"></i>
+                                <i data-lucide="${notification.icon || 'bell'}" class="text-primary"></i>
                             </div>
                             <span class="position-absolute rounded-pill bg-danger notification-badge" style="width: 8px; height: 8px; bottom: 0; right: 0;"></span>
                         </span>
                         <span class="flex-grow-1">
                             <span class="fw-medium text-body d-block">${notification.title}</span>
                             <span class="text-muted small">${this.truncate(notification.message, 40)}</span><br>
-                            <span class="fs-xs text-muted"><i class="ti ti-clock"></i> ${this.timeAgo(notification.created_at)}</span>
+                            <span class="fs-xs text-muted"><i class="ti ti-clock"></i> ${notification.created_at}</span>
                         </span>
-                        <button type="button" class="flex-shrink-0 text-muted btn btn-link p-0" data-notification-read="${notification.id}" title="Mark as read">
-                            <i class="ti ti-check fs-md"></i>
-                        </button>
+                        <form action="/notifications/${notification.id}/read" method="POST" class="d-inline">
+                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                            <input type="hidden" name="_method" value="PATCH">
+                            <button type="submit" class="flex-shrink-0 text-muted btn btn-link p-0" title="Mark as read">
+                                <i class="ti ti-check fs-md"></i>
+                            </button>
+                        </form>
                     </span>
                 </div>
             `).join('');
+
+            // Reinitialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
 
             // Rebind events
             this.bindEvents();
@@ -177,36 +184,39 @@
 
             if (count === null) {
                 // Fetch current count from server
-                fetch('/notifications/unread', {
+                fetch('/notifications/refresh', {
                     headers: { 'Accept': 'application/json' }
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.count > 0) {
-                        if (badge) {
-                            badge.textContent = data.count;
-                        } else {
-                            // Create badge if it doesn't exist
-                            const bellIcon = document.querySelector('[data-lucide="bell"]');
-                            if (bellIcon) {
-                                const newBadge = document.createElement('span');
-                                newBadge.className = 'badge text-bg-danger badge-circle topbar-badge';
-                                newBadge.textContent = data.count;
-                                bellIcon.parentElement.appendChild(newBadge);
-                            }
-                        }
-                    } else {
-                        badge?.remove();
+                    if (data.success) {
+                        this.updateBadgeDisplay(data.count);
                     }
-                });
+                })
+                .catch(err => {});
             } else {
-                if (count > 0) {
-                    if (badge) {
-                        badge.textContent = count;
-                    }
+                this.updateBadgeDisplay(count);
+            }
+        },
+
+        updateBadgeDisplay(count) {
+            const badge = document.querySelector('.topbar-badge');
+
+            if (count > 0) {
+                if (badge) {
+                    badge.textContent = count;
                 } else {
-                    badge?.remove();
+                    // Create badge if it doesn't exist
+                    const bellIcon = document.querySelector('[data-lucide="bell"]');
+                    if (bellIcon) {
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'badge text-bg-danger badge-circle topbar-badge';
+                        newBadge.textContent = count;
+                        bellIcon.parentElement.appendChild(newBadge);
+                    }
                 }
+            } else {
+                badge?.remove();
             }
         },
 
@@ -244,9 +254,6 @@
 
         showToast(message, type = 'info') {
             // Using simple alert for now, can be replaced with a toast library
-            if (type === 'error') {
-                console.error(message);
-            }
         }
     };
 

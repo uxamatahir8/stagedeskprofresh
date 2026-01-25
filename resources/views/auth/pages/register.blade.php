@@ -1,6 +1,27 @@
 @extends('auth.layouts.auth')
 
 @section('content')
+    <!-- Display Success Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Display All Validation Errors -->
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h6 class="mb-2">Please fix the following errors:</h6>
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form method="POST" class="validate_form" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
         @csrf
         <div class="row d-felx justify-content-start align-items-center">
@@ -11,7 +32,8 @@
                     <div class="btn-group d-flex" role="group" aria-label="Register As">
                         @foreach (config('arrays.registerable_roles') as $role_id => $role)
                             <input type="radio" class="btn-check" data-value="{{ strtolower($role) }}" name="register_as"
-                                id="as_{{ strtolower($role) }}" value="{{ $role_id }}" {{ strtolower($role) == 'affiliate' ? 'checked' : '' }} autocomplete="off">
+                                id="as_{{ strtolower($role) }}" value="{{ $role_id }}"
+                                {{ old('register_as', strtolower($role) == 'affiliate' ? $role_id : null) == $role_id ? 'checked' : '' }} autocomplete="off">
                             <label class="btn btn-outline-primary fw-semibold w-100"
                                 for="as_{{ strtolower($role) }}">{{ $role }}</label>
                         @endforeach
@@ -29,22 +51,31 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control required" placeholder="Your Full Name"
+                        <input type="text" name="name" class="form-control required @error('name') is-invalid @enderror" placeholder="Your Full Name"
                             value="{{ old('name') }}">
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control required unique_email" placeholder="you@example.com"
+                        <input type="email" name="email" class="form-control required @error('email') is-invalid @enderror" placeholder="you@example.com"
                             value="{{ old('email') }}">
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Phone <span class="text-danger">*</span></label>
-                        <input type="text" name="phone" class="form-control required" placeholder="Phone Number"
+                        <input type="text" name="phone" class="form-control required phone @error('phone') is-invalid @enderror" placeholder="+31 123456789"
                             value="{{ old('phone') }}">
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -64,7 +95,7 @@
                     <select name="country_id" id="country" class="form-select">
                         <option value="">Select Country</option>
                         @foreach($countries as $country)
-                            <option value="{{ $country->id }}">{{ $country->name }}</option>
+                            <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -86,7 +117,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Zip Code</label>
-                        <input type="text" name="zipcode" class="form-control" placeholder="Zip Code">
+                        <input type="text" name="zipcode" class="form-control" placeholder="Zip Code" value="{{ old('zipcode') }}">
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -103,14 +134,20 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password" id="password" class="form-control required" placeholder="••••••••">
+                        <input type="password" name="password" id="password" class="form-control required @error('password') is-invalid @enderror" placeholder="••••••••">
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" id="confirm_password" data-match="password" class="form-control match required"
+                        <input type="password" name="password_confirmation" id="confirm_password" data-match="password" class="form-control match required @error('password_confirmation') is-invalid @enderror"
                             placeholder="••••••••">
+                        @error('password_confirmation')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -125,7 +162,10 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Company Name <span class="text-danger">*</span></label>
-                        <input type="text" name="company_name" class="form-control" placeholder="Company Name">
+                        <input type="text" name="company_name" id="company_name" class="form-control @error('company_name') is-invalid @enderror" placeholder="Company Name" value="{{ old('company_name') }}">
+                        @error('company_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                 </div>
@@ -133,13 +173,13 @@
                     <div class="mb-3">
                         <label class="form-label">Company Website</label>
                         <input type="text" name="company_website" class="form-control valid_url"
-                            placeholder="https://example.com">
+                            placeholder="https://example.com" value="{{ old('company_website') }}">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">KVK Number</label>
-                        <input type="text" name="kvk_number" class="form-control kvk_number" placeholder="KVK Number">
+                        <input type="text" name="kvk_number" class="form-control kvk_number" placeholder="KVK Number" value="{{ old('kvk_number') }}">
                     </div>
                 </div>
             </div>
@@ -148,13 +188,13 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Company Email</label>
-                        <input type="email" name="company_email" class="form-control" placeholder="Company Email">
+                        <input type="email" name="company_email" class="form-control" placeholder="Company Email" value="{{ old('company_email') }}">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Company Phone</label>
-                        <input type="text" name="company_phone" class="form-control" placeholder="Company Phone">
+                        <input type="text" name="company_phone" class="form-control" placeholder="Company Phone" value="{{ old('company_phone') }}">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -167,7 +207,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Company Address</label>
-                <textarea name="company_address" class="form-control" rows="2" placeholder="Address"></textarea>
+                <textarea name="company_address" class="form-control" rows="2" placeholder="Address">{{ old('company_address') }}</textarea>
             </div>
         </div>
 
@@ -186,13 +226,32 @@
             const companyFields = document.getElementById('company-fields');
             const radios = document.querySelectorAll('input[name="register_as"]');
 
+            // Function to toggle company fields
+            function toggleCompanyFields(radio) {
+                const companyNameField = document.getElementById('company_name');
+                if (radio.getAttribute('data-value') === 'company') {
+                    companyFields.classList.remove('d-none');
+                    companyNameField.classList.add('required');
+                    // Validation will be handled by validation.js automatically
+                } else {
+                    companyFields.classList.add('d-none');
+                    companyNameField.classList.remove('required', 'is-invalid', 'is-valid');
+                    companyNameField.value = ''; // Clear the value
+                    // Remove validation message if exists
+                    const validationMsg = companyNameField.parentNode.querySelector('.validation-message');
+                    if (validationMsg) validationMsg.classList.add('d-none');
+                }
+            }
+
+            // Check on page load if company is selected (for validation errors/old input)
+            const checkedRadio = document.querySelector('input[name="register_as"]:checked');
+            if (checkedRadio) {
+                toggleCompanyFields(checkedRadio);
+            }
+
             radios.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    if (radio.getAttribute('data-value') === 'company') {
-                        companyFields.classList.remove('d-none');
-                    } else {
-                        companyFields.classList.add('d-none');
-                    }
+                    toggleCompanyFields(radio);
                 });
             });
 

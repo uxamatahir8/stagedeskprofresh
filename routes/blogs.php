@@ -14,6 +14,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/blog/{blog}', [BlogController::class, 'update'])->name('blog.update');
     Route::delete('/blog/{blog}', [BlogController::class, 'destroy'])->name('blog.destroy');
 
+    // Blog approval routes (master admin only)
+    Route::post('/blog/{blog}/approve', [BlogController::class, 'approve'])->name('blog.approve');
+    Route::post('/blog/{blog}/reject', [BlogController::class, 'reject'])->name('blog.reject');
+
     Route::post('/blogs/upload-image', [BlogController::class, 'uploadImage'])->name('blogs.uploadImage');
 
     // Comment management routes

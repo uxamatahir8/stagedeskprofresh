@@ -7,21 +7,48 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i class="ti ti-layout-dashboard me-2"></i>{{ $title }}
             </h4>
-            <p class="text-muted mb-0 mt-1">Welcome back, <strong>{{ Auth::user()->name }}</strong>! Here's what's happening today</p>
+            <p class="text-muted mb-0 mt-1">Welcome back, <strong>{{ Auth::user()->name }}</strong>! Here's what's happening
+                @if(isset($filter) && $filter !== 'this_month')
+                    <span class="badge bg-primary">{{ ucwords(str_replace('_', ' ', $filter)) }}</span>
+                @endif
+            </p>
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-light btn-sm" onclick="location.reload()">
                 <i class="ti ti-refresh"></i> Refresh
             </button>
             <div class="dropdown">
-                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="ti ti-calendar"></i> This Month
+                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                    <i class="ti ti-calendar"></i>
+                    @if(isset($filter))
+                        {{ ucwords(str_replace('_', ' ', $filter)) }}
+                    @else
+                        This Month
+                    @endif
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Week</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
+                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 200px;">
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'today']) }}">Today</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_week']) }}">This Week</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_month']) }}">This Month</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_year']) }}">This Year</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="px-3 py-2">
+                        <form action="{{ route('dashboard') }}" method="GET" id="customDateForm">
+                            <input type="hidden" name="filter" value="custom">
+                            <label class="form-label small fw-semibold">Custom Range</label>
+                            <div class="mb-2">
+                                <input type="date" name="start_date" class="form-control form-control-sm"
+                                       value="{{ request('start_date') }}" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="date" name="end_date" class="form-control form-control-sm"
+                                       value="{{ request('end_date') }}" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="ti ti-filter"></i> Apply Filter
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -46,12 +73,19 @@
                     ['title' => 'Active Artists', 'value' => $stats['active_artists'] ?? 0, 'icon' => 'ti-microphone-2', 'color' => 'info', 'change' => '+3.5%', 'changeType' => 'up', 'subtitle' => 'available now'],
                     ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
                 ];
-            } elseif(Auth::user()->role->role_key === 'dj') {
+            } elseif(in_array(Auth::user()->role->role_key, ['artist', 'dj'])) {
                 $mainStats = [
-                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
-                    ['title' => 'Pending Requests', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'new requests'],
-                    ['title' => 'Rating', 'value' => $stats['average_rating'] ?? 0, 'icon' => 'ti-star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
-                    ['title' => 'Services', 'value' => $stats['total_services'] ?? 0, 'icon' => 'ti-list', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'offered services'],
+                    ['title' => 'Assigned Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
+                    ['title' => 'Rating', 'value' => number_format($stats['average_rating'] ?? 0, 1), 'icon' => 'ti-star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
+                    ['title' => 'Confirmed', 'value' => $stats['confirmed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'confirmed events'],
+                ];
+            } elseif(Auth::user()->role->role_key === 'affiliate') {
+                $mainStats = [
+                    ['title' => 'Total Referrals', 'value' => $stats['total_referrals'] ?? 0, 'icon' => 'ti-users', 'color' => 'primary', 'change' => '+5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Active Referrals', 'value' => $stats['active_referrals'] ?? 0, 'icon' => 'ti-user-check', 'color' => 'success', 'change' => 'Verified', 'changeType' => 'neutral', 'subtitle' => 'active users'],
+                    ['title' => 'Total Commission', 'value' => '$' . number_format($stats['total_commissions'] ?? 0, 2), 'icon' => 'ti-currency-dollar', 'color' => 'info', 'change' => '+12%', 'changeType' => 'up', 'subtitle' => 'total earned'],
+                    ['title' => 'Pending Payout', 'value' => '$' . number_format($stats['pending_commissions'] ?? 0, 2), 'icon' => 'ti-wallet', 'color' => 'warning', 'change' => 'Pending', 'changeType' => 'neutral', 'subtitle' => 'awaiting payout'],
                 ];
             } else {
                 $mainStats = [

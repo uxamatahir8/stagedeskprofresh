@@ -41,6 +41,10 @@
                                 <th>Event Date</th>
                                 <th>Email</th>
                                 <th>Phone</th>
+                                @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+                                <th>Assigned Artist</th>
+                                @endif
+                                <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -65,6 +69,31 @@
                                     </td>
                                     <td>
                                         {{ $booking->phone }}
+                                    </td>
+                                    @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+                                    <td>
+                                        @if($booking->assignedArtist)
+                                            <span class="badge bg-info">{{ $booking->assignedArtist->user->name }}</span>
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->id }}">
+                                                <i class="ti ti-user-plus"></i> Assign
+                                            </button>
+                                        @endif
+                                    </td>
+                                    @endif
+                                    <td>
+                                        @php
+                                            $statusColors = [
+                                                'pending' => 'warning',
+                                                'confirmed' => 'info',
+                                                'completed' => 'success',
+                                                'cancelled' => 'danger',
+                                            ];
+                                            $color = $statusColors[$booking->status] ?? 'secondary';
+                                        @endphp
+                                        <span class="badge bg-{{ $color }}">
+                                            {{ ucfirst($booking->status) }}
+                                        </span>
                                     </td>
                                     <td>
                                         <small class="text-muted">{{ $booking->created_at->format('M d, Y') }}</small>
@@ -91,6 +120,56 @@
                                         </div>
                                     </td>
                                 </tr>
+
+                                {{-- Assign Artist Modal --}}
+                                @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']) && !$booking->assignedArtist)
+                                <div class="modal fade" id="assignArtistModal{{ $booking->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Assign Artist to Booking #{{ $booking->id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Select Artist</label>
+                                                        <select name="artist_id" class="form-select artist-select" required data-booking-company="{{ $booking->company_id }}">
+                                                            <option value="">Choose an artist...</option>
+                                                            @foreach($artists ?? [] as $artist)
+                                                                @php
+                                                                    $companyMatch = auth()->user()->role->role_key === 'master_admin' ?
+                                                                        ($booking->company_id == $artist->company_id) : true;
+                                                                @endphp
+                                                                <option value="{{ $artist->id }}"
+                                                                    data-company-id="{{ $artist->company_id }}"
+                                                                    @if(!$companyMatch && auth()->user()->role->role_key === 'master_admin') style="display:none;" @endif>
+                                                                    {{ $artist->user->name }} - {{ $artist->specialization ?? 'DJ' }}
+                                                                    @if(auth()->user()->role->role_key === 'master_admin' && $artist->company)
+                                                                        ({{ $artist->company->name }})
+                                                                    @endif
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @if(auth()->user()->role->role_key === 'master_admin')
+                                                            <small class="text-muted">Only artists from {{ $booking->company->name ?? 'the selected company' }} are shown</small>
+                                                        @endif
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Company Notes (Optional)</label>
+                                                        <textarea name="company_notes" class="form-control" rows="3" placeholder="Add any special instructions for the artist..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Assign Artist</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

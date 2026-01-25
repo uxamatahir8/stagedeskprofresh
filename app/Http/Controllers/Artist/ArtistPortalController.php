@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ArtistPortalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:artist');
-    }
-
     /**
      * Artist Dashboard
      */
@@ -145,10 +140,16 @@ class ArtistPortalController extends Controller
         $title = 'Booking Details';
         $booking->load(['user', 'eventType', 'company', 'payments']);
 
-        // Check if artist can mark as completed
+        // Determine available actions based on booking status
+        $canAccept = $booking->status === 'pending';
+        $canReject = in_array($booking->status, ['pending', 'confirmed']);
         $canComplete = $booking->status === 'confirmed';
+        $isCompleted = $booking->status === 'completed';
+        $isCancelled = in_array($booking->status, ['cancelled', 'rejected']);
 
-        return view('dashboard.pages.artist.booking-details', compact('title', 'booking', 'canComplete'));
+        return view('dashboard.pages.artist.booking-details', compact(
+            'title', 'booking', 'canAccept', 'canReject', 'canComplete', 'isCompleted', 'isCancelled'
+        ));
     }
 
     /**
@@ -186,9 +187,36 @@ class ArtistPortalController extends Controller
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id]
             );
 
+            // Notify company admin via email and in-app notification
+            if ($booking->company) {
+                $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
+                    ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                    ->get();
+
+                foreach ($companyAdmins as $admin) {
+                    // In-app notification
+                    \App\Models\Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => 'Booking Completed',
+                        'message' => $artist->user->name . ' marked booking #' . $booking->id . ' as completed',
+                        'type' => 'booking_completed',
+                        'link' => route('bookings.show', $booking->id),
+                    ]);
+
+                    // Email notification
+                    try {
+                        \Mail::to($admin->email)->send(
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), 'confirmed', 'completed', $artist->user->name . ' completed the event')
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send completion email to company admin: ' . $e->getMessage());
+                    }
+                }
+            }
+
             DB::commit();
 
-            return back()->with('success', 'Booking marked as completed successfully!');
+            return back()->with('success', 'Booking marked as completed successfully! Company has been notified.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to mark booking as completed: ' . $e->getMessage());
@@ -208,7 +236,7 @@ class ArtistPortalController extends Controller
         }
 
         if ($booking->status !== 'pending') {
-            return back()->with('error', 'Only pending bookings can be accepted');
+            return back()->with('error', 'Only pending bookings can be accepted. Current status: ' . ucfirst($booking->status));
         }
 
         DB::beginTransaction();
@@ -216,26 +244,49 @@ class ArtistPortalController extends Controller
             $oldStatus = $booking->status;
             $booking->update([
                 'status' => 'confirmed',
-                'confirmed_at' => now()
+                'confirmed_at' => now(),
+                'company_notes' => ($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Artist accepted the booking."
             ]);
 
             ActivityLog::log(
                 'updated',
                 $booking,
-                'Booking accepted by artist',
-                ['booking_id' => $booking->id, 'artist_id' => $artist->id]
+                'Booking accepted by artist ' . $artist->user->name,
+                ['booking_id' => $booking->id, 'artist_id' => $artist->id, 'confirmed_at' => now()]
             );
 
             // Send email to customer about booking confirmation
-            if ($booking->customer && $booking->customer->email) {
-                \Mail::to($booking->customer->email)->send(
-                    new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
-                );
+            if ($booking->user && $booking->user->email) {
+                try {
+                    \Mail::to($booking->user->email)->send(
+                        new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send booking acceptance email to customer: ' . $e->getMessage());
+                }
+            }
+
+            // Notify company admin
+            if ($booking->company) {
+                $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
+                    ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                    ->get();
+
+                foreach ($companyAdmins as $admin) {
+                    \App\Models\Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => 'Booking Accepted',
+                        'message' => $artist->user->name . ' accepted booking #' . $booking->id,
+                        'type' => 'booking_accepted',
+                        'link' => route('bookings.show', $booking->id),
+                    ]);
+                }
             }
 
             DB::commit();
 
-            return back()->with('success', 'Booking accepted successfully!');
+            return redirect()->route('artist.bookings.details', $booking->id)
+                ->with('success', '✅ Booking accepted successfully! Customer has been notified.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to accept booking: ' . $e->getMessage());
@@ -254,16 +305,22 @@ class ArtistPortalController extends Controller
             abort(403, 'You can only reject bookings assigned to you');
         }
 
-        if ($booking->status !== 'pending') {
-            return back()->with('error', 'Only pending bookings can be rejected');
+        if (!in_array($booking->status, ['pending', 'confirmed'])) {
+            return back()->with('error', 'This booking cannot be rejected. Current status: ' . ucfirst($booking->status));
         }
 
         $request->validate([
-            'reason' => 'required|string|max:500'
+            'reason' => 'required|string|max:500|min:10'
+        ], [
+            'reason.required' => 'Please provide a reason for rejection',
+            'reason.min' => 'Please provide a detailed reason (at least 10 characters)'
         ]);
 
         DB::beginTransaction();
         try {
+            $artistName = $artist->user->name;
+            $rejectionNote = "[" . now()->format('Y-m-d H:i:s') . "] Rejected by " . $artistName . ": " . $request->reason;
+
             // When artist rejects, booking goes back to pending state with no artist assigned
             // This allows company to reassign to another artist
             $oldStatus = $booking->status;
@@ -271,42 +328,57 @@ class ArtistPortalController extends Controller
                 'status' => 'pending',
                 'assigned_artist_id' => null,
                 'confirmed_at' => null,
-                'company_notes' => ($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Artist rejection: " . $request->reason
+                'company_notes' => ($booking->company_notes ?? '') . "\n\n" . $rejectionNote
             ]);
 
             ActivityLog::log(
                 'updated',
                 $booking,
-                'Booking rejected by artist - returned to pending for reassignment',
+                'Booking rejected by artist ' . $artistName . ' - returned to pending for reassignment',
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id, 'reason' => $request->reason]
             );
 
             // Send email to customer about booking status change
-            if ($booking->customer && $booking->customer->email) {
-                \Mail::to($booking->customer->email)->send(
-                    new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
-                );
+            if ($booking->user && $booking->user->email) {
+                try {
+                    \Mail::to($booking->user->email)->send(
+                        new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send rejection email to customer: ' . $e->getMessage());
+                }
             }
 
-            // Send email to company admin about rejection
-            if ($booking->company && $booking->company->user && $booking->company->user->email) {
-                \Mail::to($booking->company->user->email)->send(
-                    new \App\Mail\SecurityAlert(
-                        $booking->company->user,
-                        'booking_rejection',
-                        [
-                            'booking_id' => $booking->booking_id,
-                            'artist_name' => $artist->user->name,
-                            'reason' => $request->reason,
-                            'time' => now()->format('F d, Y h:i A')
-                        ]
-                    )
-                );
+// Notify company admins about rejection via email and in-app notification
+            if ($booking->company) {
+                $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
+                    ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                    ->get();
+
+                foreach ($companyAdmins as $admin) {
+                    // In-app notification
+                    \App\Models\Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => 'Booking Rejected by Artist',
+                        'message' => $artistName . ' rejected booking #' . $booking->id . ' for ' . $booking->name . ' ' . $booking->surname . '. Reason: ' . $request->reason,
+                        'type' => 'booking_rejected',
+                        'link' => route('bookings.show', $booking->id),
+                    ]);
+
+                    // Email notification
+                    try {
+                        \Mail::to($admin->email)->send(
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending', $artistName . ' rejected: ' . $request->reason)
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send rejection email to company admin: ' . $e->getMessage());
+                    }
+                }
             }
 
             DB::commit();
 
-            return back()->with('success', 'Booking rejected. The company can now reassign it to another artist.');
+            return redirect()->route('artist.bookings')->with('warning', '⚠️ Booking rejected. The company will be notified and can reassign to another artist.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to reject booking: ' . $e->getMessage());

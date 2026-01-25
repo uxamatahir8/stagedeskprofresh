@@ -588,7 +588,7 @@ class I18nManager {
             if (e.ok) return await e.json();
             throw new Error(`Failed to load ${this.selectedLanguage}.json`)
         } catch (e) {
-            return console.error("Translation load error:", e), {}
+            return {}
         }
     }
     async applyTranslations() {
@@ -596,8 +596,7 @@ class I18nManager {
         document.querySelectorAll(this.translationKeySelector).forEach(e => {
             var t = e.getAttribute(this.translationKeyAttribute),
                 a = (a = i, t.split(".").reduce((e, t) => e?.[t] ?? null, a));
-            a ? e.innerHTML = a : console.warn("Missing translation for key: " +
-                t)
+            a ? e.innerHTML = a : null
         })
     }
     setLanguage(e) {
@@ -659,10 +658,8 @@ class CustomApexChart {
             try {
                 this.render(), CustomApexChart.instances.push(this)
             } catch (e) {
-                console.error("CustomApexChart: Error during chart initialization:",
-                    e)
             }
-        } else console.warn("CustomApexChart: 'selector' is required.")
+        }
     }
     getColors() {
         var e = this.getOptions();
@@ -683,8 +680,7 @@ class CustomApexChart {
             e.colors = this.getColors(), (e = this.injectDynamicColors(e, e.colors))
                 .series || (e.series = this.series), this.chart = new ApexCharts(this
                     .element, e), this.chart.render()
-        } else console.warn(
-            `CustomApexChart: No element found for selector '${this.selector}'.`)
+        }
     }
     injectDynamicColors(e, a) {
         var t;
@@ -723,9 +719,8 @@ class CustomChartJs {
             try {
                 this.render(), CustomChartJs.instances.push(this)
             } catch (e) {
-                console.error("CustomChartJs: Initialization error", e)
             }
-        } else console.warn("CustomChartJs: 'selector' is required.")
+        }
     }
     static getDefaultOptions() {
         var e = getComputedStyle(document.body).fontFamily.trim();
@@ -822,10 +817,8 @@ class CustomChartJs {
                         plugins: i || []
                     }), window.addEventListener("resize", debounce(() => {
                         this.chart && this.chart.resize()
-                    }, 200))) : console.warn(
-                        `CustomChartJs: No element found for selector '${this.selector}'`)
+                    }, 200)))
         } catch (e) {
-            console.error(`CustomChartJs: Render error for '${this.selector}'`, e)
         }
     }
     static rerenderAll() {

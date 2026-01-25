@@ -184,19 +184,28 @@
                         </div>
 
                         <!-- My Profile -->
-                        <a href="users-profile.html" class="dropdown-item">
+                        @php
+                            $roleKey = Auth::user()->role->role_key;
+                            $profileRoute = match($roleKey) {
+                                'customer' => route('customer.profile'),
+                                'artist', 'dj' => route('artist.profile'),
+                                'affiliate' => route('affiliate.profile'),
+                                default => route('settings')
+                            };
+                        @endphp
+                        <a href="{{ $profileRoute }}" class="dropdown-item">
                             <i class="ti ti-user-circle me-1 fs-17 align-middle"></i>
-                            <span class="align-middle">Profile</span>
+                            <span class="align-middle">My Profile</span>
                         </a>
 
                         <!-- Notifications -->
-                        <a href="javascript:void(0);" class="dropdown-item">
+                        <a href="{{ route('notifications.index') }}" class="dropdown-item">
                             <i class="ti ti-bell-ringing me-1 fs-17 align-middle"></i>
                             <span class="align-middle">Notifications</span>
                         </a>
 
                         <!-- Settings -->
-                        <a href="javascript:void(0);" class="dropdown-item">
+                        <a href="{{ route('settings') }}" class="dropdown-item">
                             <i class="ti ti-settings-2 me-1 fs-17 align-middle"></i>
                             <span class="align-middle">Account Settings</span>
                         </a>

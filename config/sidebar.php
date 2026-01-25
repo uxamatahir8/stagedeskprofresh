@@ -17,6 +17,11 @@ return [
                 'roles' => ['master_admin', 'company_admin', 'customer'],
             ],
             [
+                'title' => 'My Bookings',
+                'route' => 'bookings.index',
+                'roles' => ['artist', 'dj'],
+            ],
+            [
                 'title' => 'Event Types',
                 'route' => 'event-types',
                 'roles' => ['master_admin'],
@@ -36,6 +41,12 @@ return [
             [
                 'title' => 'All Reviews',
                 'route' => 'reviews.index',
+                'roles' => ['master_admin', 'company_admin', 'artist', 'dj'],
+            ],
+            [
+                'title' => 'My Reviews',
+                'route' => 'reviews.index',
+                'roles' => ['customer'],
             ],
             [
                 'title' => 'Featured Reviews',
@@ -51,7 +62,12 @@ return [
             [
                 'title' => 'Payments',
                 'route' => 'payments.index',
-                'roles' => ['master_admin', 'company_admin'],
+                'roles' => ['master_admin', 'company_admin', 'artist', 'dj'],
+            ],
+            [
+                'title' => 'My Payments',
+                'route' => 'payments.index',
+                'roles' => ['customer'],
             ],
             [
                 'title' => 'Subscriptions',
@@ -78,6 +94,32 @@ return [
         'roles' => ['master_admin', 'company_admin'],
     ],
     [
+        'title'   => 'Affiliate Program',
+        'icon'    => 'badge-dollar-sign',
+        'submenu' => [
+            [
+                'title' => 'My Referrals',
+                'route' => 'affiliate.referrals',
+                'roles' => ['affiliate'],
+            ],
+            [
+                'title' => 'Commissions',
+                'route' => 'affiliate.commissions',
+                'roles' => ['affiliate'],
+            ],
+            [
+                'title' => 'Referral Links',
+                'route' => 'affiliate.referral-links',
+                'roles' => ['affiliate'],
+            ],
+            [
+                'title' => 'Performance',
+                'route' => 'affiliate.performance',
+                'roles' => ['affiliate'],
+            ],
+        ],
+    ],
+    [
         'title'   => 'Content Management',
         'icon'    => 'file-text',
         'submenu' => [
@@ -87,9 +129,9 @@ return [
                 'roles' => ['master_admin'],
             ],
             [
-                'title' => 'Blogs',
+                'title' => 'My Blogs',
                 'route' => 'blogs.list',
-                'roles' => ['master_admin'],
+                // All authenticated users can create blogs
             ],
         ],
     ],
@@ -103,11 +145,6 @@ return [
         'icon'  => 'activity',
         'route' => 'activity-logs.index',
         'roles' => ['master_admin', 'company_admin'],
-    ],
-    [
-        'title' => 'Notifications',
-        'icon'  => 'bell',
-        'route' => 'notifications.index',
     ],
     [
         'title' => 'Settings',

@@ -3,6 +3,12 @@ const inputs = document.querySelectorAll(
 );
 const validateRequiredInput = (element) => {
     let required = false;
+
+    // Skip validation if element or its parent container is hidden
+    if (element.classList.contains("d-none") || element.closest('.d-none')) {
+        return true;
+    }
+
     if (!element.classList.contains("d-none")) {
         let validationMessage = element.parentNode.querySelector(
             ".validation-message"
@@ -210,10 +216,6 @@ const validateRequiredInput = (element) => {
                             if (requestId === activeRequestId) {
                                 hideWait();
                             }
-                            console.error(
-                                "Email uniqueness check failed:",
-                                error
-                            );
                         });
                 }, 400); // delay after user stops typing
             }
@@ -270,13 +272,47 @@ inputs.forEach((element) => {
         validateRequiredInput(element);
     });
 });
+
+// Add mutation observer to handle dynamically added 'required' class
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const target = mutation.target;
+            if (target.classList.contains('required')) {
+                // Add event listener if not already added
+                if (!target.hasAttribute('data-validation-attached')) {
+                    target.setAttribute('data-validation-attached', 'true');
+                    target.addEventListener('input', () => {
+                        validateRequiredInput(target);
+                    });
+                }
+            }
+        }
+    });
+});
+
+// Observe all form inputs for class changes
+document.querySelectorAll('input, textarea, select').forEach((element) => {
+    observer.observe(element, { attributes: true, attributeFilter: ['class'] });
+});
+
 const form = document.querySelector(".validate_form");
 
 form?.addEventListener("submit", (e) => {
     e.preventDefault();
-    inputs.forEach((element) => {
-        validateRequiredInput(element);
+
+    // Re-query all inputs to include dynamically shown fields
+    const allInputs = document.querySelectorAll(
+        ".number, .required, .valid_url, .match, .phone, .email, .kvk_number"
+    );
+
+    allInputs.forEach((element) => {
+        // Only validate visible fields (not hidden by d-none on parent)
+        if (!element.closest('.d-none')) {
+            validateRequiredInput(element);
+        }
     });
+
     const invalidInputs = document.querySelectorAll(".is-invalid");
     if (invalidInputs.length === 0) {
         form.submit();

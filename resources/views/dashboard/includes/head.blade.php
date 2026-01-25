@@ -28,5 +28,25 @@
             background-color: #fff !important;
             border-bottom: 1px solid #e4e4e4 !important;
         }
+
+        /* Fix z-index hierarchy to prevent sidebar overlap */
+        .app-topbar {
+            z-index: 999 !important;
+        }
+
+        .app-topbar .dropdown-menu {
+            z-index: 1000 !important;
+        }
+
+        /* Ensure sidebar is always above dropdowns */
+        .sidenav-menu {
+            z-index: 1051 !important;
+        }
+
+        /* Ensure dropdown closes properly and doesn't persist */
+        .topbar-item .dropdown-menu {
+            max-width: 100%;
+            overflow: hidden;
+        }
     </style>
 </head>

@@ -715,12 +715,7 @@ new CustomApexChart({
             chart: {
                 height: 350,
                 type: "bar",
-                toolbar: { show: !1 },
-                events: {
-                    click: function (e, t, o) {
-                        console.log(e, t, o);
-                    },
-                },
+                toolbar: { show: !1 }
             },
             colors: [
                 ins("primary"),
