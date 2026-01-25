@@ -210,10 +210,6 @@ const validateRequiredInput = (element) => {
                             if (requestId === activeRequestId) {
                                 hideWait();
                             }
-                            console.error(
-                                "Email uniqueness check failed:",
-                                error
-                            );
                         });
                 }, 400); // delay after user stops typing
             }
