@@ -48,6 +48,23 @@
                 </div>
 
                 <div class="row">
+                    {{-- COMPANY (Master Admin only) --}}
+                    @if (auth()->user()->role->role_key === 'master_admin')
+                        <div class="col-lg-6 mb-3">
+                            <label class="col-form-label">Company <span class="text-danger">*</span></label>
+                            <select name="company_id" id="company_select" class="form-control form-select required">
+                                <option value="">Select Company</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}"
+                                        {{ old('company_id', $booking->company_id ?? '') == $company->id ? 'selected' : '' }}>
+                                        {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Select the company this booking is for</small>
+                        </div>
+                    @endif
+
                     {{-- USER (Company Admin only) --}}
                     @if (auth()->user()->role->role_key === 'company_admin' || auth()->user()->role->role_key === 'master_admin')
                         <div class="col-lg-6 mb-3">
@@ -56,6 +73,10 @@
                                 <option value="">Select Existing Customer (or create new below)</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}"
+                                        data-name="{{ $customer->first_name ?? '' }}"
+                                        data-surname="{{ $customer->surname ?? '' }}"
+                                        data-email="{{ $customer->email ?? '' }}"
+                                        data-phone="{{ $customer->phone ?? '' }}"
                                         {{ old('user_id', $booking->user_id ?? '') == $customer->id ? 'selected' : '' }}>
                                         {{ $customer->name }} ({{ $customer->email }})
                                     </option>
@@ -217,16 +238,53 @@
             const createCustomerCheckbox = document.getElementById('create_customer_account');
             const createCustomerContainer = document.getElementById('create_customer_container');
 
+            // Form fields for autofill (from user_profiles table)
+            const nameInput = document.querySelector('input[name="name"]');
+            const surnameInput = document.querySelector('input[name="surname"]');
+            const emailInput = document.querySelector('input[name="email"]');
+            const phoneInput = document.querySelector('input[name="phone"]');
+
             if (customerSelect && createCustomerCheckbox) {
-                // Toggle create customer checkbox based on customer selection
+                // Autofill customer data when selecting existing customer
                 customerSelect.addEventListener('change', function() {
                     if (this.value) {
-                        // Customer selected, hide create account option
+                        // Customer selected, hide create account option and autofill data
                         createCustomerContainer.style.display = 'none';
                         createCustomerCheckbox.checked = false;
+
+                        // Get customer data from selected option
+                        const selectedOption = this.options[this.selectedIndex];
+                        const firstName = selectedOption.getAttribute('data-name') || '';
+                        const surname = selectedOption.getAttribute('data-surname') || '';
+                        const email = selectedOption.getAttribute('data-email') || '';
+                        const phone = selectedOption.getAttribute('data-phone') || '';
+
+                        // Autofill the form fields
+                        if (nameInput) nameInput.value = firstName;
+                        if (surnameInput) surnameInput.value = surname;
+                        if (emailInput) emailInput.value = email;
+                        if (phoneInput) phoneInput.value = phone;
+
+                        // Make fields readonly since customer is selected
+                        if (nameInput) nameInput.readOnly = true;
+                        if (surnameInput) surnameInput.readOnly = true;
+                        if (emailInput) emailInput.readOnly = true;
+                        if (phoneInput) phoneInput.readOnly = true;
                     } else {
-                        // No customer selected, show create account option
+                        // No customer selected, show create account option and clear fields
                         createCustomerContainer.style.display = 'block';
+
+                        // Clear form fields
+                        if (nameInput) nameInput.value = '';
+                        if (surnameInput) surnameInput.value = '';
+                        if (emailInput) emailInput.value = '';
+                        if (phoneInput) phoneInput.value = '';
+
+                        // Make fields editable again
+                        if (nameInput) nameInput.readOnly = false;
+                        if (surnameInput) surnameInput.readOnly = false;
+                        if (emailInput) emailInput.readOnly = false;
+                        if (phoneInput) phoneInput.readOnly = false;
                     }
                 });
 
@@ -253,6 +311,8 @@
                             label.innerHTML += ' <span class="text-danger">*</span>';
                         }
                     });
+                    // Reinitialize flatpickr for wedding date field after showing
+                    initializeFlatpickr();
                 } else {
                     weddingFields.style.display = 'none';
                     weddingInputs.forEach(input => input.classList.remove('required'));
@@ -262,6 +322,44 @@
                     });
                 }
             }
+
+            // Function to initialize all flatpickr instances
+            function initializeFlatpickr() {
+                document.querySelectorAll('[data-provider="flatpickr"]').forEach(element => {
+                    // Destroy existing instance if any
+                    if (element._flatpickr) {
+                        element._flatpickr.destroy();
+                    }
+
+                    // Get data attributes
+                    const config = {
+                        disableMobile: true,
+                        dateFormat: element.getAttribute('data-date-format') || 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'F j, Y'
+                    };
+
+                    // Add minDate if exists
+                    if (element.hasAttribute('data-minDate')) {
+                        config.minDate = element.getAttribute('data-minDate');
+                    }
+
+                    // Add maxDate if exists
+                    if (element.hasAttribute('data-maxDate')) {
+                        config.maxDate = element.getAttribute('data-maxDate');
+                    }
+
+                    // Initialize flatpickr
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(element, config);
+                    }
+                });
+            }
+
+            // Initialize flatpickr on page load
+            setTimeout(() => {
+                initializeFlatpickr();
+            }, 100);
 
             // Run on page load
             toggleWeddingFields();

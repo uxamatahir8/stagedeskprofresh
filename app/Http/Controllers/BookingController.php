@@ -87,9 +87,21 @@ class BookingController extends Controller
         }
 
         $customers = match ($roleKey) {
-            'company_admin' => User::companyCustomers()->get(),
+            'company_admin' => User::companyCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
+                $nameParts = explode(' ', $customer->name, 2);
+                $customer->first_name = $nameParts[0] ?? '';
+                $customer->surname = $nameParts[1] ?? '';
+                $customer->phone = $customer->profile->phone ?? '';
+                return $customer;
+            }),
             'customer'      => collect([]),  // Customers create for themselves
-            default         => User::allCustomers()->get(),
+            default         => User::allCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
+                $nameParts = explode(' ', $customer->name, 2);
+                $customer->first_name = $nameParts[0] ?? '';
+                $customer->surname = $nameParts[1] ?? '';
+                $customer->phone = $customer->profile->phone ?? '';
+                return $customer;
+            }),
         };
 
         // Get companies for admin assignment
@@ -129,9 +141,21 @@ class BookingController extends Controller
         }
 
         $customers = match ($roleKey) {
-            'company_admin' => User::companyCustomers()->get(),
+            'company_admin' => User::companyCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
+                $nameParts = explode(' ', $customer->name, 2);
+                $customer->first_name = $nameParts[0] ?? '';
+                $customer->surname = $nameParts[1] ?? '';
+                $customer->phone = $customer->profile->phone ?? '';
+                return $customer;
+            }),
             'customer'      => collect([]),
-            default         => User::allCustomers()->get(),
+            default         => User::allCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
+                $nameParts = explode(' ', $customer->name, 2);
+                $customer->first_name = $nameParts[0] ?? '';
+                $customer->surname = $nameParts[1] ?? '';
+                $customer->phone = $customer->profile->phone ?? '';
+                return $customer;
+            }),
         };
 
         // Get companies for admin assignment
@@ -288,6 +312,24 @@ class BookingController extends Controller
             // Fire booking created event if company is assigned
             if ($booking->company_id && $booking->company) {
                 event(new BookingCreated($booking, $booking->company));
+
+                // Send email to company admin if master admin created this booking
+                if ($roleKey === 'master_admin') {
+                    $companyAdmin = User::where('company_id', $booking->company_id)
+                        ->whereHas('role', function($q) {
+                            $q->where('role_key', 'company_admin');
+                        })->first();
+
+                    if ($companyAdmin && $companyAdmin->email) {
+                        try {
+                            \Mail::to($companyAdmin->email)->send(
+                                new \App\Mail\NewBookingForCompany($booking, $companyAdmin)
+                            );
+                        } catch (\Exception $e) {
+                            \Log::error('Failed to send booking notification to company admin: ' . $e->getMessage());
+                        }
+                    }
+                }
             }
 
             DB::commit();
@@ -493,6 +535,24 @@ class BookingController extends Controller
                     );
                 } catch (\Exception $e) {
                     \Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
+                }
+            }
+
+            // Send email to company admin if master admin assigned the artist
+            if ($roleKey === 'master_admin' && $booking->company_id) {
+                $companyAdmin = User::where('company_id', $booking->company_id)
+                    ->whereHas('role', function($q) {
+                        $q->where('role_key', 'company_admin');
+                    })->first();
+
+                if ($companyAdmin && $companyAdmin->email) {
+                    try {
+                        \Mail::to($companyAdmin->email)->send(
+                            new \App\Mail\ArtistAssignedToCompany($booking->fresh(), $artist, $companyAdmin)
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send artist assignment notification to company admin: ' . $e->getMessage());
+                    }
                 }
             }
 

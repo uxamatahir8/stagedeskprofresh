@@ -500,15 +500,25 @@
                             <select name="artist_id" class="form-select" required>
                                 <option value="">Choose an artist...</option>
                                 @foreach($artists ?? [] as $artist)
+                                    @php
+                                        $companyMatch = auth()->user()->role->role_key === 'master_admin' ?
+                                            ($booking->company_id == $artist->company_id) : true;
+                                    @endphp
+                                    @if($companyMatch)
                                     <option value="{{ $artist->id }}">
                                         {{ $artist->user->name }} - {{ $artist->specialization ?? 'DJ' }}
-                                        @if($artist->company)
+                                        @if(auth()->user()->role->role_key === 'master_admin' && $artist->company)
                                             ({{ $artist->company->name }})
                                         @endif
                                     </option>
+                                    @endif
                                 @endforeach
                             </select>
-                            <small class="text-muted">Select the artist who will perform at this event</small>
+                            @if(auth()->user()->role->role_key === 'master_admin')
+                                <small class="text-muted">Only artists from {{ $booking->company->name ?? 'the booking company' }} are shown</small>
+                            @else
+                                <small class="text-muted">Select the artist who will perform at this event</small>
+                            @endif
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Company Notes (Optional)</label>
@@ -546,14 +556,23 @@
                             <select name="artist_id" class="form-select" required>
                                 <option value="">Choose a new artist...</option>
                                 @foreach($artists ?? [] as $artist)
+                                    @php
+                                        $companyMatch = auth()->user()->role->role_key === 'master_admin' ?
+                                            ($booking->company_id == $artist->company_id) : true;
+                                    @endphp
+                                    @if($companyMatch)
                                     <option value="{{ $artist->id }}" {{ $booking->assigned_artist_id == $artist->id ? 'selected' : '' }}>
                                         {{ $artist->user->name }} - {{ $artist->specialization ?? 'DJ' }}
-                                        @if($artist->company)
+                                        @if(auth()->user()->role->role_key === 'master_admin' && $artist->company)
                                             ({{ $artist->company->name }})
                                         @endif
                                     </option>
+                                    @endif
                                 @endforeach
                             </select>
+                            @if(auth()->user()->role->role_key === 'master_admin')
+                                <small class="text-muted">Only artists from {{ $booking->company->name ?? 'the booking company' }} are shown</small>
+                            @endif
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Company Notes (Optional)</label>

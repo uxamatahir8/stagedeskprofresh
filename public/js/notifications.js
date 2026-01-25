@@ -124,7 +124,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        this.updateNotificationDropdown(data.notifications);
+                        // this.updateNotificationDropdown(data.notifications);
                         this.updateBadgeCount(data.count);
                     }
                 }
