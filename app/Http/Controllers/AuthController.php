@@ -244,17 +244,29 @@ class AuthController extends Controller
 
         // Check if email is verified
         if (!$user->email_verified_at) {
-            return back()->withErrors([
-                'email' => 'Please verify your email address first.',
-            ])->onlyInput('email');
+            // Auto-send verification email
+            if (!$user->verification_token) {
+                $user->verification_token = Str::random(64);
+                $user->save();
+            }
+
+            $verificationUrl = route('verify-email', ['token' => $user->verification_token]);
+            Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+
+            return back()
+                ->withErrors(['email' => 'Your email is not verified. We\'ve sent a new verification link to your email.'])
+                ->with('active_tab', 'code-login')
+                ->with('verification_sent', true)
+                ->onlyInput('email');
         }
 
         // Check if account is locked
         if ($this->authSecurity->isAccountLocked($user)) {
             $minutes = $user->locked_until->diffInMinutes(now());
-            return back()->withErrors([
-                'email' => "Your account is locked. Please try again in {$minutes} minutes.",
-            ])->onlyInput('email');
+            return back()
+                ->withErrors(['email' => "Your account is locked. Please try again in {$minutes} minutes."])
+                ->with('active_tab', 'code-login')
+                ->onlyInput('email');
         }
 
         // Check rate limiting for code generation
@@ -262,9 +274,10 @@ class AuthController extends Controller
         $rateLimit = $this->authSecurity->checkRateLimit($rateLimitKey, 3, 15); // 3 codes per 15 minutes
 
         if ($rateLimit['limited']) {
-            return back()->withErrors([
-                'email' => 'Too many code requests. Please try again in ' . ceil($rateLimit['retry_after'] / 60) . ' minutes.',
-            ])->onlyInput('email');
+            return back()
+                ->withErrors(['email' => 'Too many code requests. Please try again in ' . ceil($rateLimit['retry_after'] / 60) . ' minutes.'])
+                ->with('active_tab', 'code-login')
+                ->onlyInput('email');
         }
 
         // Generate 6-digit code
@@ -281,7 +294,11 @@ class AuthController extends Controller
         // Send email
         Mail::to($user->email)->send(new LoginCodeMail($code, $user->email, 10));
 
-        return back()->with('code_sent', true)->with('success', 'Login code sent to your email!')->onlyInput('email');
+        return back()
+            ->with('code_sent', true)
+            ->with('active_tab', 'code-login')
+            ->with('success', 'Login code sent to your email!')
+            ->onlyInput('email');
     }
 
     /**
@@ -298,17 +315,21 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'code' => 'Invalid email or code.',
-            ])->onlyInput('email');
+            return back()
+                ->withErrors(['code' => 'Invalid email or code.'])
+                ->with('active_tab', 'code-login')
+                ->with('code_sent', true)
+                ->onlyInput('email');
         }
 
         // Check if account is locked
         if ($this->authSecurity->isAccountLocked($user)) {
             $minutes = $user->locked_until->diffInMinutes(now());
-            return back()->withErrors([
-                'code' => "Your account is locked. Please try again in {$minutes} minutes.",
-            ])->onlyInput('email');
+            return back()
+                ->withErrors(['code' => "Your account is locked. Please try again in {$minutes} minutes."])
+                ->with('active_tab', 'code-login')
+                ->with('code_sent', true)
+                ->onlyInput('email');
         }
 
         // Find valid code
@@ -322,9 +343,11 @@ class AuthController extends Controller
             $this->authSecurity->incrementFailedAttempts($user);
             $this->authSecurity->recordLoginAttempt($request->email, false, $user->id, 'Invalid login code');
 
-            return back()->withErrors([
-                'code' => 'Invalid or expired code.',
-            ])->onlyInput('email');
+            return back()
+                ->withErrors(['code' => 'Invalid or expired code.'])
+                ->with('active_tab', 'code-login')
+                ->with('code_sent', true)
+                ->onlyInput('email');
         }
 
         // Mark code as used

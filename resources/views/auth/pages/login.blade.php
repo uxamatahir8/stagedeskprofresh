@@ -5,14 +5,14 @@
     <!-- Login Method Tabs -->
     <ul class="nav nav-pills nav-justified mb-4" id="loginTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="password-tab" data-bs-toggle="pill" data-bs-target="#password-login"
-                type="button" role="tab" aria-controls="password-login" aria-selected="true">
+            <button class="nav-link {{ (session('code_sent') || session('active_tab') === 'code-login') ? '' : 'active' }}" id="password-tab" data-bs-toggle="pill" data-bs-target="#password-login"
+                type="button" role="tab" aria-controls="password-login" aria-selected="{{ (session('code_sent') || session('active_tab') === 'code-login') ? 'false' : 'true' }}">
                 <i class="bx bx-lock-alt me-1"></i> Password Login
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="code-tab" data-bs-toggle="pill" data-bs-target="#code-login" type="button"
-                role="tab" aria-controls="code-login" aria-selected="false">
+            <button class="nav-link {{ (session('code_sent') || session('active_tab') === 'code-login') ? 'active' : '' }}" id="code-tab" data-bs-toggle="pill" data-bs-target="#code-login" type="button"
+                role="tab" aria-controls="code-login" aria-selected="{{ (session('code_sent') || session('active_tab') === 'code-login') ? 'true' : 'false' }}">
                 <i class="bx bx-envelope me-1"></i> Email Code Login
             </button>
         </li>
@@ -20,7 +20,7 @@
 
     <div class="tab-content" id="loginTabContent">
         <!-- Password Login -->
-        <div class="tab-pane fade show active" id="password-login" role="tabpanel" aria-labelledby="password-tab">
+        <div class="tab-pane fade {{ (session('code_sent') || session('active_tab') === 'code-login') ? '' : 'show active' }}" id="password-login" role="tabpanel" aria-labelledby="password-tab">
             <form method="post" class="validate_form" autocomplete="off" action="{{ route('user_login') }}">
                 @csrf
                 <div class="mb-3">
@@ -78,11 +78,21 @@
         </div>
 
         <!-- Code Login -->
-        <div class="tab-pane fade" id="code-login" role="tabpanel" aria-labelledby="code-tab">
+        <div class="tab-pane fade {{ (session('code_sent') || session('active_tab') === 'code-login') ? 'show active' : '' }}" id="code-login" role="tabpanel" aria-labelledby="code-tab">
             @if(!session('code_sent'))
                 <!-- Request Code Form -->
                 <form method="post" action="{{ route('send-login-code') }}" id="requestCodeForm">
                     @csrf
+
+                    @if(session('verification_sent'))
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="bx bx-envelope me-2"></i>
+                            <strong>Email Verification Required!</strong><br>
+                            We've sent a verification link to your email. Please verify your email address before using code login.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
                     <div class="alert alert-info" role="alert">
                         <i class="bx bx-info-circle me-2"></i>
                         <strong>Secure Login:</strong> Enter your email to receive a 6-digit code for passwordless login.
@@ -162,12 +172,34 @@
                     });
                 }
 
-                // Activate code tab if code was sent
-                @if(session('code_sent'))
+                // Activate code tab if code was sent or active_tab is set
+                @if(session('code_sent') || session('active_tab') === 'code-login')
                     const codeTab = document.getElementById('code-tab');
                     if (codeTab) {
                         const tab = new bootstrap.Tab(codeTab);
                         tab.show();
+                    }
+                @endif
+
+                // Store active tab in session on tab change
+                const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
+                tabButtons.forEach(button => {
+                    button.addEventListener('shown.bs.tab', function(e) {
+                        const targetId = e.target.getAttribute('data-bs-target');
+                        // Store in sessionStorage for client-side persistence
+                        sessionStorage.setItem('activeLoginTab', targetId);
+                    });
+                });
+
+                // Restore tab from sessionStorage on page load (if no server-side session)
+                @if(!session('code_sent') && !session('active_tab'))
+                    const savedTab = sessionStorage.getItem('activeLoginTab');
+                    if (savedTab === '#code-login') {
+                        const codeTab = document.getElementById('code-tab');
+                        if (codeTab) {
+                            const tab = new bootstrap.Tab(codeTab);
+                            tab.show();
+                        }
                     }
                 @endif
             });
