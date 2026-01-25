@@ -43,7 +43,6 @@
                                 <th>Experience</th>
                                 <th>Rating</th>
                                 <th>Genres</th>
-                                <th>Services</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -91,9 +90,6 @@
                                     </td>
                                     <td>
                                         <small>{{ substr($artist->genres, 0, 30) }}...</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-primary">{{ $artist->services->count() }}</span>
                                     </td>
                                     <td>
                                         <div class="action-btn">

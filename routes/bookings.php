@@ -7,20 +7,28 @@ Route::middleware('auth')->group(function () {
     // List all bookings
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 
-    // Show form to create a new booking
-    Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+    // Show form to create a new booking (not for artists)
+    Route::get('/bookings/create', [BookingController::class, 'create'])
+        ->name('bookings.create')
+        ->middleware('role:master_admin,company_admin,customer');
 
-    // Store a new booking
-    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    // Store a new booking (not for artists)
+    Route::post('/bookings', [BookingController::class, 'store'])
+        ->name('bookings.store')
+        ->middleware('role:master_admin,company_admin,customer');
 
     // Show a specific booking
     Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
 
-    // Show form to edit a booking
-    Route::get('/bookings/{booking}/edit', [BookingController::class, 'edit'])->name('bookings.edit');
+    // Show form to edit a booking (not for artists)
+    Route::get('/bookings/{booking}/edit', [BookingController::class, 'edit'])
+        ->name('bookings.edit')
+        ->middleware('role:master_admin,company_admin,customer');
 
-    // Update a specific booking
-    Route::put('/bookings/{booking}', [BookingController::class, 'update'])->name('bookings.update');
+    // Update a specific booking (not for artists)
+    Route::put('/bookings/{booking}', [BookingController::class, 'update'])
+        ->name('bookings.update')
+        ->middleware('role:master_admin,company_admin,customer');
 
     // Delete a specific booking (Admin only)
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])

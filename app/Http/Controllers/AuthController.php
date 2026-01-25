@@ -193,9 +193,19 @@ class AuthController extends Controller
         if ($user && !$user->email_verified_at) {
             $this->authSecurity->recordLoginAttempt($credentials['email'], false, $user->id, 'Email not verified');
 
+            // Generate new verification token if doesn't exist or regenerate
+            if (!$user->verification_token) {
+                $user->verification_token = \Illuminate\Support\Str::random(64);
+                $user->save();
+            }
+
+            // Send new verification email
+            $verificationUrl = url('/verify-email/' . $user->verification_token);
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user, $verificationUrl));
+
             return back()->withErrors([
-                'email' => 'Please verify your email address before logging in. Check your inbox for the verification link.',
-            ])->with('email_not_verified', true)->onlyInput('email');
+                'email' => 'Your email is not verified. A new verification link has been sent to your email address.',
+            ])->with('verification_sent', true)->onlyInput('email');
         }
 
         // Attempt authentication
@@ -210,6 +220,11 @@ class AuthController extends Controller
             $this->authSecurity->detectSuspiciousActivity($user);
 
             $request->session()->regenerate();
+
+            // Check if user must change password
+            if ($user->must_change_password == 1) {
+                return redirect()->route('change-password')->with('info', 'For security reasons, you must change your temporary password before continuing.');
+            }
 
             $previous = url()->previous();
 
@@ -372,14 +387,37 @@ class AuthController extends Controller
 
     public function userRegister(Request $request)
     {
-        $validated = $request->validate([
+        // Base validation rules
+        $rules = [
             'register_as' => 'required',
             'name'        => 'required|string|max:255',
             'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|confirmed|min:8',
-        ]);
+            'phone'       => 'required|string',
+            'password'    => [
+                'required',
+                'confirmed',
+                'min:10',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/'
+            ],
+        ];
 
+        $messages = [
+            'password.min' => 'Password must be at least 10 characters.',
+            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+        ];
+
+        // Get role to check if it's company
         $role = Role::where('id', $request->register_as)->first();
+
+        // Add company-specific validation rules
+        if ($role && $role->role_key === 'company_admin') {
+            $rules['company_name'] = 'required|string|max:255';
+        }
+
+        $validated = $request->validate($rules, $messages);
 
         DB::beginTransaction();
         try {
@@ -451,5 +489,73 @@ class AuthController extends Controller
     {
         Auth::logout();
         return redirect()->route('home');
+    }
+
+    /**
+     * Show the change password form for temporary passwords
+     */
+    public function showChangePassword()
+    {
+        // Only authenticated users with must_change_password flag can access
+        $user = Auth::user();
+
+        if (!$user || $user->must_change_password != 1) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('auth.pages.change-password', [
+            'title' => 'Change Password - Required',
+        ]);
+    }
+
+    /**
+     * Update the password for users with temporary passwords
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        // Verify user must change password
+        if (!$user || $user->must_change_password != 1) {
+            return redirect()->route('dashboard')->withErrors(['error' => 'Unauthorized action.']);
+        }
+
+        // Validate the new password
+        $validated = $request->validate([
+            'current_password' => ['required'],
+            'new_password' => [
+                'required',
+                'confirmed',
+                'min:10',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/',
+            ],
+        ], [
+            'new_password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+            'new_password.confirmed' => 'Password confirmation does not match.',
+        ]);
+
+        // Verify current password
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        // Check if new password is different from current
+        if (Hash::check($validated['new_password'], $user->password)) {
+            return back()->withErrors(['new_password' => 'New password must be different from your temporary password.']);
+        }
+
+        // Update password and remove must_change_password flag
+        $user->update([
+            'password' => Hash::make($validated['new_password']),
+            'must_change_password' => 0,
+        ]);
+
+        // Log the password change
+        $this->authSecurity->recordLoginAttempt($user->email, true, $user->id, 'Password changed successfully');
+
+        return redirect()->route('dashboard')->with('success', 'Password changed successfully! You can now access all features.');
     }
 }

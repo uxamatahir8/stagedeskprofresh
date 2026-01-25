@@ -13,12 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class ArtistSharingController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:company_admin');
-        $this->middleware('company.scope');
-    }
-
     /**
      * Show artist sharing page
      */

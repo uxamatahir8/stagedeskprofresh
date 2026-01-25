@@ -17,14 +17,32 @@ class BlogController extends Controller
     public function index()
     {
         $title = 'Blogs';
-        $blogs = Blog::with(['category', 'user'])->withCount('allComments')->latest()->paginate(15);
+        $roleKey = Auth::user()->role->role_key;
 
-        $stats = [
-            'total' => Blog::count(),
-            'published' => Blog::where('status', 'published')->count(),
-            'draft' => Blog::where('status', 'draft')->count(),
-            'unapproved' => Blog::where('status', 'unapproved')->count(),
-        ];
+        // Master admin sees all blogs, others see only their own
+        if ($roleKey === 'master_admin') {
+            $blogs = Blog::with(['category', 'user'])->withCount('allComments')->latest()->paginate(15);
+
+            $stats = [
+                'total' => Blog::count(),
+                'published' => Blog::where('status', 'published')->count(),
+                'draft' => Blog::where('status', 'draft')->count(),
+                'unapproved' => Blog::where('status', 'unapproved')->count(),
+            ];
+        } else {
+            $blogs = Blog::where('user_id', Auth::id())
+                ->with(['category', 'user'])
+                ->withCount('allComments')
+                ->latest()
+                ->paginate(15);
+
+            $stats = [
+                'total' => Blog::where('user_id', Auth::id())->count(),
+                'published' => Blog::where('user_id', Auth::id())->where('status', 'published')->count(),
+                'draft' => Blog::where('user_id', Auth::id())->where('status', 'draft')->count(),
+                'unapproved' => Blog::where('user_id', Auth::id())->where('status', 'unapproved')->count(),
+            ];
+        }
 
         return view('dashboard.pages.blogs.index', compact('title', 'blogs', 'stats'));
     }
@@ -97,7 +115,16 @@ class BlogController extends Controller
         $blog->excerpt = $request->excerpt;
         $blog->published_at = $request->published_at;
         $blog->user_id = Auth::user()->id;
-        $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+
+        // Master admin can publish directly, others need approval
+        $roleKey = Auth::user()->role->role_key;
+        if ($roleKey === 'master_admin') {
+            $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+        } else {
+            // Non-admin users' blogs go to unapproved status
+            $blog->status = $request->has('status') && $request->status == 'active' ? 'unapproved' : 'draft';
+        }
+
         $blog->is_featured = $request->has('is_featured') ? true : false;
         $blog->meta_title = $request->meta_title ?? $request->title;
         $blog->meta_description = $request->meta_description ?? $request->excerpt;
@@ -171,7 +198,16 @@ class BlogController extends Controller
         $blog->excerpt = $request->excerpt;
         $blog->published_at = $request->published_at;
         $blog->user_id = Auth::user()->id;
-        $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+
+        // Master admin can publish directly, others need approval
+        $roleKey = Auth::user()->role->role_key;
+        if ($roleKey === 'master_admin') {
+            $blog->status = $request->has('status') && $request->status == 'active' ? 'published' : 'draft';
+        } else {
+            // Non-admin users' blogs go to unapproved status when activated
+            $blog->status = $request->has('status') && $request->status == 'active' ? 'unapproved' : 'draft';
+        }
+
         $blog->is_featured = $request->has('is_featured') ? true : false;
         $blog->meta_title = $request->meta_title ?? $request->title;
         $blog->meta_description = $request->meta_description ?? $request->excerpt;
@@ -223,6 +259,40 @@ class BlogController extends Controller
         }
         $blog->delete();
         return redirect()->route('blogs')->with('success', 'Blog deleted successfully!');
+    }
+
+    /**
+     * Approve a blog (master admin only)
+     */
+    public function approve($id)
+    {
+        // Only master admin can approve blogs
+        if (Auth::user()->role->role_key !== 'master_admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $blog = Blog::findOrFail($id);
+        $blog->status = 'published';
+        $blog->save();
+
+        return redirect()->back()->with('success', 'Blog approved and published successfully!');
+    }
+
+    /**
+     * Reject a blog (master admin only)
+     */
+    public function reject($id)
+    {
+        // Only master admin can reject blogs
+        if (Auth::user()->role->role_key !== 'master_admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $blog = Blog::findOrFail($id);
+        $blog->status = 'draft';
+        $blog->save();
+
+        return redirect()->back()->with('success', 'Blog rejected and moved to draft.');
     }
 
     public function showDashboard($id)

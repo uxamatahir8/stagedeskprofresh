@@ -22,8 +22,9 @@ class DashboardStatisticsService
         return match ($roleKey) {
             'master_admin' => $this->getMasterAdminStatistics(),
             'company_admin' => $this->getCompanyAdminStatistics(),
-            'dj' => $this->getArtistStatistics(),
+            'artist', 'dj' => $this->getArtistStatistics(),
             'customer' => $this->getCustomerStatistics(),
+            'affiliate' => $this->getAffiliateStatistics(),
             default => [],
         };
     }
@@ -118,22 +119,35 @@ class DashboardStatisticsService
         $startOfMonth = $now->copy()->startOfMonth();
 
         return [
-            'total_services' => $artist->services()->count(),
-            'active_services' => $artist->services()->where('is_active', true)->count(),
-            'total_bookings' => BookingRequest::whereHas('bookedServices', function ($query) use ($artist) {
-                $query->where('artist_id', $artist->id);
-            })->count(),
-            'pending_requests' => \App\Models\ArtistRequest::where('artist_id', $artist->id)
-                ->where('status', 'pending')
+            'total_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)->count(),
+            'pending_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)
+                ->where(function($q) {
+                    $q->whereNull('status')->orWhere('status', 'pending');
+                })->count(),
+            'confirmed_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)
+                ->where('status', 'confirmed')
                 ->count(),
-            'monthly_bookings' => BookingRequest::whereHas('bookedServices', function ($query) use ($artist) {
-                $query->where('artist_id', $artist->id);
-            })->where('created_at', '>=', $startOfMonth)->count(),
-            'average_rating' => $artist->rating ?? 0,
+            'completed_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)
+                ->where('status', 'completed')
+                ->count(),
+            'monthly_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)
+                ->where('created_at', '>=', $startOfMonth)
+                ->count(),
+            'average_rating' => round($artist->rating ?? 0, 1),
+            'total_earnings' => DB::table('payments')
+                ->join('booking_requests', 'payments.booking_requests_id', '=', 'booking_requests.id')
+                ->where('booking_requests.assigned_artist_id', $artist->id)
+                ->where('payments.status', 'completed')
+                ->sum('payments.amount'),
+            'monthly_earnings' => DB::table('payments')
+                ->join('booking_requests', 'payments.booking_requests_id', '=', 'booking_requests.id')
+                ->where('booking_requests.assigned_artist_id', $artist->id)
+                ->where('payments.status', 'completed')
+                ->where('payments.created_at', '>=', $startOfMonth)
+                ->sum('payments.amount'),
             'profile_completion' => $this->calculateProfileCompletion($artist),
-            'recent_bookings' => BookingRequest::whereHas('bookedServices', function ($query) use ($artist) {
-                $query->where('artist_id', $artist->id);
-            })->with(['user', 'eventType'])
+            'recent_bookings' => BookingRequest::where('assigned_artist_id', $artist->id)
+                ->with(['user', 'eventType'])
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get(),
@@ -219,5 +233,56 @@ class DashboardStatisticsService
         $total = count($fields);
 
         return round(($completed / $total) * 100);
+    }
+
+    private function getAffiliateStatistics(): array
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+        $startOfMonth = $now->copy()->startOfMonth();
+
+        return [
+            'total_referrals' => User::where('referred_by', $user->id)->count(),
+            'active_referrals' => User::where('referred_by', $user->id)
+                ->whereNotNull('email_verified_at')
+                ->count(),
+            'pending_referrals' => User::where('referred_by', $user->id)
+                ->whereNull('email_verified_at')
+                ->count(),
+            'monthly_referrals' => User::where('referred_by', $user->id)
+                ->where('created_at', '>=', $startOfMonth)
+                ->count(),
+            'total_commissions' => \App\Models\AffiliateComission::where('affiliate_id', $user->id)
+                ->sum('commission_amount'),
+            'pending_commissions' => \App\Models\AffiliateComission::where('affiliate_id', $user->id)
+                ->where('status', 'pending')
+                ->sum('commission_amount'),
+            'paid_commissions' => \App\Models\AffiliateComission::where('affiliate_id', $user->id)
+                ->where('status', 'paid')
+                ->sum('commission_amount'),
+            'monthly_commissions' => \App\Models\AffiliateComission::where('affiliate_id', $user->id)
+                ->where('created_at', '>=', $startOfMonth)
+                ->sum('commission_amount'),
+            'recent_referrals' => User::where('referred_by', $user->id)
+                ->with('role')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get(),
+            'conversion_rate' => $this->calculateConversionRate($user->id),
+        ];
+    }
+
+    private function calculateConversionRate($affiliateId): float
+    {
+        $totalReferrals = User::where('referred_by', $affiliateId)->count();
+        if ($totalReferrals === 0) {
+            return 0;
+        }
+
+        $activeReferrals = User::where('referred_by', $affiliateId)
+            ->whereNotNull('email_verified_at')
+            ->count();
+
+        return round(($activeReferrals / $totalReferrals) * 100, 2);
     }
 }

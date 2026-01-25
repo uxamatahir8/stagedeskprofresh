@@ -48,6 +48,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // Change password routes for temporary passwords
+    Route::get('/change-password', [AuthController::class, 'showChangePassword'])->name('change-password');
+    Route::post('/change-password', [AuthController::class, 'updatePassword'])->name('update-password');
+
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
     // Test route for creating notifications (remove in production)

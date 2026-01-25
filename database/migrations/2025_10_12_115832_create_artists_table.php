@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('genres');
             $table->string('specialization');
             $table->string('rating');
-            $table->string('image');
-            $table->string('bio');
+            $table->string('image')->nullable();
+            $table->text('bio')->nullable();
             $table->softDeletes();
 
             $table->timestamps();

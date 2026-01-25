@@ -63,7 +63,6 @@
                     this.showToast('Notification marked as read', 'success');
                 }
             } catch (error) {
-                console.error('Error marking notification as read:', error);
                 this.showToast('Failed to mark notification as read', 'error');
             }
         },
@@ -91,7 +90,6 @@
                     this.showToast('All notifications marked as read', 'success');
                 }
             } catch (error) {
-                console.error('Error marking all notifications as read:', error);
                 this.showToast('Failed to mark all notifications as read', 'error');
             }
         },
@@ -111,7 +109,6 @@
                     window.location.reload();
                 }
             } catch (error) {
-                console.error('Error clearing notifications:', error);
                 this.showToast('Failed to clear notifications', 'error');
             }
         },
@@ -132,7 +129,6 @@
                     }
                 }
             } catch (error) {
-                console.error('Error fetching notifications:', error);
             }
         },
 
@@ -197,7 +193,7 @@
                         this.updateBadgeDisplay(data.count);
                     }
                 })
-                .catch(err => console.error('Error fetching notification count:', err));
+                .catch(err => {});
             } else {
                 this.updateBadgeDisplay(count);
             }
@@ -258,9 +254,6 @@
 
         showToast(message, type = 'info') {
             // Using simple alert for now, can be replaced with a toast library
-            if (type === 'error') {
-                console.error(message);
-            }
         }
     };
 

@@ -138,24 +138,47 @@ class DashboardController extends Controller
                 })->count();
             $stats['total_companies'] = 1;
             $stats['total_event_types'] = EventType::count();
-        } elseif ($roleKey === 'dj') {
+        } elseif (in_array($roleKey, ['artist', 'dj'])) {
             $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
             if ($artist) {
-                $stats['total_bookings'] = BookingRequest::whereHas('bookedServices', function($q) use ($artist) {
-                    $q->where('artist_id', $artist->id);
-                })->count();
-                $stats['pending_bookings'] = \App\Models\ArtistRequest::where('artist_id', $artist->id)
-                    ->where('status', 'pending')->count();
-                $stats['completed_bookings'] = BookingRequest::whereHas('bookedServices', function($q) use ($artist) {
-                    $q->where('artist_id', $artist->id);
-                })->where('status', 'completed')->count();
-                $stats['total_services'] = $artist->services()->count();
+                // Count bookings where this artist is assigned
+                $stats['total_bookings'] = BookingRequest::where('assigned_artist_id', $artist->id)->count();
+                $stats['pending_bookings'] = BookingRequest::where('assigned_artist_id', $artist->id)
+                    ->where(function($q) {
+                        $q->whereNull('status')->orWhere('status', 'pending');
+                    })->count();
+                $stats['completed_bookings'] = BookingRequest::where('assigned_artist_id', $artist->id)
+                    ->where('status', 'completed')->count();
+                $stats['confirmed_bookings'] = BookingRequest::where('assigned_artist_id', $artist->id)
+                    ->where('status', 'confirmed')->count();
                 $stats['average_rating'] = round($artist->rating ?? 0, 1);
+                $stats['total_earnings'] = \Illuminate\Support\Facades\DB::table('payments')
+                    ->join('booking_requests', 'payments.booking_requests_id', '=', 'booking_requests.id')
+                    ->where('booking_requests.assigned_artist_id', $artist->id)
+                    ->where('payments.status', 'completed')
+                    ->sum('payments.amount');
             }
             $stats['total_users'] = 1;
             $stats['total_companies'] = 0;
             $stats['total_event_types'] = 0;
+        } elseif ($roleKey === 'affiliate') {
+            // Affiliate dashboard stats
+            $stats['total_referrals'] = User::where('referred_by', Auth::id())->count();
+            $stats['active_referrals'] = User::where('referred_by', Auth::id())
+                ->whereNotNull('email_verified_at')->count();
+            $stats['total_commissions'] = \App\Models\AffiliateComission::where('affiliate_id', Auth::id())->sum('commission_amount');
+            $stats['pending_commissions'] = \App\Models\AffiliateComission::where('affiliate_id', Auth::id())
+                ->where('status', 'pending')->sum('commission_amount');
+            $stats['paid_commissions'] = \App\Models\AffiliateComission::where('affiliate_id', Auth::id())
+                ->where('status', 'paid')->sum('commission_amount');
+            $stats['total_bookings'] = 0;
+            $stats['pending_bookings'] = 0;
+            $stats['completed_bookings'] = 0;
+            $stats['total_users'] = 1;
+            $stats['total_companies'] = 0;
+            $stats['total_event_types'] = 0;
         } else {
+            // Customer dashboard stats
             $stats['total_bookings'] = BookingRequest::where('user_id', Auth::user()->id)->count();
             $stats['pending_bookings'] = BookingRequest::where('user_id', Auth::user()->id)
                 ->where(function($q) {
@@ -175,18 +198,28 @@ class DashboardController extends Controller
 
     private function getRecentBookings($roleKey, $limit = 5, $dateRange = null)
     {
-        $query = BookingRequest::with(['user', 'eventType']);
+        $query = BookingRequest::with(['user', 'eventType', 'assignedArtist']);
 
         if ($dateRange && $dateRange['start']) {
             $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
         }
 
         if ($roleKey === 'company_admin') {
-            $query->whereHas('user', function ($q) {
-                $q->where('company_id', Auth::user()->company_id);
-            });
+            $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
+        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+            // Artists see bookings assigned to them
+            $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
+            if ($artist) {
+                $query->where('assigned_artist_id', $artist->id);
+            } else {
+                // If no artist profile, show nothing
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($roleKey === 'affiliate') {
+            // Affiliates don't see bookings in dashboard
+            $query->whereRaw('1 = 0');
         }
 
         return $query->orderBy('created_at', 'desc')->limit($limit)->get();
@@ -204,11 +237,18 @@ class DashboardController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            $query->whereHas('user', function ($q) {
-                $q->where('company_id', Auth::user()->company_id);
-            });
+            $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
+        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+            $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
+            if ($artist) {
+                $query->where('assigned_artist_id', $artist->id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($roleKey === 'affiliate') {
+            $query->whereRaw('1 = 0');
         }
 
         $stats = $query->get()->reverse()->values();
@@ -230,11 +270,18 @@ class DashboardController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            $query->whereHas('user', function ($q) {
-                $q->where('company_id', Auth::user()->company_id);
-            });
+            $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
+        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+            $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
+            if ($artist) {
+                $query->where('assigned_artist_id', $artist->id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($roleKey === 'affiliate') {
+            $query->whereRaw('1 = 0');
         }
 
         $data = $query->get();
@@ -244,9 +291,9 @@ class DashboardController extends Controller
             $eventTypeCounts[$item->eventType->event_type ?? 'Unknown'] = $item->count;
         }
 
-        // If no data, return default values
-        if (empty($eventTypeCounts)) {
-            $eventTypeCounts = ['Wedding' => 45, 'Corporate' => 30, 'Birthday' => 25];
+        // If no data, return empty for roles without bookings
+        if (empty($eventTypeCounts) && !in_array($roleKey, ['affiliate'])) {
+            $eventTypeCounts = ['No Data' => 0];
         }
 
         return $eventTypeCounts;
