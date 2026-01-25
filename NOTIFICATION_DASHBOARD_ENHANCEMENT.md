@@ -313,6 +313,7 @@ Notification::create([
     'user_id' => $user->id,
     'title' => 'New Booking Request',
     'message' => 'You have a new booking for Wedding on Dec 25',
+    'type' => 'booking',  // general, booking, payment, message, review
     'link' => route('bookings.show', $booking->id),
     'is_read' => false
 ]);

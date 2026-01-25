@@ -10,6 +10,7 @@ Notification::create([
     'user_id' => $userId,
     'title' => 'Notification Title',
     'message' => 'Your notification message here',
+    'type' => 'general',  // or 'booking', 'payment', 'message', 'review'
     'link' => route('some.route'),  // Optional
     'is_read' => false
 ]);
