@@ -30,7 +30,16 @@ class BookingController extends Controller
         // Load relationships
         $booking->load(['user', 'eventType', 'company', 'assignedArtist.user', 'artistRequests.artist.user', 'payments', 'reviews']);
 
-        return view('dashboard.pages.bookings.show', compact('title', 'booking'));
+        // Get artists for assignment (admin only)
+        $user = Auth::user();
+        $roleKey = $user->role->role_key;
+        $artists = match ($roleKey) {
+            'company_admin' => Artist::where('company_id', $user->company_id)->with('user')->get(),
+            'master_admin'  => Artist::with(['user', 'company'])->get(),
+            default         => collect([]),
+        };
+
+        return view('dashboard.pages.bookings.show', compact('title', 'booking', 'artists'));
     }
 
     //
@@ -55,7 +64,14 @@ class BookingController extends Controller
             ? $bookingResolvers[$roleKey]()->orderBy('created_at', 'desc')->get()
             : collect();
 
-        return view('dashboard.pages.bookings.index', compact('title', 'bookings'));
+        // Get artists for assignment (admin only)
+        $artists = match ($roleKey) {
+            'company_admin' => Artist::where('company_id', $user->company_id)->with('user')->get(),
+            'master_admin'  => Artist::with(['user', 'company'])->get(),
+            default         => collect([]),
+        };
+
+        return view('dashboard.pages.bookings.index', compact('title', 'bookings', 'artists'));
     }
 
     public function create()
@@ -176,7 +192,7 @@ class BookingController extends Controller
         ]);
 
         // Auto-assign company for company admins
-        if ($roleKey === 'company_admin' && !$validated['company_id']) {
+        if ($roleKey === 'company_admin' && empty($validated['company_id'])) {
             $validated['company_id'] = $user->company_id;
         }
 
@@ -216,7 +232,7 @@ class BookingController extends Controller
                             'email' => $validated['email'],
                             'password' => bcrypt($generatedPassword),
                             'role_id' => $customerRole->id,
-                            'company_id' => $validated['company_id'] ?? $user->company_id,
+                            'company_id' => $validated['company_id'] ?? ($roleKey === 'company_admin' ? $user->company_id : null),
                             'email_verified_at' => now(), // Auto-verify since created by admin
                         ]);
 
@@ -449,10 +465,14 @@ class BookingController extends Controller
 
         DB::beginTransaction();
         try {
+            $isReassignment = $booking->assigned_artist_id !== null;
+            $previousArtist = $isReassignment ? Artist::find($booking->assigned_artist_id) : null;
+
+            // Assign artist but keep status as PENDING (waiting for artist acceptance)
             $booking->update([
                 'assigned_artist_id' => $request->artist_id,
-                'status' => 'confirmed',
-                'confirmed_at' => now(),
+                'status' => 'pending',
+                'confirmed_at' => null,
                 'company_notes' => $request->company_notes ?? $booking->company_notes
             ]);
 
@@ -461,13 +481,46 @@ class BookingController extends Controller
             ActivityLog::log(
                 'updated',
                 $booking,
-                'Artist assigned to booking: ' . $artist->user->name,
-                ['booking_id' => $booking->id, 'artist_id' => $request->artist_id]
+                ($isReassignment ? 'Artist reassigned' : 'Artist assigned') . ' to booking: ' . $artist->user->name,
+                ['booking_id' => $booking->id, 'artist_id' => $request->artist_id, 'is_reassignment' => $isReassignment]
             );
+
+            // Send email to artist about new booking assignment
+            if ($artist->user && $artist->user->email) {
+                try {
+                    \Mail::to($artist->user->email)->send(
+                        new \App\Mail\NewBookingForArtist($booking->fresh())
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
+                }
+            }
+
+            // Send email to customer about artist assignment
+            if ($booking->user && $booking->user->email) {
+                try {
+                    \Mail::to($booking->user->email)->send(
+                        new \App\Mail\ArtistAssigned($booking->fresh(), $isReassignment)
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send assignment email to customer: ' . $e->getMessage());
+                }
+            }
+
+            // Notify previous artist if reassignment
+            if ($isReassignment && $previousArtist && $previousArtist->user && $previousArtist->user->email) {
+                try {
+                    \Mail::to($previousArtist->user->email)->send(
+                        new \App\Mail\BookingReassigned($booking->fresh(), $previousArtist->user->name)
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send reassignment notification: ' . $e->getMessage());
+                }
+            }
 
             DB::commit();
 
-            return back()->with('success', 'Artist assigned successfully!');
+            return back()->with('success', 'Artist assigned successfully! The artist will be notified to accept or reject the booking.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to assign artist: ' . $e->getMessage());

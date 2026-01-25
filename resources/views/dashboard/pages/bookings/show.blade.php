@@ -139,6 +139,81 @@
                 </div>
             </div>
 
+            {{-- Assigned Artist Information --}}
+            @if($booking->assignedArtist)
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i data-lucide="music" class="me-2"></i>Assigned Artist
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-lg me-3">
+                            @if($booking->assignedArtist->profile_image)
+                                <img src="{{ asset('storage/' . $booking->assignedArtist->profile_image) }}"
+                                     alt="{{ $booking->assignedArtist->user->name }}"
+                                     class="rounded-circle"
+                                     style="width: 64px; height: 64px; object-fit: cover;">
+                            @else
+                                <span class="avatar-title rounded-circle bg-primary fs-3">
+                                    {{ substr($booking->assignedArtist->user->name, 0, 1) }}
+                                </span>
+                            @endif
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ $booking->assignedArtist->user->name }}</h5>
+                            <p class="text-muted mb-1">{{ $booking->assignedArtist->specialization ?? 'DJ/Artist' }}</p>
+                            @if($booking->assignedArtist->rating)
+                            <div class="d-flex align-items-center">
+                                <span class="text-warning me-1">⭐</span>
+                                <strong>{{ number_format($booking->assignedArtist->rating, 1) }}</strong>
+                                <span class="text-muted ms-1">({{ $booking->assignedArtist->total_reviews ?? 0 }} reviews)</span>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i data-lucide="mail" class="me-1"></i>Email</h6>
+                            <p class="mb-0">
+                                <a href="mailto:{{ $booking->assignedArtist->user->email }}">{{ $booking->assignedArtist->user->email }}</a>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i data-lucide="phone" class="me-1"></i>Phone</h6>
+                            <p class="mb-0">
+                                <a href="tel:{{ $booking->assignedArtist->user->phone }}">{{ $booking->assignedArtist->user->phone ?? 'N/A' }}</a>
+                            </p>
+                        </div>
+                        @if($booking->assignedArtist->experience_years)
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i data-lucide="award" class="me-1"></i>Experience</h6>
+                            <p class="mb-0">{{ $booking->assignedArtist->experience_years }} years</p>
+                        </div>
+                        @endif
+                    </div>
+                    @if($booking->company_notes)
+                    <div class="mt-3">
+                        <h6 class="text-muted mb-2"><i data-lucide="file-text" class="me-1"></i>Company Notes</h6>
+                        <div class="alert alert-info mb-0">{{ $booking->company_notes }}</div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @elseif(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+            <div class="card mb-3 border-warning">
+                <div class="card-body text-center py-4">
+                    <i data-lucide="alert-circle" class="text-warning mb-2" style="width: 48px; height: 48px;"></i>
+                    <h5 class="text-warning mb-2">No Artist Assigned</h5>
+                    <p class="text-muted mb-3">This booking doesn't have an assigned artist yet.</p>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#assignArtistModal">
+                        <i data-lucide="user-plus" class="me-1"></i>Assign Artist Now
+                    </button>
+                </div>
+            </div>
+            @endif
+
             {{-- Customer Information --}}
             <div class="card mb-3">
                 <div class="card-header bg-info text-white">
@@ -273,6 +348,17 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+                            @if(!$booking->assignedArtist)
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignArtistModal">
+                                    <i data-lucide="user-plus" class="me-1"></i>Assign Artist
+                                </button>
+                            @else
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#reassignArtistModal">
+                                    <i data-lucide="user-check" class="me-1"></i>Reassign Artist
+                                </button>
+                            @endif
+                        @endif
                         <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-warning">
                             <i data-lucide="edit" class="me-1"></i>Edit Booking
                         </a>
@@ -396,6 +482,95 @@
             </div>
         </div>
     </div>
+
+    @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+    {{-- Assign Artist Modal --}}
+    <div class="modal fade" id="assignArtistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Assign Artist to Booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Artist <span class="text-danger">*</span></label>
+                            <select name="artist_id" class="form-select" required>
+                                <option value="">Choose an artist...</option>
+                                @foreach($artists ?? [] as $artist)
+                                    <option value="{{ $artist->id }}">
+                                        {{ $artist->user->name }} - {{ $artist->specialization ?? 'DJ' }}
+                                        @if($artist->company)
+                                            ({{ $artist->company->name }})
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Select the artist who will perform at this event</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Company Notes (Optional)</label>
+                            <textarea name="company_notes" class="form-control" rows="3" placeholder="Add any special instructions or notes for the artist...">{{ $booking->company_notes }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="check" class="me-1"></i>Assign Artist
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Reassign Artist Modal --}}
+    <div class="modal fade" id="reassignArtistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-warning text-white">
+                        <h5 class="modal-title">Reassign Artist</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i data-lucide="alert-triangle" class="me-2"></i>
+                            <strong>Current Artist:</strong> {{ $booking->assignedArtist->user->name ?? 'N/A' }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Artist <span class="text-danger">*</span></label>
+                            <select name="artist_id" class="form-select" required>
+                                <option value="">Choose a new artist...</option>
+                                @foreach($artists ?? [] as $artist)
+                                    <option value="{{ $artist->id }}" {{ $booking->assigned_artist_id == $artist->id ? 'selected' : '' }}>
+                                        {{ $artist->user->name }} - {{ $artist->specialization ?? 'DJ' }}
+                                        @if($artist->company)
+                                            ({{ $artist->company->name }})
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Company Notes (Optional)</label>
+                            <textarea name="company_notes" class="form-control" rows="3" placeholder="Reason for reassignment or special instructions...">{{ $booking->company_notes }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i data-lucide="refresh-cw" class="me-1"></i>Reassign Artist
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     @push('styles')
     <style>
