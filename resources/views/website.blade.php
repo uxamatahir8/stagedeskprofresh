@@ -132,124 +132,85 @@
         </div>
         <!--===== HOW IT WORKS AREA ENDS =======-->
 
-        <!--===== BRAND AREA STARTS =======-->
-        <div class="brand4-section-area sp3">
+        <!--===== WHY CHOOSE US AREA STARTS =======-->
+        <div class="brand4-section-area sp3" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-6 m-auto">
+                    <div class="col-lg-8 m-auto">
                         <div class="brand4-header tags2 heading6 text-center">
-                            <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Our Trusted
-                                Brand</span>
+                            <span data-aos="fade-up" data-aos-duration="800">
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Why Choose StageDesk Pro
+                            </span>
                             <div class="space16"></div>
-                            <h2 data-aos="fade-up" data-aos-duration="1000">Trusted by Thousands Our Brand's Legacy of
-                                Excellence</h2>
+                            <h2 data-aos="fade-up" data-aos-duration="1000">The Complete Solution for Event Entertainment Management</h2>
+                            <div class="space24"></div>
+                            <p data-aos="fade-up" data-aos-duration="1200">
+                                StageDesk Pro revolutionizes how event companies manage their DJ bookings, streamline operations,
+                                and grow their business. Our all-in-one platform eliminates the chaos of manual booking management.
+                            </p>
                         </div>
                     </div>
                 </div>
                 <div class="space60"></div>
                 <div class="row">
-                    <div class="col-lg-12">
-                        <div class="brand2-logos">
-                            <div class="brand2-logo" data-aos="fade-right" data-aos-duration="1000">
-                                <img src="{{ asset('landing/images/elements/brand2-logo1.png') }}" alt="">
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="800">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon1.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo2.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo3.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo4.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo5.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo1.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo2.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo3.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo4.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo5.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo1.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo2.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo3.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo4.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo5.png') }}" alt="">
-                            </div>
+                            <h4 class="mb-3">Centralized Management</h4>
+                            <p>Manage all your DJs, bookings, customers, and payments from a single, intuitive dashboard. No more scattered spreadsheets or missed opportunities.</p>
                         </div>
-                        <div class="space24"></div>
-                        <div class="brand3-logos" data-aos="fade-left" data-aos-duration="800">
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo1.png') }}" alt="">
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1000">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon2.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo2.png') }}" alt="">
+                            <h4 class="mb-3">Automated Workflows</h4>
+                            <p>Save hours with automated email notifications, booking confirmations, payment reminders, and status updates for all parties involved.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1200">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon3.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo3.png') }}" alt="">
+                            <h4 class="mb-3">Flexible Pricing Plans</h4>
+                            <p>Start free and scale as you grow. Choose monthly or yearly subscriptions with features tailored to your business size and needs.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="800">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icons4.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo4.png') }}" alt="">
+                            <h4 class="mb-3">Secure Payments</h4>
+                            <p>Integrated payment processing with industry-leading security. Accept bookings and process payments seamlessly through our platform.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1000">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-log5.png') }}" alt="">
+                            <h4 class="mb-3">Real-Time Analytics</h4>
+                            <p>Track your business performance with comprehensive analytics. Monitor bookings, revenue, DJ performance, and customer satisfaction metrics.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1200">
+                        <div class="text-center p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); height: 100%;">
+                            <div class="mb-3">
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="" style="width: 60px; height: 60px;">
                             </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo1.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo2.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo3.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand2-logo4.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-log5.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo1.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo2.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo3.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-logo4.png') }}" alt="">
-                            </div>
-                            <div class="brand2-logo">
-                                <img src="{{ asset('landing/images/elements/brand4-log5.png') }}" alt="">
-                            </div>
+                            <h4 class="mb-3">24/7 Accessibility</h4>
+                            <p>Access your dashboard anytime, anywhere. Manage bookings on the go with our fully responsive platform that works on all devices.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--===== BRAND AREA ENDS =======-->
+        <!--===== WHY CHOOSE US AREA ENDS =======-->
 
         <!--===== SERVICES AREA STARTS =======-->
         <div class="marketing-section-area sp3">
@@ -528,171 +489,148 @@
         </div>
         <!--===== PRICING PLAN AREA ENDS =======-->
 
-        <!--===== OTHERS AREA STARTS =======-->
-        <div class="others5-section-area sp3">
+        <!--===== BENEFITS FOR ALL USERS AREA STARTS =======-->
+        <div class="benefits-section-area sp3" style="background: #f8f9fa;">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-6 m-auto">
-                        <div class="social-area-header heading6 tags2 text-center">
-                            <span data-aos="fade-up" data-aos-duration="800"><img
-                                    src="{{ asset('landing/images/icons/clock-img2.svg') }}"
-                                    alt="">Integration</span>
+                    <div class="col-lg-8 m-auto">
+                        <div class="text-center heading6 tags2">
+                            <span data-aos="fade-up" data-aos-duration="800">
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">For Everyone
+                            </span>
                             <div class="space16"></div>
-                            <h2 data-aos="fade-up" data-aos-duration="1000" class="text-capitalize">We’re a Meta
-                                Business Partner</h2>
+                            <h2 data-aos="fade-up" data-aos-duration="1000">Benefits for Every User Type</h2>
+                            <div class="space24"></div>
+                            <p data-aos="fade-up" data-aos-duration="1200">
+                                Whether you're a company owner, DJ, customer, or affiliate, StageDesk Pro has features designed specifically for your needs.
+                            </p>
                         </div>
                     </div>
                 </div>
                 <div class="space60"></div>
                 <div class="row">
-                    <div class="col-lg-12">
-                        <div class="all-social-area">
-                            <div class="facebook" data-aos="zoom-in" data-aos-duration="800">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/facebook.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Facebook</a>
+                    <!-- For Companies -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-right" data-aos-duration="800">
+                        <div class="p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: 100%;">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon1.svg') }}" alt="" style="width: 50px; height: 50px; margin-right: 15px;">
+                                <h3 class="mb-0">For Event Companies</h3>
                             </div>
-                            <div class="instagram" data-aos="zoom-in" data-aos-duration="900">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/instagram2.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Instagram</a>
-                            </div>
-                            <div class="behance" data-aos="zoom-in" data-aos-duration="900">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Behance</a>
-                            </div>
-                            <div class="twitter" data-aos="zoom-in" data-aos-duration="1000">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/twitter.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Twitter</a>
-                            </div>
-                            <div class="telegram" data-aos="zoom-in" data-aos-duration="1100">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/telegram.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Telegram</a>
-                            </div>
-                            <div class="tiktok" data-aos="zoom-in" data-aos-duration="1200">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/tiktok.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Tiktok</a>
-                            </div>
-                            <div class="youtube" data-aos="zoom-in" data-aos-duration="800">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/youtube.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Youtube</a>
-                            </div>
-                            <div class="behance" data-aos="zoom-in" data-aos-duration="900">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/behance.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Behance</a>
-                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Manage unlimited DJs and bookings</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Track revenue and performance analytics</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Automated booking assignments</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Customer relationship management</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Flexible subscription plans</li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="space50"></div>
-                    <div class="col-lg-12">
-                        <div class="all-social-area">
-                            <div class="pinterest" data-aos="zoom-in" data-aos-duration="1000">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/pinterest.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Pinterest</a>
+                    <!-- For DJs -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-left" data-aos-duration="800">
+                        <div class="p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: 100%;">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon2.svg') }}" alt="" style="width: 50px; height: 50px; margin-right: 15px;">
+                                <h3 class="mb-0">For DJs & Artists</h3>
                             </div>
-                            <div class="linkedin" data-aos="zoom-in" data-aos-duration="1000">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/linkedin.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Linkedin</a>
-                            </div>
-
-                            <div class="instagram" data-aos="zoom-in" data-aos-duration="1100">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/massenger.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Messenger</a>
-                            </div>
-                            <div class="github" data-aos="zoom-out" data-aos-duration="1200">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/github.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Github</a>
-                            </div>
-                            <div class="gtp" data-aos="zoom-out" data-aos-duration="800">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/gpt.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Chat GPT</a>
-                            </div>
-                            <div class="reddit" data-aos="zoom-out" data-aos-duration="900">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/reddit.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Reddit</a>
-                            </div>
-                            <div class="paypal" data-aos="zoom-out" data-aos-duration="1000">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/paypal.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Paypal</a>
-                            </div>
-                            <div class="thumb" data-aos="zoom-out" data-aos-duration="1100">
-                                <div class="icons1">
-                                    <a href="#"><img src="{{ asset('landing/images/icons/thumb.svg') }}"
-                                            alt=""></a>
-                                </div>
-                                <div class="space20"></div>
-                                <a class="link" href="#">Paypal</a>
-                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Personal dashboard with booking calendar</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Accept or reject booking requests</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Track earnings and payment history</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Build your profile and showcase services</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Receive instant booking notifications</li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="space50"></div>
-                    <div class="col-lg-12">
-                        <div class="text-center" data-aos="fade-up" data-aos-duration="1200">
-                            <a href="download.html" class="header-btn7">Browse All Integration</a>
+                    <!-- For Customers -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-right" data-aos-duration="1000">
+                        <div class="p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: 100%;">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icon3.svg') }}" alt="" style="width: 50px; height: 50px; margin-right: 15px;">
+                                <h3 class="mb-0">For Customers</h3>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Browse and book DJs instantly</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> View DJ profiles, reviews, and ratings</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Secure online payment processing</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Track booking status in real-time</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Leave reviews and feedback</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- For Affiliates -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-left" data-aos-duration="1000">
+                        <div class="p-4" style="background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: 100%;">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ asset('landing/images/icons/service-icons4.svg') }}" alt="" style="width: 50px; height: 50px; margin-right: 15px;">
+                                <h3 class="mb-0">For Affiliates</h3>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Earn commissions on referrals</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Access to marketing materials</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Real-time commission tracking</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Detailed performance analytics</li>
+                                <li class="mb-3"><img src="{{ asset('landing/images/icons/check-img7.svg') }}" alt="" style="width: 20px; margin-right: 10px;"> Automated payout management</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--===== OTHERS AREA ENDS =======-->
+        <!--===== BENEFITS FOR ALL USERS AREA ENDS =======-->
+
+        <!--===== SUCCESS METRICS AREA STARTS =======-->
+        <div class="metrics-section-area sp3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 m-auto">
+                        <div class="text-center heading6 tags2">
+                            <span data-aos="fade-up" data-aos-duration="800">
+                                <img src="{{ asset('landing/images/icons/clock-img2.svg') }}" alt="">Platform Impact
+                            </span>
+                            <div class="space16"></div>
+                            <h2 data-aos="fade-up" data-aos-duration="1000">Growing Together, Achieving More</h2>
+                            <div class="space24"></div>
+                            <p data-aos="fade-up" data-aos-duration="1200">
+                                Join thousands of event companies and DJs who have transformed their booking management with StageDesk Pro
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space60"></div>
+                <div class="row text-center">
+                    <div class="col-lg-3 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="800">
+                        <div class="p-4">
+                            <h1 class="mb-3" style="color: #6c5ce7; font-size: 3.5rem; font-weight: 700;">500+</h1>
+                            <h5>Registered Companies</h5>
+                            <p class="text-muted">Event companies trust our platform</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1000">
+                        <div class="p-4">
+                            <h1 class="mb-3" style="color: #00b894; font-size: 3.5rem; font-weight: 700;">2,000+</h1>
+                            <h5>Active DJs</h5>
+                            <p class="text-muted">Professional artists on our platform</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1200">
+                        <div class="p-4">
+                            <h1 class="mb-3" style="color: #fd79a8; font-size: 3.5rem; font-weight: 700;">15,000+</h1>
+                            <h5>Bookings Completed</h5>
+                            <p class="text-muted">Successful events managed</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4" data-aos="zoom-in" data-aos-duration="1400">
+                        <div class="p-4">
+                            <h1 class="mb-3" style="color: #fdcb6e; font-size: 3.5rem; font-weight: 700;">98%</h1>
+                            <h5>Satisfaction Rate</h5>
+                            <p class="text-muted">Happy customers and companies</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--===== SUCCESS METRICS AREA ENDS =======-->
+
 
         <!--===== TESTIMONIAL AREA STARTS =======-->
         <div class="testimonial-carousel-area sp3" id="testimonials">
