@@ -28,42 +28,56 @@ class ArtistController extends Controller
         return view('dashboard.pages.artists.index', compact('title', 'artists'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $title = 'Add Artist';
         $mode = 'create';
 
         $roleKey = Auth::user()->role->role_key;
 
+        // Get preselected user if passed from user creation
+        $preselectedUserId = $request->query('user_id');
+        $preselectedUser = null;
+
+        if ($preselectedUserId) {
+            $preselectedUser = User::find($preselectedUserId);
+        }
+
         if ($roleKey === 'company_admin') {
             $users = User::where('company_id', Auth::user()->company_id)
                 ->whereHas('role', function ($q) {
-                    $q->where('role_key', 'artist');
-                })->get();
+                    $q->whereIn('role_key', ['artist', 'dj']);
+                })
+                ->whereDoesntHave('artist') // Only show users without artist profile
+                ->get();
         } else {
             $users = User::whereHas('role', function ($q) {
-                $q->where('role_key', 'artist');
-            })->get();
+                $q->whereIn('role_key', ['artist', 'dj']);
+            })
+            ->whereDoesntHave('artist') // Only show users without artist profile
+            ->get();
         }
 
         $companies = $roleKey === 'company_admin'
             ? Company::where('id', Auth::user()->company_id)->get()
             : Company::all();
 
-        return view('dashboard.pages.artists.manage', compact('title', 'mode', 'users', 'companies'));
+        return view('dashboard.pages.artists.manage', compact('title', 'mode', 'users', 'companies', 'preselectedUser'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'company_id'      => 'required|exists:companies,id',
-            'user_id'         => 'required|exists:users,id',
+            'user_id'         => 'required|exists:users,id|unique:artists,user_id',
             'stage_name'      => 'required|string|max:255',
             'experience_years'=> 'required|integer|min:0',
             'genres'          => 'required|string|max:255',
             'specialization'  => 'required|string|max:255',
             'bio'             => 'nullable|string|max:1000',
             'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'user_id.unique' => 'This user already has an artist profile.',
         ]);
 
         if ($request->hasFile('image')) {
@@ -75,7 +89,7 @@ class ArtistController extends Controller
 
         Artist::create($validated);
 
-        return redirect()->route('artists.index')->with('success', 'Artist added successfully.');
+        return redirect()->route('artists.index')->with('success', 'Artist profile created successfully.');
     }
 
     public function show(Artist $artist)
@@ -87,9 +101,10 @@ class ArtistController extends Controller
             'total_bookings' => $artist->assignedBookings()->count(),
             'completed_bookings' => $artist->assignedBookings()->where('status', 'completed')->count(),
             'avg_rating' => $artist->reviews()->avg('rating') ?? 0,
-            'total_earnings' => $artist->assignedBookings()
-                ->whereHas('payment', fn($q) => $q->where('status', 'completed'))
-                ->sum('total_amount'),
+            'total_earnings' => \DB::table('payments')
+                ->whereIn('booking_requests_id', $artist->assignedBookings()->pluck('id'))
+                ->where('status', 'completed')
+                ->sum('amount'),
             'reviews_count' => $artist->reviews()->count(),
         ];
 

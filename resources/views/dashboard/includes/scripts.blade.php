@@ -29,3 +29,41 @@
 
 <!-- Page js -->
 <script src="{{ asset('js/pages/datatables-export-data.js') }}"></script>
+
+<!-- Fix dropdown/sidebar z-index conflict -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close all dropdowns when clicking on sidebar or sidebar toggle
+        const sidebar = document.querySelector('.sidenav-menu');
+        const sidebarToggle = document.querySelector('.sidenav-toggle-button');
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+
+        // Function to close all dropdowns
+        function closeAllDropdowns() {
+            dropdowns.forEach(dropdown => {
+                const bsDropdown = bootstrap.Dropdown.getInstance(dropdown.previousElementSibling);
+                if (bsDropdown) {
+                    bsDropdown.hide();
+                }
+            });
+        }
+
+        // Close dropdowns when clicking sidebar
+        if (sidebar) {
+            sidebar.addEventListener('click', closeAllDropdowns);
+        }
+
+        // Close dropdowns when toggling sidebar
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', closeAllDropdowns);
+        }
+
+        // Ensure dropdowns close when clicking outside
+        document.addEventListener('click', function(event) {
+            const isDropdownClick = event.target.closest('.dropdown');
+            if (!isDropdownClick) {
+                closeAllDropdowns();
+            }
+        });
+    });
+</script>

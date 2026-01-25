@@ -20,6 +20,26 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ti ti-check me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h6 class="mb-2">Please fix the following errors:</h6>
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header justify-content-between">
             <h4 class="card-title">{{ $title }}</h4>
@@ -39,28 +59,39 @@
                 <div class="row">
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Company <span class="text-danger">*</span></label>
-                        <select name="company_id" class="form-control form-select required">
+                        <select name="company_id" class="form-control form-select required" id="company_id">
                             <option value="">Select Company</option>
                             @foreach ($companies as $company)
                                 <option value="{{ $company->id }}"
-                                    {{ old('company_id', $artist->company_id ?? '') == $company->id ? 'selected' : '' }}>
+                                    {{ old('company_id', $preselectedUser->company_id ?? $artist->company_id ?? '') == $company->id ? 'selected' : '' }}>
                                     {{ $company->name }}
                                 </option>
                             @endforeach
                         </select>
+                        @error('company_id')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">User (Artist) <span class="text-danger">*</span></label>
-                        <select name="user_id" class="form-control form-select required">
+                        <select name="user_id" class="form-control form-select required" id="user_id">
                             <option value="">Select Artist User</option>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}"
-                                    {{ old('user_id', $artist->user_id ?? '') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
+                                    {{ old('user_id', $preselectedUser->id ?? $artist->user_id ?? '') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }} ({{ $user->email }})
                                 </option>
                             @endforeach
                         </select>
+                        @if(isset($preselectedUser))
+                            <small class="text-info mt-1 d-block">
+                                <i class="ti ti-info-circle"></i> User "{{ $preselectedUser->name }}" was just created and is pre-selected.
+                            </small>
+                        @endif
+                        @error('user_id')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-lg-6 mb-3">

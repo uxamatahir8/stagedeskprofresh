@@ -193,9 +193,19 @@ class AuthController extends Controller
         if ($user && !$user->email_verified_at) {
             $this->authSecurity->recordLoginAttempt($credentials['email'], false, $user->id, 'Email not verified');
 
+            // Generate new verification token if doesn't exist or regenerate
+            if (!$user->verification_token) {
+                $user->verification_token = \Illuminate\Support\Str::random(64);
+                $user->save();
+            }
+
+            // Send new verification email
+            $verificationUrl = url('/verify-email/' . $user->verification_token);
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user, $verificationUrl));
+
             return back()->withErrors([
-                'email' => 'Please verify your email address before logging in. Check your inbox for the verification link.',
-            ])->with('email_not_verified', true)->onlyInput('email');
+                'email' => 'Your email is not verified. A new verification link has been sent to your email address.',
+            ])->with('verification_sent', true)->onlyInput('email');
         }
 
         // Attempt authentication

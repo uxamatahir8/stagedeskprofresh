@@ -18,6 +18,18 @@
         </div>
     </div>
 
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h6 class="mb-2">Please fix the following errors:</h6>
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header justify-content-between">
             <h4 class="card-title">{{ $title }}</h4>
@@ -142,11 +154,11 @@
 
                     {{-- Right Side --}}
                     <div class="col-lg-6">
-                        {{-- Company --}}
-                        @if ($role != 'Company Admin')
+                        {{-- Company - Only for Master Admin creating Company Admin --}}
+                        @if (Auth::user()->role->role_key === 'master_admin')
                             <div id="company_admin" class="row g-lg-4 g-2 d-none">
                                 <div class="col-lg-4">
-                                    <label class="col-form-label">Select Company:</label>
+                                    <label class="col-form-label">Select Company: <span class="text-danger">*</span></label>
                                 </div>
                                 <div class="col-lg-8">
                                     <select class="form-control form-select" name="company_id" id="company_id">
@@ -158,6 +170,9 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                    @error('company_id')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         @endif
@@ -259,25 +274,40 @@
 
     {{-- ================== SCRIPT SECTION ================== --}}
     <script>
-        // document.querySelector('select[name="role_id"]').addEventListener('change', (e) => {
-        //     const select = e.target;
-        //     const role_key = select.options[select.selectedIndex].text;
+        // Handle role change to show/hide company dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.querySelector('select[name="role_id"]');
+            const companyDiv = document.querySelector('#company_admin');
+            const companySelect = document.querySelector('#company_id');
+            const emailDiv = document.querySelector('#email-div');
+            const isMasterAdmin = {{ Auth::user()->role->role_key === 'master_admin' ? 'true' : 'false' }};
 
+            if (roleSelect && companyDiv && isMasterAdmin) {
+                // Function to check and update company dropdown visibility
+                function updateCompanyDropdown() {
+                    const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+                    const roleText = selectedOption.text;
 
-        //     const company_roles_key = ['Artist', 'Company Admin']
+                    // Show company dropdown only for Company Admin role
+                    if (roleText === 'Company Admin') {
+                        companyDiv.classList.remove('d-none');
+                        companySelect.classList.add('required');
+                        emailDiv.classList.add('mt-2');
+                    } else {
+                        companyDiv.classList.add('d-none');
+                        companySelect.classList.remove('required');
+                        companySelect.value = '';
+                        emailDiv.classList.remove('mt-2');
+                    }
+                }
 
-        //     if (company_roles_key.includes(role_key)) {
-        //         document.querySelector('#company_admin').classList.remove('d-none');
-        //         document.querySelector('#company_id').classList.add('required');
-        //         document.querySelector('#email-div').classList.add('mt-2');
-        //     } else {
-        //         document.querySelector('#company_admin').classList.add('d-none');
-        //         document.querySelector('#company_id').classList.remove('required');
-        //         document.querySelector('#company_id').value = '';
-        //         document.querySelector('#email-div').classList.remove('mt-2');
-        //     }
+                // Check on page load (for edit mode)
+                updateCompanyDropdown();
 
-        // });
+                // Listen for role changes
+                roleSelect.addEventListener('change', updateCompanyDropdown);
+            }
+        });
         document.addEventListener('DOMContentLoaded', function() {
             const logoInput = document.getElementById('logo');
             const preview = document.getElementById('logo-preview');

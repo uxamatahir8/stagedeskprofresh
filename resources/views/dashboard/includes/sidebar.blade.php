@@ -55,17 +55,19 @@
                         </div>
 
                         <!-- My Profile -->
-                        @if(Auth::user()->role->role_key === 'customer')
-                            <a href="{{ route('customer.profile') }}" class="dropdown-item">
-                                <i class="ti ti-user-circle me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">My Profile</span>
-                            </a>
-                        @else
-                            <a href="{{ route('settings') }}" class="dropdown-item">
-                                <i class="ti ti-user-circle me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">My Profile</span>
-                            </a>
-                        @endif
+                        @php
+                            $roleKey = Auth::user()->role->role_key;
+                            $profileRoute = match($roleKey) {
+                                'customer' => route('customer.profile'),
+                                'artist', 'dj' => route('artist.profile'),
+                                'affiliate' => route('affiliate.profile'),
+                                default => route('settings')
+                            };
+                        @endphp
+                        <a href="{{ $profileRoute }}" class="dropdown-item">
+                            <i class="ti ti-user-circle me-2 fs-17 align-middle"></i>
+                            <span class="align-middle">My Profile</span>
+                        </a>
 
                         <!-- Notifications -->
                         <a href="{{ route('notifications.index') }}" class="dropdown-item">
