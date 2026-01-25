@@ -48,6 +48,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+
+    // Test route for creating notifications (remove in production)
+    if (config('app.debug')) {
+        require __DIR__.'/test.php';
+    }
 });

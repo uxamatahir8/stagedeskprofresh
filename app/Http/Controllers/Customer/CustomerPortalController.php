@@ -14,11 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class CustomerPortalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:customer');
-    }
-
     /**
      * Customer Dashboard
      */

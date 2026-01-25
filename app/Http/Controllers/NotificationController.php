@@ -55,15 +55,75 @@ class NotificationController extends Controller
         $notifications = Notification::where('user_id', Auth::user()->id)
             ->where('is_read', false)
             ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+            ->limit(10)
+            ->get()
+            ->map(function($notification) {
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->title,
+                    'message' => $notification->message,
+                    'link' => $notification->link,
+                    'is_read' => $notification->is_read,
+                    'created_at' => $notification->created_at->diffForHumans(),
+                    'icon' => $this->getNotificationIcon($notification->title)
+                ];
+            });
 
-        $count = $notifications->count();
+        $count = Notification::where('user_id', Auth::user()->id)
+            ->where('is_read', false)
+            ->count();
 
         return response()->json([
+            'success' => true,
             'notifications' => $notifications,
             'count' => $count
         ]);
+    }
+
+    public function refresh()
+    {
+        $unreadCount = Notification::where('user_id', Auth::user()->id)
+            ->where('is_read', false)
+            ->count();
+
+        $latestNotifications = Notification::where('user_id', Auth::user()->id)
+            ->where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function($notification) {
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->title,
+                    'message' => $notification->message,
+                    'link' => $notification->link,
+                    'created_at' => $notification->created_at->diffForHumans(),
+                    'icon' => $this->getNotificationIcon($notification->title)
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'count' => $unreadCount,
+            'notifications' => $latestNotifications
+        ]);
+    }
+
+    private function getNotificationIcon($title)
+    {
+        $title = strtolower($title ?? '');
+
+        if (str_contains($title, 'booking')) {
+            return 'calendar';
+        } elseif (str_contains($title, 'payment')) {
+            return 'dollar-sign';
+        } elseif (str_contains($title, 'message')) {
+            return 'message-circle';
+        } elseif (str_contains($title, 'review')) {
+            return 'star';
+        }
+
+        return 'bell';
     }
 
     public function destroy(Notification $notification)

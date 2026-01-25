@@ -19,26 +19,34 @@ class DashboardController extends Controller
         $this->dashboardService = $dashboardService;
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $title = 'Dashboard';
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
+        // Get filter parameters
+        $filter = $request->get('filter', 'this_month');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        // Set date range based on filter
+        $dateRange = $this->getDateRange($filter, $startDate, $endDate);
+
         // Get comprehensive stats based on user role
         $statistics = $this->dashboardService->getStatisticsForRole();
 
-        // Legacy stats for backward compatibility
-        $stats = $this->getStats($roleKey);
+        // Legacy stats for backward compatibility with date filter
+        $stats = $this->getStats($roleKey, $dateRange);
 
         // Get recent bookings
-        $recentBookings = $this->getRecentBookings($roleKey, 5);
+        $recentBookings = $this->getRecentBookings($roleKey, 5, $dateRange);
 
         // Get booking stats for charts
-        $bookingStats = $this->getBookingStats($roleKey);
+        $bookingStats = $this->getBookingStats($roleKey, $dateRange);
 
         // Get event type counts
-        $eventTypeCounts = $this->getEventTypeCounts($roleKey);
+        $eventTypeCounts = $this->getEventTypeCounts($roleKey, $dateRange);
 
         // Get unread notifications count
         $unreadNotifications = \App\Models\Notification::where('user_id', Auth::id())
@@ -52,11 +60,48 @@ class DashboardController extends Controller
             'recentBookings',
             'bookingStats',
             'eventTypeCounts',
-            'unreadNotifications'
+            'unreadNotifications',
+            'filter',
+            'dateRange'
         ));
     }
 
-    private function getStats($roleKey)
+    private function getDateRange($filter, $startDate = null, $endDate = null)
+    {
+        $range = ['start' => null, 'end' => now()];
+
+        switch ($filter) {
+            case 'today':
+                $range['start'] = now()->startOfDay();
+                $range['end'] = now()->endOfDay();
+                break;
+            case 'this_week':
+                $range['start'] = now()->startOfWeek();
+                $range['end'] = now()->endOfWeek();
+                break;
+            case 'this_month':
+                $range['start'] = now()->startOfMonth();
+                $range['end'] = now()->endOfMonth();
+                break;
+            case 'this_year':
+                $range['start'] = now()->startOfYear();
+                $range['end'] = now()->endOfYear();
+                break;
+            case 'custom':
+                if ($startDate && $endDate) {
+                    $range['start'] = \Carbon\Carbon::parse($startDate)->startOfDay();
+                    $range['end'] = \Carbon\Carbon::parse($endDate)->endOfDay();
+                }
+                break;
+            default:
+                $range['start'] = now()->startOfMonth();
+                $range['end'] = now()->endOfMonth();
+        }
+
+        return $range;
+    }
+
+    private function getStats($roleKey, $dateRange = null)
     {
         $stats = [];
 
@@ -128,9 +173,13 @@ class DashboardController extends Controller
         return $stats;
     }
 
-    private function getRecentBookings($roleKey, $limit = 5)
+    private function getRecentBookings($roleKey, $limit = 5, $dateRange = null)
     {
         $query = BookingRequest::with(['user', 'eventType']);
+
+        if ($dateRange && $dateRange['start']) {
+            $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        }
 
         if ($roleKey === 'company_admin') {
             $query->whereHas('user', function ($q) {
@@ -143,12 +192,16 @@ class DashboardController extends Controller
         return $query->orderBy('created_at', 'desc')->limit($limit)->get();
     }
 
-    private function getBookingStats($roleKey)
+    private function getBookingStats($roleKey, $dateRange = null)
     {
         $query = BookingRequest::selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date', 'desc')
             ->limit(7);
+
+        if ($dateRange && $dateRange['start']) {
+            $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        }
 
         if ($roleKey === 'company_admin') {
             $query->whereHas('user', function ($q) {
@@ -166,11 +219,15 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getEventTypeCounts($roleKey)
+    private function getEventTypeCounts($roleKey, $dateRange = null)
     {
         $query = BookingRequest::with('eventType')
             ->selectRaw('event_type_id, COUNT(*) as count')
             ->groupBy('event_type_id');
+
+        if ($dateRange && $dateRange['start']) {
+            $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        }
 
         if ($roleKey === 'company_admin') {
             $query->whereHas('user', function ($q) {

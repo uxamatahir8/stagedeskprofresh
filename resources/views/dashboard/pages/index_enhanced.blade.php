@@ -7,21 +7,48 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i class="ti ti-layout-dashboard me-2"></i>{{ $title }}
             </h4>
-            <p class="text-muted mb-0 mt-1">Welcome back, <strong>{{ Auth::user()->name }}</strong>! Here's what's happening today</p>
+            <p class="text-muted mb-0 mt-1">Welcome back, <strong>{{ Auth::user()->name }}</strong>! Here's what's happening
+                @if(isset($filter) && $filter !== 'this_month')
+                    <span class="badge bg-primary">{{ ucwords(str_replace('_', ' ', $filter)) }}</span>
+                @endif
+            </p>
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-light btn-sm" onclick="location.reload()">
                 <i class="ti ti-refresh"></i> Refresh
             </button>
             <div class="dropdown">
-                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="ti ti-calendar"></i> This Month
+                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                    <i class="ti ti-calendar"></i>
+                    @if(isset($filter))
+                        {{ ucwords(str_replace('_', ' ', $filter)) }}
+                    @else
+                        This Month
+                    @endif
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Week</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
+                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 200px;">
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'today']) }}">Today</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_week']) }}">This Week</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_month']) }}">This Month</a></li>
+                    <li><a class="dropdown-item filter-option" href="{{ route('dashboard', ['filter' => 'this_year']) }}">This Year</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="px-3 py-2">
+                        <form action="{{ route('dashboard') }}" method="GET" id="customDateForm">
+                            <input type="hidden" name="filter" value="custom">
+                            <label class="form-label small fw-semibold">Custom Range</label>
+                            <div class="mb-2">
+                                <input type="date" name="start_date" class="form-control form-control-sm"
+                                       value="{{ request('start_date') }}" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="date" name="end_date" class="form-control form-control-sm"
+                                       value="{{ request('end_date') }}" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="ti ti-filter"></i> Apply Filter
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
