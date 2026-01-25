@@ -92,6 +92,9 @@ class UserController extends Controller
             'company_id.required' => 'Company selection is required for Company Admin role.',
         ]);
 
+        // ✅ Store temporary password before hashing
+        $temporaryPassword = $validated['password'];
+
         // ✅ Create user
         $user = User::create([
             'role_id'    => $validated['role_id'],
@@ -100,6 +103,7 @@ class UserController extends Controller
             'password'   => Hash::make($validated['password']),
             'company_id' => Auth::user()->role->role_key == 'master_admin' ? $validated['company_id'] ?? null : Auth::user()->company_id,
             'status'     => $request->status === 'active' ? 'active' : 'inactive',
+            'must_change_password' => 1, // Force password change on first login
         ]);
 
         // ✅ Handle logo upload
@@ -123,13 +127,17 @@ class UserController extends Controller
             ]
         );
 
+        // ✅ Send credentials email to user
+        $loginUrl = url('/login');
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserCredentials($user, $temporaryPassword, $loginUrl));
+
         // Check if the role is artist and redirect to artist creation page
         if ($role && in_array($role->role_key, ['artist', 'dj'])) {
             return redirect()->route('artists.create', ['user_id' => $user->id])
-                ->with('success', 'User created successfully! Now complete the artist profile.');
+                ->with('success', 'User created successfully! Credentials have been sent to their email. Now complete the artist profile.');
         }
 
-        return redirect()->route('users')->with('success', 'User and profile saved successfully.');
+        return redirect()->route('users')->with('success', 'User and profile saved successfully. Credentials have been sent to their email.');
     }
 
     /**

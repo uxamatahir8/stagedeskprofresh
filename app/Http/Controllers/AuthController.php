@@ -221,6 +221,11 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // Check if user must change password
+            if ($user->must_change_password == 1) {
+                return redirect()->route('change-password')->with('info', 'For security reasons, you must change your temporary password before continuing.');
+            }
+
             $previous = url()->previous();
 
             // Check if user came from a blog page
@@ -484,5 +489,73 @@ class AuthController extends Controller
     {
         Auth::logout();
         return redirect()->route('home');
+    }
+
+    /**
+     * Show the change password form for temporary passwords
+     */
+    public function showChangePassword()
+    {
+        // Only authenticated users with must_change_password flag can access
+        $user = Auth::user();
+
+        if (!$user || $user->must_change_password != 1) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('auth.pages.change-password', [
+            'title' => 'Change Password - Required',
+        ]);
+    }
+
+    /**
+     * Update the password for users with temporary passwords
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        // Verify user must change password
+        if (!$user || $user->must_change_password != 1) {
+            return redirect()->route('dashboard')->withErrors(['error' => 'Unauthorized action.']);
+        }
+
+        // Validate the new password
+        $validated = $request->validate([
+            'current_password' => ['required'],
+            'new_password' => [
+                'required',
+                'confirmed',
+                'min:10',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/',
+            ],
+        ], [
+            'new_password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+            'new_password.confirmed' => 'Password confirmation does not match.',
+        ]);
+
+        // Verify current password
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        // Check if new password is different from current
+        if (Hash::check($validated['new_password'], $user->password)) {
+            return back()->withErrors(['new_password' => 'New password must be different from your temporary password.']);
+        }
+
+        // Update password and remove must_change_password flag
+        $user->update([
+            'password' => Hash::make($validated['new_password']),
+            'must_change_password' => 0,
+        ]);
+
+        // Log the password change
+        $this->authSecurity->recordLoginAttempt($user->email, true, $user->id, 'Password changed successfully');
+
+        return redirect()->route('dashboard')->with('success', 'Password changed successfully! You can now access all features.');
     }
 }

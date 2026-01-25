@@ -33,6 +33,7 @@ class User extends Authenticatable
         'force_password_change',
         'email_verified_at',
         'verification_token',
+        'must_change_password',
     ];
     /**
      * The attributes that should be hidden for serialization.
