@@ -33,37 +33,40 @@
 <!-- Fix dropdown/sidebar z-index conflict -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Close all dropdowns when clicking on sidebar or sidebar toggle
+        // Close topbar dropdowns when clicking on sidebar (not sidebar menus)
         const sidebar = document.querySelector('.sidenav-menu');
         const sidebarToggle = document.querySelector('.sidenav-toggle-button');
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
 
-        // Function to close all dropdowns
-        function closeAllDropdowns() {
-            dropdowns.forEach(dropdown => {
-                const bsDropdown = bootstrap.Dropdown.getInstance(dropdown.previousElementSibling);
-                if (bsDropdown) {
-                    bsDropdown.hide();
+        // Function to close only topbar dropdowns (notifications, user menu)
+        function closeTopbarDropdowns() {
+            // Only target dropdowns in the topbar, not in the sidebar
+            const topbarDropdowns = document.querySelectorAll('.app-topbar .dropdown-menu');
+
+            topbarDropdowns.forEach(dropdown => {
+                const dropdownButton = dropdown.previousElementSibling;
+                if (dropdownButton) {
+                    const bsDropdown = bootstrap.Dropdown.getInstance(dropdownButton);
+                    if (bsDropdown) {
+                        bsDropdown.hide();
+                    }
                 }
             });
         }
 
-        // Close dropdowns when clicking sidebar
+        // Close topbar dropdowns when clicking sidebar navigation
         if (sidebar) {
-            sidebar.addEventListener('click', closeAllDropdowns);
+            sidebar.addEventListener('click', function(event) {
+                // Only close topbar dropdowns if clicking on an actual menu link, not the menu toggle
+                const isMenuLink = event.target.closest('.side-nav-link');
+                if (isMenuLink && !event.target.closest('[data-bs-toggle="collapse"]')) {
+                    closeTopbarDropdowns();
+                }
+            });
         }
 
-        // Close dropdowns when toggling sidebar
+        // Close topbar dropdowns when toggling sidebar
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', closeAllDropdowns);
+            sidebarToggle.addEventListener('click', closeTopbarDropdowns);
         }
-
-        // Ensure dropdowns close when clicking outside
-        document.addEventListener('click', function(event) {
-            const isDropdownClick = event.target.closest('.dropdown');
-            if (!isDropdownClick) {
-                closeAllDropdowns();
-            }
-        });
     });
 </script>

@@ -73,12 +73,19 @@
                     ['title' => 'Active Artists', 'value' => $stats['active_artists'] ?? 0, 'icon' => 'ti-microphone-2', 'color' => 'info', 'change' => '+3.5%', 'changeType' => 'up', 'subtitle' => 'available now'],
                     ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
                 ];
-            } elseif(Auth::user()->role->role_key === 'dj') {
+            } elseif(in_array(Auth::user()->role->role_key, ['artist', 'dj'])) {
                 $mainStats = [
-                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
-                    ['title' => 'Pending Requests', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'new requests'],
-                    ['title' => 'Rating', 'value' => $stats['average_rating'] ?? 0, 'icon' => 'ti-star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
-                    ['title' => 'Services', 'value' => $stats['total_services'] ?? 0, 'icon' => 'ti-list', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'offered services'],
+                    ['title' => 'Assigned Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
+                    ['title' => 'Rating', 'value' => number_format($stats['average_rating'] ?? 0, 1), 'icon' => 'ti-star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
+                    ['title' => 'Confirmed', 'value' => $stats['confirmed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'confirmed events'],
+                ];
+            } elseif(Auth::user()->role->role_key === 'affiliate') {
+                $mainStats = [
+                    ['title' => 'Total Referrals', 'value' => $stats['total_referrals'] ?? 0, 'icon' => 'ti-users', 'color' => 'primary', 'change' => '+5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Active Referrals', 'value' => $stats['active_referrals'] ?? 0, 'icon' => 'ti-user-check', 'color' => 'success', 'change' => 'Verified', 'changeType' => 'neutral', 'subtitle' => 'active users'],
+                    ['title' => 'Total Commission', 'value' => '$' . number_format($stats['total_commissions'] ?? 0, 2), 'icon' => 'ti-currency-dollar', 'color' => 'info', 'change' => '+12%', 'changeType' => 'up', 'subtitle' => 'total earned'],
+                    ['title' => 'Pending Payout', 'value' => '$' . number_format($stats['pending_commissions'] ?? 0, 2), 'icon' => 'ti-wallet', 'color' => 'warning', 'change' => 'Pending', 'changeType' => 'neutral', 'subtitle' => 'awaiting payout'],
                 ];
             } else {
                 $mainStats = [

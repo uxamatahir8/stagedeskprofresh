@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ArtistPortalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:artist');
-    }
-
     /**
      * Artist Dashboard
      */
