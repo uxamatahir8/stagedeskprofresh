@@ -658,7 +658,7 @@
                                                 <div class="space32"></div>
                                                 <div class="team-details">
                                                     <div class="img1">
-                                                        <img src="{{ asset('storage/' . $testimonial->avatar ?? '') }}"
+                                                        <img src="{{ $testimonial->avatar ? asset('storage/' . $testimonial->avatar) : asset('images/default.jpg') }}"
                                                             alt="">
                                                     </div>
                                                     <div class="content">
