@@ -9,7 +9,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -110,7 +110,7 @@
                     @endphp
 
                     <div class="alert alert-{{ $daysRemaining < 7 ? 'warning' : 'info' }}" role="alert">
-                        <i class="ti ti-info-circle"></i>
+                        <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                         @if($daysRemaining > 0)
                             <strong>{{ $daysRemaining }} days remaining</strong> on this subscription.
                         @elseif($daysRemaining === 0)
@@ -132,23 +132,23 @@
                 <div class="card-body">
                     @if($subscription->status === 'active')
                         <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-warning w-100 mb-2">
-                            <i class="ti ti-pencil"></i> Edit Subscription
+                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Edit Subscription
                         </a>
 
                         <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you sure you want to cancel this subscription?')">
-                                <i class="ti ti-trash"></i> Cancel Subscription
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Cancel Subscription
                             </button>
                         </form>
                     @elseif($subscription->status === 'canceled')
                         <a href="{{ route('subscriptions.create') }}" class="btn btn-primary w-100">
-                            <i class="ti ti-plus"></i> Create New Subscription
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Create New Subscription
                         </a>
                     @else
                         <div class="alert alert-info mb-0">
-                            <i class="ti ti-info-circle"></i>
+                            <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                             <strong>{{ ucfirst($subscription->status) }} Subscription</strong>
                             <p class="mb-0 mt-2">This subscription cannot be modified in its current state.</p>
                         </div>
@@ -166,7 +166,7 @@
                         <ul class="list-unstyled">
                             @foreach($subscription->package->features as $feature)
                                 <li class="mb-2">
-                                    <i class="ti ti-check text-success"></i>
+                                    <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
                                     {{ $feature->feature_description }}
                                 </li>
                             @endforeach
@@ -213,7 +213,7 @@
 
                 <div class="card-body">
                     <a href="{{ route('subscriptions.index') }}" class="btn btn-primary w-100">
-                        <i class="ti ti-arrow-left"></i> Back to Subscriptions
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Subscriptions
                     </a>
                 </div>
             </div>

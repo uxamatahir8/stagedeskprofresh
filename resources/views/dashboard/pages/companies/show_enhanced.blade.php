@@ -5,19 +5,19 @@
     <div class="page-title-head d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fs-xl fw-bold m-0">
-                <i class="ti ti-building me-2"></i>{{ $company->name }}
+                <i data-lucide="building" class="me-2" style="width: 20px; height: 20px;"></i>{{ $company->name }}
             </h4>
             <p class="text-muted mb-0 mt-1">Complete company profile and analytics</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('companies') }}" class="btn btn-light btn-sm">
-                <i class="ti ti-arrow-left"></i> Back
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back
             </a>
             <a href="{{ route('subscription.create', $company->id) }}" class="btn btn-warning btn-sm">
-                <i class="ti ti-credit-card"></i> Manage Subscription
+                <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i> Manage Subscription
             </a>
             <a href="{{ route('company.edit', $company->id) }}" class="btn btn-primary btn-sm">
-                <i class="ti ti-edit"></i> Edit Company
+                <i data-lucide="edit" style="width: 14px; height: 14px;"></i> Edit Company
             </a>
         </div>
     </div>
@@ -42,14 +42,14 @@
                     {{-- Company Name & Status --}}
                     <h5 class="mb-2 fw-bold">{{ $company->name }}</h5>
                     <span class="badge bg-{{ $company->status === 'active' ? 'success' : 'secondary' }}-subtle text-{{ $company->status === 'active' ? 'success' : 'secondary' }} mb-3">
-                        <i class="ti ti-circle-check"></i> {{ ucfirst($company->status) }}
+                        <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> {{ ucfirst($company->status) }}
                     </span>
 
                     {{-- Company Info --}}
                     <div class="border-top pt-3 text-start">
                         <div class="d-flex align-items-start mb-3">
                             <div class="icon-box bg-primary-subtle text-primary me-3">
-                                <i class="ti ti-mail"></i>
+                                <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">Email Address</small>
@@ -59,7 +59,7 @@
 
                         <div class="d-flex align-items-start mb-3">
                             <div class="icon-box bg-success-subtle text-success me-3">
-                                <i class="ti ti-phone"></i>
+                                <i data-lucide="phone" style="width: 16px; height: 16px;"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">Phone Number</small>
@@ -69,7 +69,7 @@
 
                         <div class="d-flex align-items-start mb-3">
                             <div class="icon-box bg-info-subtle text-info me-3">
-                                <i class="ti ti-id"></i>
+                                <i data-lucide="id-card" style="width: 16px; height: 16px;"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">KVK Number</small>
@@ -79,7 +79,7 @@
 
                         <div class="d-flex align-items-start mb-3">
                             <div class="icon-box bg-warning-subtle text-warning me-3">
-                                <i class="ti ti-map-pin"></i>
+                                <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">Location</small>
@@ -91,7 +91,7 @@
                         @if($company->website)
                             <div class="d-flex align-items-start mb-3">
                                 <div class="icon-box bg-purple-subtle text-purple me-3">
-                                    <i class="ti ti-world"></i>
+                                    <i data-lucide="globe" style="width: 16px; height: 16px;"></i>
                                 </div>
                                 <div class="flex-grow-1">
                                     <small class="text-muted d-block">Website</small>
@@ -102,7 +102,7 @@
 
                         <div class="d-flex align-items-start">
                             <div class="icon-box bg-secondary-subtle text-secondary me-3">
-                                <i class="ti ti-calendar"></i>
+                                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">Member Since</small>
@@ -115,11 +115,11 @@
                     {{-- Social Links --}}
                     @if(isset($company->socialLinks) && $company->socialLinks->count() > 0)
                         <div class="border-top pt-3 mt-3">
-                            <h6 class="mb-2 fw-semibold"><i class="ti ti-share me-2"></i>Social Media</h6>
+                            <h6 class="mb-2 fw-semibold"><i data-lucide="share-2" class="me-2" style="width: 18px; height: 18px;"></i>Social Media</h6>
                             <div class="d-flex gap-2 justify-content-center">
                                 @foreach($company->socialLinks as $social)
                                     <a href="{{ $social->url }}" target="_blank" class="btn btn-sm btn-light">
-                                        <i class="ti ti-{{ $social->handle }}"></i>
+                                        <i data-lucide="{{ $social->handle }}" style="width: 16px; height: 16px;"></i>
                                     </a>
                                 @endforeach
                             </div>
@@ -138,7 +138,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stats-icon bg-primary-subtle text-primary me-3">
-                                    <i class="ti ti-users"></i>
+                                    <i data-lucide="users" style="width: 16px; height: 16px;"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0 fw-bold">{{ $stats['total_artists'] ?? 0 }}</h3>
@@ -154,7 +154,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stats-icon bg-success-subtle text-success me-3">
-                                    <i class="ti ti-calendar-check"></i>
+                                    <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0 fw-bold">{{ $stats['total_bookings'] ?? 0 }}</h3>
@@ -170,7 +170,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stats-icon bg-warning-subtle text-warning me-3">
-                                    <i class="ti ti-star"></i>
+                                    <i data-lucide="star" style="width: 16px; height: 16px;"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0 fw-bold">{{ number_format($stats['avg_rating'] ?? 0, 1) }}</h3>
@@ -186,7 +186,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="stats-icon bg-info-subtle text-info me-3">
-                                    <i class="ti ti-currency-dollar"></i>
+                                    <i data-lucide="dollar-sign" style="width: 16px; height: 16px;"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0 fw-bold">${{ number_format($stats['total_revenue'] ?? 0, 0) }}</h3>
@@ -201,9 +201,9 @@
             {{-- Subscription Card --}}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-semibold"><i class="ti ti-credit-card me-2"></i>Subscription Details</h6>
+                    <h6 class="mb-0 fw-semibold"><i data-lucide="credit-card" class="me-2" style="width: 18px; height: 18px;"></i>Subscription Details</h6>
                     <a href="{{ route('subscription.create', $company) }}" class="btn btn-sm btn-primary">
-                        <i class="ti ti-edit"></i> Manage
+                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i> Manage
                     </a>
                 </div>
                 <div class="card-body">
@@ -211,7 +211,7 @@
                         <div class="row g-3 align-items-center">
                             <div class="col-md-3 text-center">
                                 <div class="subscription-badge mb-2">
-                                    <i class="ti ti-crown fs-1 text-warning"></i>
+                                    <i data-lucide="crown" class="text-warning" style="width: 48px; height: 48px;"></i>
                                 </div>
                                 <h5 class="mb-0 fw-bold text-primary">{{ $subscription->package->name ?? 'N/A' }}</h5>
                                 <small class="text-muted">Current Plan</small>
@@ -235,7 +235,7 @@
                             </div>
                             <div class="col-md-2 text-center border-start">
                                 <span class="badge bg-{{ $subscription->status === 'active' ? 'success' : ($subscription->status === 'expired' ? 'danger' : 'warning') }} px-3 py-2">
-                                    <i class="ti ti-circle-check"></i> {{ ucfirst($subscription->status) }}
+                                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> {{ ucfirst($subscription->status) }}
                                 </span>
                             </div>
                         </div>
@@ -248,7 +248,7 @@
                                     @foreach($subscription->package->packageFeatures as $feature)
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center">
-                                                <i class="ti ti-circle-check text-success me-2"></i>
+                                                <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
                                                 <span class="text-muted">{{ $feature->feature }}</span>
                                             </div>
                                         </div>
@@ -262,7 +262,7 @@
                             <h6 class="mt-3 text-muted">No Active Subscription</h6>
                             <p class="text-muted mb-3">This company doesn't have an active subscription plan.</p>
                             <a href="{{ route('subscription.create', $company) }}" class="btn btn-primary">
-                                <i class="ti ti-plus"></i> Add Subscription
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add Subscription
                             </a>
                         </div>
                     @endif
@@ -302,7 +302,7 @@
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-users me-2"></i>Company Artists</h5>
                     <a href="{{ route('artists.create') }}" class="btn btn-primary btn-sm">
-                        <i class="ti ti-plus"></i> Add Artist
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add Artist
                     </a>
                 </div>
                 <div class="card-body p-0">
@@ -351,7 +351,7 @@
                                             </td>
                                             <td>
                                                 <span class="badge bg-info-subtle text-info">
-                                                    <i class="ti ti-calendar"></i> {{ $artist->experience_years ?? '0' }} years
+                                                    <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> {{ $artist->experience_years ?? '0' }} years
                                                 </span>
                                             </td>
                                             <td>{{ $artist->specialization ?? 'N/A' }}</td>
@@ -369,10 +369,10 @@
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('artists.show', $artist) }}" class="btn btn-light" title="View">
-                                                        <i class="ti ti-eye"></i>
+                                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                     <a href="{{ route('artists.edit', $artist) }}" class="btn btn-light" title="Edit">
-                                                        <i class="ti ti-edit"></i>
+                                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -387,7 +387,7 @@
                             <h5 class="mt-3 text-muted">No Artists Found</h5>
                             <p class="text-muted">This company doesn't have any artists yet.</p>
                             <a href="{{ route('artists.create') }}" class="btn btn-primary">
-                                <i class="ti ti-plus"></i> Add First Artist
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add First Artist
                             </a>
                         </div>
                     @endif
@@ -466,10 +466,10 @@
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('bookings.show', $booking) }}" class="btn btn-light" title="View">
-                                                        <i class="ti ti-eye"></i>
+                                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                     <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-light" title="Edit">
-                                                        <i class="ti ti-edit"></i>
+                                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -587,7 +587,7 @@
                                 <div class="timeline-content">
                                     <h6 class="mb-1 fw-semibold">{{ $activity['title'] }}</h6>
                                     <p class="text-muted mb-1">{{ $activity['desc'] }}</p>
-                                    <small class="text-muted"><i class="ti ti-clock"></i> {{ $activity['time'] }}</small>
+                                    <small class="text-muted"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $activity['time'] }}</small>
                                 </div>
                             </div>
                         @endforeach

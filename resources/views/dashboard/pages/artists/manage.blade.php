@@ -9,7 +9,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -86,7 +86,7 @@
                         </select>
                         @if(isset($preselectedUser))
                             <small class="text-info mt-1 d-block">
-                                <i class="ti ti-info-circle"></i> User "{{ $preselectedUser->name }}" was just created and is pre-selected.
+                                <i data-lucide="info" style="width: 16px; height: 16px;"></i> User "{{ $preselectedUser->name }}" was just created and is pre-selected.
                             </small>
                         @endif
                         @error('user_id')

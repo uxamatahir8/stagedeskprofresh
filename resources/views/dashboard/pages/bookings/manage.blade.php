@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -44,7 +44,7 @@
             {{-- Display Success Message --}}
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="ti ti-check-circle"></i> {{ session('success') }}
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -52,7 +52,7 @@
             {{-- Display Error Message --}}
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="ti ti-alert-circle"></i> {{ session('error') }}
+                    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -276,7 +276,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-{{ $mode === 'edit' ? 'warning' : 'primary' }}">
-                        <i class="ti ti-{{ $mode === 'edit' ? 'pencil' : 'plus' }}"></i>
+                        <i data-lucide="{{ $mode === 'edit' ? 'pencil' : 'plus' }}" style="width: 16px; height: 16px;"></i>
                         {{ $mode === 'edit' ? 'Update' : 'Save' }} Booking
                     </button>
                 </div>

@@ -9,7 +9,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -130,7 +130,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-{{ $mode === 'edit' ? 'warning' : 'primary' }}">
-                        <i class="ti ti-{{ $mode === 'edit' ? 'pencil' : 'plus' }}"></i>
+                        <i data-lucide="{{ $mode === 'edit' ? 'pencil' : 'plus' }}" style="width: 16px; height: 16px;"></i>
                         {{ $mode === 'edit' ? 'Update' : 'Record' }} Payment
                     </button>
                 </div>
