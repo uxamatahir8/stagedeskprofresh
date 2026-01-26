@@ -9,7 +9,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -22,7 +22,7 @@
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ti ti-check me-2"></i>
+            <i data-lucide="check" class="me-2" style="width: 16px; height: 16px;"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -86,7 +86,7 @@
                         </select>
                         @if(isset($preselectedUser))
                             <small class="text-info mt-1 d-block">
-                                <i class="ti ti-info-circle"></i> User "{{ $preselectedUser->name }}" was just created and is pre-selected.
+                                <i data-lucide="info" style="width: 16px; height: 16px;"></i> User "{{ $preselectedUser->name }}" was just created and is pre-selected.
                             </small>
                         @endif
                         @error('user_id')
@@ -139,7 +139,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-{{ $mode === 'edit' ? 'warning' : 'primary' }}">
-                        <i class="ti ti-{{ $mode === 'edit' ? 'pencil' : 'plus' }}"></i>
+                        <i data-lucide="{{ $mode === 'edit' ? 'pencil' : 'plus' }}" style="width: 16px; height: 16px;"></i>
                         {{ $mode === 'edit' ? 'Update' : 'Save' }} Artist
                     </button>
                 </div>

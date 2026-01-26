@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">{{ $title }}</li>
@@ -103,9 +103,9 @@
                                 <td>{{ Str::limit($log->user_agent ?? 'N/A', 30) }}</td>
                                 <td>{{ $log->created_at->format('M d, Y h:i A') }}</td>
                                 <td>
-                                    <div class="action-btn">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('activity-logs.show', $log) }}" class="btn btn-sm btn-primary" title="View Details">
-                                            <i class="ti ti-eye"></i>
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                         </a>
                                     </div>
                                 </td>

@@ -113,7 +113,7 @@
                             <tbody>
                                 @forelse($upcomingBookings ?? [] as $booking)
                                     <tr>
-                                        <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                        <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->user->name ?? 'N/A' }}</td>
                                         <td>
@@ -198,7 +198,7 @@
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
                                         <td>#{{ $booking->id }}</td>
-                                        <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                        <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ $booking->user->name ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>

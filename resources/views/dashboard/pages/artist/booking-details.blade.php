@@ -6,7 +6,7 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i data-lucide="calendar-check" class="me-2"></i>Booking Details
             </h4>
-            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->id }} - {{ $booking->eventType->name ?? 'Event' }}</p>
+            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->id }} - {{ $booking->eventType->event_type ?? 'Event' }}</p>
         </div>
         <div class="text-end">
             <a href="{{ route('artist.bookings') }}" class="btn btn-light btn-sm">
@@ -15,16 +15,6 @@
         </div>
     </div>
 
-    {{-- DEBUG INFO (Remove after testing) --}}
-    <div class="alert alert-info mb-3">
-        <strong>Debug Info:</strong><br>
-        Booking Status: <strong>{{ $booking->status }}</strong><br>
-        Can Accept: <strong>{{ $canAccept ?? 'NOT SET' ? 'YES' : 'NO' }}</strong><br>
-        Can Reject: <strong>{{ $canReject ?? 'NOT SET' ? 'YES' : 'NO' }}</strong><br>
-        Can Complete: <strong>{{ $canComplete ?? 'NOT SET' ? 'YES' : 'NO' }}</strong><br>
-        Is Completed: <strong>{{ $isCompleted ?? 'NOT SET' ? 'YES' : 'NO' }}</strong><br>
-        Is Cancelled: <strong>{{ $isCancelled ?? 'NOT SET' ? 'YES' : 'NO' }}</strong>
-    </div>
 
     {{-- Quick Action Buttons (Always Visible for Testing) --}}
     @if($booking->status === 'pending')
@@ -44,10 +34,8 @@
 
     @if($booking->status === 'confirmed')
     <div class="alert alert-success">
-        <h5>Quick Actions (Always Visible - Status: Confirmed)</h5>
-        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#rejectModal">
-            🚫 Cancel Commitment
-        </button>
+        <h5>✅ Booking Confirmed</h5>
+        <p class="mb-2">You have accepted this booking. You cannot cancel after acceptance.</p>
         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#completeModal">
             ✅ Mark as Completed
         </button>
@@ -95,7 +83,7 @@
                                 <i data-lucide="tag" class="text-primary me-2 mt-1"></i>
                                 <div>
                                     <p class="text-muted mb-1 small">Event Type</p>
-                                    <h6 class="mb-0">{{ $booking->eventType->name ?? 'N/A' }}</h6>
+                                    <h6 class="mb-0">{{ $booking->eventType->event_type ?? 'N/A' }}</h6>
                                 </div>
                             </div>
                         </div>

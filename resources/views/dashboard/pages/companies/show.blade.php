@@ -276,7 +276,7 @@
                                     <tr>
                                         <td><strong>#{{ $booking->id }}</strong></td>
                                         <td>{{ $booking->name }} {{ $booking->surname }}</td>
-                                        <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                        <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->assignedArtist->user->name ?? 'Unassigned' }}</td>
                                         <td>

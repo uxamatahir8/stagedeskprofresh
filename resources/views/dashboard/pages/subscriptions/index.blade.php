@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
 
@@ -28,7 +28,7 @@
             </div>
             <div class="action-btns">
                 <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> Add Subscription
+                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add Subscription
                 </a>
             </div>
         </div>
@@ -66,15 +66,15 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="action-btn">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('subscriptions.show', $subscription) }}"
                                             class="btn btn-sm btn-primary" title="View">
-                                            <i class="ti ti-eye"></i>
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         @if($subscription->status === 'active')
                                             <a href="{{ route('subscriptions.edit', $subscription) }}"
                                                 class="btn btn-sm btn-info" title="Edit">
-                                                <i class="ti ti-pencil"></i>
+                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <form action="{{ route('subscriptions.destroy', $subscription) }}" method="POST"
                                                 style="display: inline;">
@@ -82,7 +82,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Cancel"
                                                     onclick="return confirm('Are you sure?')">
-                                                    <i class="ti ti-trash text-white"></i>
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                             </form>
                                         @endif

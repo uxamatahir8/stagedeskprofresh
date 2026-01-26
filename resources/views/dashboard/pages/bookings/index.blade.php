@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">{{ $title }}</li>
@@ -25,7 +25,7 @@
             </div>
             <div class="action-btns">
                 <a href="{{ route('bookings.create') }}" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> Request New Booking
+                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Request New Booking
                 </a>
             </div>
         </div>
@@ -76,7 +76,7 @@
                                             <span class="badge bg-info">{{ $booking->assignedArtist->user->name }}</span>
                                         @else
                                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->id }}">
-                                                <i class="ti ti-user-plus"></i> Assign
+                                                <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Assign
                                             </button>
                                         @endif
                                     </td>
@@ -99,14 +99,14 @@
                                         <small class="text-muted">{{ $booking->created_at->format('M d, Y') }}</small>
                                     </td>
                                     <td>
-                                        <div class="action-btn">
+                                        <div class="btn-group" role="group">
                                             <a href="{{ route('bookings.show', $booking) }}"
                                                 class="btn btn-sm btn-primary"title="View">
-                                                <i class="ti ti-eye"></i>
+                                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <a href="{{ route('bookings.edit', $booking) }}"
                                                 class="btn btn-sm btn-info"title="Edit">
-                                                <i class="ti ti-pencil"></i>
+                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <form action="{{ route('bookings.destroy', $booking) }}" method="POST"
                                                 style="display: inline;">
@@ -114,7 +114,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete"
                                                     onclick="return confirm('Are you sure?')">
-                                                    <i class="ti ti-trash text-white"></i>
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -176,7 +176,7 @@
                 </div>
             @else
                 <div class="alert alert-info mb-0">
-                    <i class="ti ti-info-circle"></i> No bookings found. <a href="{{ route('bookings.create') }}">Create a
+                    <i data-lucide="info" style="width: 16px; height: 16px;"></i> No bookings found. <a href="{{ route('bookings.create') }}">Create a
                         new booking</a>
                 </div>
             @endif

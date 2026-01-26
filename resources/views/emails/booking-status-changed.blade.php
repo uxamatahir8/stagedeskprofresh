@@ -45,7 +45,7 @@
         </tr>
         <tr>
             <th>Event Type</th>
-            <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+            <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
         </tr>
         <tr>
             <th>Event Date</th>

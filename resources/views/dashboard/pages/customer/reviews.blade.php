@@ -56,7 +56,7 @@
                             </small>
                             <br>
                             <small class="text-muted">
-                                Event: {{ $review->booking->eventType->name ?? 'N/A' }}
+                                Event: {{ $review->booking->eventType->event_type ?? 'N/A' }}
                             </small>
                             <br>
                             <small class="text-muted">

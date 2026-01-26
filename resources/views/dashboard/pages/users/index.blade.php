@@ -11,7 +11,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
 
@@ -26,7 +26,7 @@
             </div>
             <div class="action-btns">
                 <a href="{{ route('user.create') }}" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> Add User
+                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add User
                 </a>
             </div>
         </div>
@@ -60,9 +60,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="action-btn">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('user.edit', $user) }}" class="btn btn-sm btn-info" title="Edit">
-                                            <i class="ti ti-pencil"></i>
+                                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         @if(Auth::user()->id != $user->id)
                                             <form action="{{ route('user.destroy', $user) }}" method="POST"
@@ -71,7 +71,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                    <i class="ti ti-trash text-white"></i>
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                             </form>
                                         @endif

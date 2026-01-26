@@ -14,11 +14,16 @@ return [
             [
                 'title' => 'Booking Requests',
                 'route' => 'bookings.index',
-                'roles' => ['master_admin', 'company_admin', 'customer'],
+                'roles' => ['master_admin', 'company_admin'],
             ],
             [
                 'title' => 'My Bookings',
-                'route' => 'bookings.index',
+                'route' => 'customer.bookings',
+                'roles' => ['customer'],
+            ],
+            [
+                'title' => 'My Bookings',
+                'route' => 'artist.bookings',
                 'roles' => ['artist', 'dj'],
             ],
             [

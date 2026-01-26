@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -216,10 +216,10 @@
 
             <div class="mt-3">
                 <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-warning">
-                    <i class="ti ti-pencil"></i> Edit Booking
+                    <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Edit Booking
                 </a>
                 <a href="{{ route('bookings.index') }}" class="btn btn-secondary">
-                    <i class="ti ti-arrow-left"></i> Back
+                    <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back
                 </a>
             </div>
         </div>

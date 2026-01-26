@@ -5,7 +5,7 @@
     <div class="page-title-head d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fs-xl fw-bold m-0">
-                <i class="ti ti-layout-dashboard me-2"></i>{{ $title }}
+                <i data-lucide="layout-dashboard" class="me-2" style="width: 20px; height: 20px;"></i>{{ $title }}
             </h4>
             <p class="text-muted mb-0 mt-1">Welcome back, <strong>{{ Auth::user()->name }}</strong>! Here's what's happening
                 @if(isset($filter) && $filter !== 'this_month')
@@ -15,11 +15,11 @@
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-light btn-sm" onclick="location.reload()">
-                <i class="ti ti-refresh"></i> Refresh
+                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh
             </button>
             <div class="dropdown">
                 <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
-                    <i class="ti ti-calendar"></i>
+                    <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
                     @if(isset($filter))
                         {{ ucwords(str_replace('_', ' ', $filter)) }}
                     @else
@@ -45,7 +45,7 @@
                                        value="{{ request('end_date') }}" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm w-100">
-                                <i class="ti ti-filter"></i> Apply Filter
+                                <i data-lucide="filter" style="width: 16px; height: 16px;"></i> Apply Filter
                             </button>
                         </form>
                     </li>
@@ -113,7 +113,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <small class="text-muted">{{ $stat['subtitle'] }}</small>
                             <span class="badge bg-{{ $stat['changeType'] === 'up' ? 'success' : ($stat['changeType'] === 'down' ? 'danger' : 'secondary') }}-subtle text-{{ $stat['changeType'] === 'up' ? 'success' : ($stat['changeType'] === 'down' ? 'danger' : 'secondary') }}">
-                                <i class="ti ti-trending-{{ $stat['changeType'] === 'up' ? 'up' : ($stat['changeType'] === 'down' ? 'down' : 'up') }}"></i>
+                                <i data-lucide="trending-{{ $stat['changeType'] === 'up' ? 'up' : ($stat['changeType'] === 'down' ? 'down' : 'up') }}" style="width: 14px; height: 14px;"></i>
                                 {{ $stat['change'] }}
                             </span>
                         </div>
@@ -135,7 +135,7 @@
                         <div class="card-body text-white">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-75 text-uppercase fw-semibold fs-xs mb-0">Monthly Revenue</h6>
-                                <i class="ti ti-trending-up fs-4"></i>
+                                <i data-lucide="trending-up" class="fs-4" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-1 fw-bold">${{ number_format($statistics['monthly_revenue'], 0) }}</h2>
                             <small class="text-white-75">This month earnings</small>
@@ -150,7 +150,7 @@
                         <div class="card-body text-white">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-75 text-uppercase fw-semibold fs-xs mb-0">Total Artists</h6>
-                                <i class="ti ti-users fs-4"></i>
+                                <i data-lucide="users" class="fs-4" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-1 fw-bold">{{ $statistics['total_artists'] }}</h2>
                             <small class="text-white-75">DJs & Performers</small>
@@ -165,7 +165,7 @@
                         <div class="card-body text-white">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-75 text-uppercase fw-semibold fs-xs mb-0">Subscriptions</h6>
-                                <i class="ti ti-credit-card fs-4"></i>
+                                <i data-lucide="credit-card" class="fs-4" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-1 fw-bold">{{ $statistics['active_subscriptions'] }}</h2>
                             <small class="text-white-75">Active now</small>
@@ -180,7 +180,7 @@
                         <div class="card-body text-white">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-75 text-uppercase fw-semibold fs-xs mb-0">Customers</h6>
-                                <i class="ti ti-user-check fs-4"></i>
+                                <i data-lucide="user-check" class="fs-4" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-1 fw-bold">{{ $statistics['total_customers'] }}</h2>
                             <small class="text-white-75">Registered users</small>
@@ -199,12 +199,12 @@
                 <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
-                            <i class="ti ti-chart-line me-2 text-primary"></i>Booking Trends
+                            <i data-lucide="line-chart" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Booking Trends
                         </h5>
                         <small class="text-muted">Last 7 days performance</small>
                     </div>
                     <div class="d-flex gap-2">
-                        <span class="badge bg-primary-subtle text-primary"><i class="ti ti-calendar"></i> Last 7 Days</span>
+                        <span class="badge bg-primary-subtle text-primary"><i data-lucide="calendar" style="width: 16px; height: 16px;"></i> Last 7 Days</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -218,7 +218,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="card-title mb-0 fw-semibold">
-                        <i class="ti ti-chart-donut me-2 text-info"></i>Event Types
+                        <i data-lucide="pie-chart" class="me-2 text-info" style="width: 20px; height: 20px;"></i>Event Types
                     </h5>
                     <small class="text-muted">Distribution by category</small>
                 </div>
@@ -236,30 +236,30 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="card-title mb-0 fw-semibold">
-                        <i class="ti ti-bolt me-2 text-warning"></i>Quick Actions
+                        <i data-lucide="zap" class="me-2 text-warning" style="width: 20px; height: 20px;"></i>Quick Actions
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <a href="{{ route('bookings.create') }}" class="btn btn-outline-primary">
-                            <i class="ti ti-plus me-2"></i>Create New Booking
+                            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Booking
                         </a>
                         @if(in_array(Auth::user()->role->role_key, ['master_admin', 'company_admin']))
                             <a href="{{ route('users') }}" class="btn btn-outline-info">
-                                <i class="ti ti-user-plus me-2"></i>Add New User
+                                <i data-lucide="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Add New User
                             </a>
                             <a href="{{ route('artists.index') }}" class="btn btn-outline-success">
-                                <i class="ti ti-microphone me-2"></i>Manage Artists
+                                <i data-lucide="mic" class="me-2" style="width: 16px; height: 16px;"></i>Manage Artists
                             </a>
                         @endif
                         <a href="{{ route('notifications.index') }}" class="btn btn-outline-warning">
-                            <i class="ti ti-bell me-2"></i>View Notifications
+                            <i data-lucide="bell" class="me-2" style="width: 16px; height: 16px;"></i>View Notifications
                             @if(isset($unreadNotifications) && $unreadNotifications > 0)
                                 <span class="badge bg-danger">{{ $unreadNotifications }}</span>
                             @endif
                         </a>
                         <a href="{{ route('settings') }}" class="btn btn-outline-secondary">
-                            <i class="ti ti-settings me-2"></i>Settings
+                            <i data-lucide="settings" class="me-2" style="width: 16px; height: 16px;"></i>Settings
                         </a>
                     </div>
                 </div>
@@ -272,12 +272,12 @@
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
-                            <i class="ti ti-activity me-2 text-success"></i>Recent Activity
+                            <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>Recent Activity
                         </h5>
                         <small class="text-muted">Latest updates and actions</small>
                     </div>
                     <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-light">
-                        <i class="ti ti-external-link"></i> View All
+                        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> View All
                     </a>
                 </div>
                 <div class="card-body">
@@ -299,7 +299,7 @@
                                 <div class="timeline-content">
                                     <h6 class="mb-1">{{ $activity['title'] }}</h6>
                                     <p class="text-muted mb-1">{{ $activity['desc'] }}</p>
-                                    <small class="text-muted"><i class="ti ti-clock"></i> {{ $activity['time'] }}</small>
+                                    <small class="text-muted"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $activity['time'] }}</small>
                                 </div>
                             </div>
                         @endforeach
@@ -316,12 +316,12 @@
                 <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
-                            <i class="ti ti-list me-2 text-primary"></i>Recent Booking Requests
+                            <i data-lucide="list" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Recent Booking Requests
                         </h5>
                         <small class="text-muted">Latest booking activity</small>
                     </div>
                     <a href="{{ route('bookings.index') }}" class="btn btn-primary btn-sm">
-                        <i class="ti ti-eye"></i> View All Bookings
+                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i> View All Bookings
                     </a>
                 </div>
 
@@ -362,7 +362,7 @@
                                             </td>
                                             <td>
                                                 <span class="badge bg-primary-subtle text-primary">
-                                                    <i class="ti ti-calendar"></i> {{ $booking->eventType->event_type ?? 'N/A' }}
+                                                    <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> {{ $booking->eventType->event_type ?? 'N/A' }}
                                                 </span>
                                             </td>
                                             <td>
@@ -370,8 +370,8 @@
                                             </td>
                                             <td>
                                                 <div>
-                                                    <small class="d-block"><i class="ti ti-mail"></i> {{ Str::limit($booking->email, 25) }}</small>
-                                                    <small class="d-block"><i class="ti ti-phone"></i> {{ $booking->phone }}</small>
+                                                    <small class="d-block"><i data-lucide="mail" style="width: 16px; height: 16px;"></i> {{ Str::limit($booking->email, 25) }}</small>
+                                                    <small class="d-block"><i data-lucide="phone" style="width: 16px; height: 16px;"></i> {{ $booking->phone }}</small>
                                                 </div>
                                             </td>
                                             <td>
@@ -392,16 +392,16 @@
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    <i class="ti ti-clock"></i> {{ $booking->created_at->diffForHumans() }}
+                                                    <i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $booking->created_at->diffForHumans() }}
                                                 </small>
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('bookings.show', $booking) }}" class="btn btn-light" title="View">
-                                                        <i class="ti ti-eye"></i>
+                                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                     <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-light" title="Edit">
-                                                        <i class="ti ti-edit"></i>
+                                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -412,11 +412,11 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="ti ti-calendar-off text-muted" style="font-size: 64px;"></i>
+                            <i data-lucide="calendar-off" class="text-muted" style="width: 64px; height: 64px;"></i>
                             <h5 class="mt-3 text-muted">No Recent Bookings</h5>
                             <p class="text-muted">There are no booking requests yet.</p>
                             <a href="{{ route('bookings.create') }}" class="btn btn-primary">
-                                <i class="ti ti-plus"></i> Create Your First Booking
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Create Your First Booking
                             </a>
                         </div>
                     @endif
