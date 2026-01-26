@@ -145,6 +145,14 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $currentUser = Auth::user();
+        $roleKey = $currentUser->role->role_key;
+
+        // Company admin can only view users from their company
+        if ($roleKey === 'company_admin' && $user->company_id !== $currentUser->company_id) {
+            abort(403, 'You can only view users from your company');
+        }
+
         $title = $user->name . ' - Profile';
 
         // Load relationships
@@ -194,6 +202,14 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $currentUser = Auth::user();
+        $roleKey = $currentUser->role->role_key;
+
+        // Company admin can only edit users from their company
+        if ($roleKey === 'company_admin' && $user->company_id !== $currentUser->company_id) {
+            abort(403, 'You can only edit users from your company');
+        }
+
         //
         $title = 'Edit User';
         $roles = Auth::user()->role->name == 'Company Admin'
@@ -213,6 +229,14 @@ class UserController extends Controller
     {
         // ✅ Find user or fail
         $user = User::findOrFail($id);
+
+        $currentUser = Auth::user();
+        $roleKey = $currentUser->role->role_key;
+
+        // Company admin can only update users from their company
+        if ($roleKey === 'company_admin' && $user->company_id !== $currentUser->company_id) {
+            abort(403, 'You can only update users from your company');
+        }
 
         // ✅ Validation rules
         $validated = $request->validate([
@@ -289,6 +313,14 @@ class UserController extends Controller
     {
         // ✅ Find user
         $user = User::findOrFail($id);
+
+        $currentUser = Auth::user();
+        $roleKey = $currentUser->role->role_key;
+
+        // Company admin can only delete users from their company
+        if ($roleKey === 'company_admin' && $user->company_id !== $currentUser->company_id) {
+            abort(403, 'You can only delete users from your company');
+        }
 
         // ✅ Start transaction for safety
         DB::beginTransaction();

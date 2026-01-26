@@ -374,6 +374,14 @@ class BookingController extends Controller
             return redirect()->route('bookings.index')->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'booking_creation_error', 'error', [
+                'user_id' => Auth::id(),
+                'action' => 'create_booking',
+                'validated_data' => $validated ?? null,
+            ]);
+            
             return back()->withInput()->with('error', 'Failed to create booking: ' . $e->getMessage());
         }
     }
@@ -475,6 +483,14 @@ class BookingController extends Controller
             return redirect()->route('bookings.index')->with('success', 'Booking updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'booking_update_error', 'error', [
+                'booking_id' => $booking->id,
+                'user_id' => Auth::id(),
+                'action' => 'update_booking',
+            ]);
+            
             return back()->withInput()->with('error', 'Failed to update booking: ' . $e->getMessage());
         }
     }
@@ -599,7 +615,9 @@ class BookingController extends Controller
                 }
             }
 
-            // Notify previous artist if reassignment
+            // TODO: Notify previous artist if reassignment
+            // Requires BookingReassigned mail class to be created
+            /*
             if ($isReassignment && $previousArtist && $previousArtist->user && $previousArtist->user->email) {
                 try {
                     \Mail::to($previousArtist->user->email)->send(
@@ -609,12 +627,21 @@ class BookingController extends Controller
                     \Log::error('Failed to send reassignment notification: ' . $e->getMessage());
                 }
             }
+            */
 
             DB::commit();
 
             return back()->with('success', 'Artist assigned successfully! The artist will be notified to accept or reject the booking.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'artist_assignment_error', 'error', [
+                'booking_id' => $booking->id,
+                'artist_id' => $request->artist_id ?? null,
+                'user_id' => Auth::id(),
+            ]);
+            
             return back()->with('error', 'Failed to assign artist: ' . $e->getMessage());
         }
     }

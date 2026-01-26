@@ -142,7 +142,7 @@ class ArtistPortalController extends Controller
 
         // Determine available actions based on booking status
         $canAccept = $booking->status === 'pending';
-        $canReject = in_array($booking->status, ['pending', 'confirmed']);
+        $canReject = $booking->status === 'pending'; // Only pending bookings can be rejected
         $canComplete = $booking->status === 'confirmed';
         $isCompleted = $booking->status === 'completed';
         $isCancelled = in_array($booking->status, ['cancelled', 'rejected']);
@@ -206,7 +206,7 @@ class ArtistPortalController extends Controller
                     // Email notification
                     try {
                         \Mail::to($admin->email)->send(
-                            new \App\Mail\BookingStatusChanged($booking->fresh(), 'confirmed', 'completed', $artist->user->name . ' completed the event')
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), 'confirmed', 'completed')
                         );
                     } catch (\Exception $e) {
                         \Log::error('Failed to send completion email to company admin: ' . $e->getMessage());
@@ -401,7 +401,7 @@ class ArtistPortalController extends Controller
                     // Email notification
                     try {
                         \Mail::to($admin->email)->send(
-                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending', $artistName . ' rejected: ' . $request->reason)
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
                         );
                     } catch (\Exception $e) {
                         \Log::error('Failed to send rejection email to company admin: ' . $e->getMessage());
