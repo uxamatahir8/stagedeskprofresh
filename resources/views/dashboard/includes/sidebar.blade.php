@@ -20,12 +20,12 @@
 
     <!-- Sidebar Hover Menu Toggle Button -->
     <button class="button-on-hover">
-        <i class="ti ti-menu-4 fs-22 align-middle"></i>
+        <i data-lucide="menu" class="fs-22 align-middle" style="width: 22px; height: 22px;"></i>
     </button>
 
     <!-- Full Sidebar Menu Close Button -->
     <button class="button-close-offcanvas">
-        <i class="ti ti-x align-middle"></i>
+        <i data-lucide="x" class="align-middle" style="width: 22px; height: 22px;"></i>
     </button>
 
     <div class="scrollbar" data-simplebar>

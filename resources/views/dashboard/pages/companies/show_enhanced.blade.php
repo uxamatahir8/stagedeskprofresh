@@ -258,7 +258,7 @@
                         @endif
                     @else
                         <div class="text-center py-4">
-                            <i class="ti ti-credit-card-off text-muted" style="font-size: 64px;"></i>
+                            <i data-lucide="credit-card" class="text-muted" style="width: 64px; height: 64px;"></i>
                             <h6 class="mt-3 text-muted">No Active Subscription</h6>
                             <p class="text-muted mb-3">This company doesn't have an active subscription plan.</p>
                             <a href="{{ route('subscription.create', $company) }}" class="btn btn-primary">
@@ -275,22 +275,22 @@
     <ul class="nav nav-pills nav-fill bg-light rounded p-1 mb-4 shadow-sm" id="companyTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active rounded" id="artists-tab" data-bs-toggle="pill" data-bs-target="#artists" type="button" role="tab">
-                <i class="ti ti-users me-2"></i>Artists <span class="badge bg-primary ms-1">{{ $stats['total_artists'] ?? 0 }}</span>
+                <i data-lucide="users" class="me-2" style="width: 16px; height: 16px;"></i>Artists <span class="badge bg-primary ms-1">{{ $stats['total_artists'] ?? 0 }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded" id="bookings-tab" data-bs-toggle="pill" data-bs-target="#bookings" type="button" role="tab">
-                <i class="ti ti-calendar me-2"></i>Bookings <span class="badge bg-success ms-1">{{ $stats['total_bookings'] ?? 0 }}</span>
+                <i data-lucide="calendar" class="me-2" style="width: 16px; height: 16px;"></i>Bookings <span class="badge bg-success ms-1">{{ $stats['total_bookings'] ?? 0 }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab">
-                <i class="ti ti-chart-bar me-2"></i>Analytics
+                <i data-lucide="bar-chart" class="me-2" style="width: 16px; height: 16px;"></i>Analytics
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
-                <i class="ti ti-activity me-2"></i>Activity
+                <i data-lucide="activity" class="me-2" style="width: 16px; height: 16px;"></i>Activity
             </button>
         </li>
     </ul>
@@ -300,7 +300,7 @@
         <div class="tab-pane fade show active" id="artists" role="tabpanel">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-users me-2"></i>Company Artists</h5>
+                    <h5 class="card-title mb-0 fw-semibold"><i data-lucide="users" class="me-2" style="width: 20px; height: 20px;"></i>Company Artists</h5>
                     <a href="{{ route('artists.create') }}" class="btn btn-primary btn-sm">
                         <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add Artist
                     </a>
@@ -346,7 +346,7 @@
                                             </td>
                                             <td>
                                                 <div>
-                                                    <small class="d-block"><i class="ti ti-phone text-muted"></i> {{ $artist->user->phone ?? 'N/A' }}</small>
+                                                    <small class="d-block"><i data-lucide="phone" class="text-muted" style="width: 14px; height: 14px;"></i> {{ $artist->user->phone ?? 'N/A' }}</small>
                                                 </div>
                                             </td>
                                             <td>
@@ -357,7 +357,7 @@
                                             <td>{{ $artist->specialization ?? 'N/A' }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ti ti-star-filled text-warning me-1"></i>
+                                                    <i data-lucide="star" class="fill-current text-warning me-1" style="width: 16px; height: 16px;"></i>
                                                     <strong>{{ number_format($artist->rating ?? 0, 1) }}</strong>
                                                 </div>
                                             </td>
@@ -383,7 +383,7 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="ti ti-user-off text-muted" style="font-size: 64px;"></i>
+                            <i data-lucide="user-x" class="text-muted" style="width: 64px; height: 64px;"></i>
                             <h5 class="mt-3 text-muted">No Artists Found</h5>
                             <p class="text-muted">This company doesn't have any artists yet.</p>
                             <a href="{{ route('artists.create') }}" class="btn btn-primary">
@@ -399,7 +399,7 @@
         <div class="tab-pane fade" id="bookings" role="tabpanel">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-calendar me-2"></i>Recent Bookings</h5>
+                    <h5 class="card-title mb-0 fw-semibold"><i data-lucide="calendar" class="me-2" style="width: 20px; height: 20px;"></i>Recent Bookings</h5>
                     <div class="d-flex gap-2">
                         <select class="form-select form-select-sm" style="width: auto;">
                             <option>All Status</option>
@@ -480,7 +480,7 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="ti ti-calendar-off text-muted" style="font-size: 64px;"></i>
+                            <i data-lucide="calendar-off" class="text-muted" style="width: 64px; height: 64px;"></i>
                             <h5 class="mt-3 text-muted">No Bookings Found</h5>
                             <p class="text-muted">This company doesn't have any bookings yet.</p>
                         </div>
@@ -501,7 +501,7 @@
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom">
-                            <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-chart-line me-2"></i>Booking Trends</h5>
+                            <h5 class="card-title mb-0 fw-semibold"><i data-lucide="line-chart" class="me-2" style="width: 20px; height: 20px;"></i>Booking Trends</h5>
                         </div>
                         <div class="card-body">
                             <canvas id="bookingChart" height="100"></canvas>
@@ -513,7 +513,7 @@
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom">
-                            <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-chart-pie me-2"></i>Performance</h5>
+                            <h5 class="card-title mb-0 fw-semibold"><i data-lucide="pie-chart" class="me-2" style="width: 20px; height: 20px;"></i>Performance</h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-4">
@@ -565,7 +565,7 @@
         <div class="tab-pane fade" id="activity" role="tabpanel">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom">
-                    <h5 class="card-title mb-0 fw-semibold"><i class="ti ti-activity me-2"></i>Recent Activity</h5>
+                    <h5 class="card-title mb-0 fw-semibold"><i data-lucide="activity" class="me-2" style="width: 20px; height: 20px;"></i>Recent Activity</h5>
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline">

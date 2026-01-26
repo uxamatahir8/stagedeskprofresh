@@ -22,7 +22,7 @@
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ti ti-check me-2"></i>
+            <i data-lucide="check" class="me-2" style="width: 16px; height: 16px;"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -139,7 +139,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-{{ $mode === 'edit' ? 'warning' : 'primary' }}">
-                        <i class="ti ti-{{ $mode === 'edit' ? 'pencil' : 'plus' }}"></i>
+                        <i data-lucide="{{ $mode === 'edit' ? 'pencil' : 'plus' }}" style="width: 16px; height: 16px;"></i>
                         {{ $mode === 'edit' ? 'Update' : 'Save' }} Artist
                     </button>
                 </div>
