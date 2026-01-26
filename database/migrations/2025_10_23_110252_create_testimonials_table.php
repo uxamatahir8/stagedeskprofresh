@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->text('testimonial');
             $table->string('name');
-            $table->string('avatar');
+            $table->string('avatar')->nullable();
             $table->string('designation');
             $table->softDeletes();
             $table->timestamps();
