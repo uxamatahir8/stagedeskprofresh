@@ -32,7 +32,7 @@
                         <div class="col-md-6">
                             <label class="text-muted mb-1">Company</label>
                             <p class="mb-0 fw-bold">
-                                <a href="{{ route('companies.show', $subscription->company->id) }}">
+                                <a href="{{ route('company.show', $subscription->company->id) }}">
                                     {{ $subscription->company->company_name }}
                                 </a>
                             </p>
@@ -167,7 +167,7 @@
                             @foreach(json_decode($subscription->package->features, true) as $feature)
                                 <li class="mb-2">
                                     <i class="ti ti-check text-success"></i>
-                                    {{ $feature }}
+                                    {{ is_array($feature) ? json_encode($feature) : $feature }}
                                 </li>
                             @endforeach
                         </ul>
