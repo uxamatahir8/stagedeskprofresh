@@ -28,6 +28,35 @@
         </div>
 
         <div class="card-body">
+            {{-- Display Validation Errors --}}
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Please fix the following errors:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            {{-- Display Success Message --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="ti ti-check-circle"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            {{-- Display Error Message --}}
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="ti ti-alert-circle"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <form class="validate_form"
                 action="{{ $mode === 'edit' ? route('bookings.update', $booking) : route('bookings.store') }}"
                 method="POST">
@@ -40,10 +69,13 @@
                     {{-- Event Date --}}
                     <div class="col-lg-4 mb-3">
                         <label class="col-form-label">Event Date <span class="text-danger">*</span></label>
-                        <input type="text" name="event_date" class="form-control required" data-provider="flatpickr"
+                        <input type="text" name="event_date" class="form-control required @error('event_date') is-invalid @enderror" data-provider="flatpickr"
                             data-date-format="Y-m-d" data-minDate="{{ now()->addDays(1)->format('Y-m-d') }}"
                             placeholder="Select event date"
                             value="{{ old('event_date', isset($booking) ? \Carbon\Carbon::parse($booking->event_date)->format('Y-m-d') : '') }}">
+                        @error('event_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -52,7 +84,7 @@
                     @if (auth()->user()->role->role_key === 'master_admin')
                         <div class="col-lg-6 mb-3">
                             <label class="col-form-label">Company <span class="text-danger">*</span></label>
-                            <select name="company_id" id="company_select" class="form-control form-select required">
+                            <select name="company_id" id="company_select" class="form-control form-select required @error('company_id') is-invalid @enderror">
                                 <option value="">Select Company</option>
                                 @foreach ($companies as $company)
                                     <option value="{{ $company->id }}"
@@ -61,6 +93,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('company_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             <small class="text-muted">Select the company this booking is for</small>
                         </div>
                     @endif
@@ -69,7 +104,7 @@
                     @if (auth()->user()->role->role_key === 'company_admin' || auth()->user()->role->role_key === 'master_admin')
                         <div class="col-lg-6 mb-3">
                             <label class="col-form-label">Customer</label>
-                            <select name="user_id" id="customer_select" class="form-control form-select">
+                            <select name="user_id" id="customer_select" class="form-control form-select @error('user_id') is-invalid @enderror">
                                 <option value="">Select Existing Customer (or create new below)</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}"
@@ -82,6 +117,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('user_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             <small class="text-muted">Leave empty to create a new customer account</small>
                         </div>
 
@@ -104,7 +142,7 @@
                     {{-- EVENT TYPE --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Event Type <span class="text-danger">*</span></label>
-                        <select name="event_type_id" class="form-control form-select required">
+                        <select name="event_type_id" class="form-control form-select required @error('event_type_id') is-invalid @enderror">
                             <option value="">Select Event Type</option>
                             @foreach ($event_types as $event_type)
                                 <option value="{{ $event_type->id }}"
@@ -113,50 +151,71 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('event_type_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- NAME --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control required" placeholder="Enter first name"
+                        <input type="text" name="name" class="form-control required @error('name') is-invalid @enderror" placeholder="Enter first name"
                             value="{{ old('name', $booking->name ?? '') }}">
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- SURNAME --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Surname <span class="text-danger">*</span></label>
-                        <input type="text" name="surname" class="form-control required" placeholder="Enter surname"
+                        <input type="text" name="surname" class="form-control required @error('surname') is-invalid @enderror" placeholder="Enter surname"
                             value="{{ old('surname', $booking->surname ?? '') }}">
+                        @error('surname')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- DOB --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Date of Birth <span class="text-danger">*</span></label>
-                        <input type="text" name="date_of_birth" class="form-control required" data-provider="flatpickr"
+                        <input type="text" name="date_of_birth" class="form-control required @error('date_of_birth') is-invalid @enderror" data-provider="flatpickr"
                             data-date-format="Y-m-d" data-maxDate="{{ now()->subDays(5)->format('Y-m-d') }}"
                             placeholder="Select date of birth"
                             value="{{ old('date_of_birth', $booking->date_of_birth ?? '') }}">
+                        @error('date_of_birth')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- PHONE --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Phone <span class="text-danger">*</span></label>
-                        <input type="text" name="phone" class="form-control required phone"
+                        <input type="text" name="phone" class="form-control required phone @error('phone') is-invalid @enderror"
                             placeholder="Enter phone number" value="{{ old('phone', $booking->phone ?? '') }}">
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- EMAIL --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control required" placeholder="Enter email"
+                        <input type="email" name="email" class="form-control required @error('email') is-invalid @enderror" placeholder="Enter email"
                             value="{{ old('email', $booking->email ?? '') }}">
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- ADDRESS --}}
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Address <span class="text-danger">*</span></label>
-                        <input type="text" name="address" class="form-control required" placeholder="Enter address"
+                        <input type="text" name="address" class="form-control required @error('address') is-invalid @enderror" placeholder="Enter address"
                             value="{{ old('address', $booking->address ?? '') }}">
+                        @error('address')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- WEDDING FIELDS --}}
@@ -269,7 +328,6 @@
                         if (nameInput) nameInput.readOnly = true;
                         if (surnameInput) surnameInput.readOnly = true;
                         if (emailInput) emailInput.readOnly = true;
-                        if (phoneInput) phoneInput.readOnly = true;
                     } else {
                         // No customer selected, show create account option and clear fields
                         createCustomerContainer.style.display = 'block';

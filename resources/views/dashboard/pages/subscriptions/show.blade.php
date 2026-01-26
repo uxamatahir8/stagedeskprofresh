@@ -162,12 +162,12 @@
                 </div>
 
                 <div class="card-body">
-                    @if($subscription->package->features && count(json_decode($subscription->package->features, true)) > 0)
+                    @if($subscription->package->features && $subscription->package->features->count() > 0)
                         <ul class="list-unstyled">
-                            @foreach(json_decode($subscription->package->features, true) as $feature)
+                            @foreach($subscription->package->features as $feature)
                                 <li class="mb-2">
                                     <i class="ti ti-check text-success"></i>
-                                    {{ is_array($feature) ? json_encode($feature) : $feature }}
+                                    {{ $feature->feature_description }}
                                 </li>
                             @endforeach
                         </ul>

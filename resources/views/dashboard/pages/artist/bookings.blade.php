@@ -59,7 +59,7 @@
                             <tr>
                                 <td>#{{ $booking->id }}</td>
                                 <td>{{ $booking->user->name ?? 'N/A' }}</td>
-                                <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y h:i A') }}</td>
                                 <td>{{ $booking->duration_hours ?? 0 }}h</td>
                                 <td>

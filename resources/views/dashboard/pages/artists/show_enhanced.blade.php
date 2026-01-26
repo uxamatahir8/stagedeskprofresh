@@ -226,7 +226,7 @@
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
                                         <td><strong>#{{ $booking->id }}</strong></td>
-                                        <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                        <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->company->name ?? 'N/A' }}</td>
                                         <td>
@@ -336,7 +336,7 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1">Booking #{{ $booking->id }}</h6>
-                                        <p class="text-muted mb-1">{{ $booking->eventType->name ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
+                                        <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
                                         <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
                                     </div>
                                 </div>

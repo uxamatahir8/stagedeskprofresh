@@ -26,7 +26,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <p class="text-muted mb-1">Event Type</p>
-                            <h6>{{ $booking->eventType->name ?? 'N/A' }}</h6>
+                            <h6>{{ $booking->eventType->event_type ?? 'N/A' }}</h6>
                         </div>
                         <div class="col-md-6">
                             <p class="text-muted mb-1">Company</p>

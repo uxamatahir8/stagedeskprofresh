@@ -61,7 +61,7 @@
                                         <strong>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</strong><br>
                                         <small class="text-muted">{{ \Carbon\Carbon::parse($booking->event_date)->format('h:i A') }}</small>
                                     </td>
-                                    <td>{{ $booking->eventType->name ?? 'N/A' }}</td>
+                                    <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                     <td>{{ $booking->user->name ?? 'N/A' }}</td>
                                     <td>{{ $booking->duration_hours ?? 0 }} hours</td>
                                     <td><small>{{ Str::limit($booking->venue_address ?? 'N/A', 30) }}</small></td>
