@@ -74,8 +74,19 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
-        if ($payment->user_id !== Auth::user()->id && Auth::user()->role->role_key !== 'master_admin') {
+        $roleKey = Auth::user()->role->role_key;
+
+        // Check authorization based on role
+        if ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
             return abort(403, 'Unauthorized');
+        }
+
+        if ($roleKey === 'company_admin') {
+            // Company admin can only view payments from their company users
+            $companyId = Auth::user()->company_id;
+            if ($payment->user && $payment->user->company_id !== $companyId) {
+                return abort(403, 'Unauthorized - You can only view payments from your company');
+            }
         }
 
         $title = 'Payment Details';
@@ -85,8 +96,19 @@ class PaymentController extends Controller
 
     public function edit(Payment $payment)
     {
-        if ($payment->user_id !== Auth::user()->id) {
+        $roleKey = Auth::user()->role->role_key;
+
+        // Check authorization based on role
+        if ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
             return abort(403, 'Unauthorized');
+        }
+
+        if ($roleKey === 'company_admin') {
+            // Company admin can only edit payments from their company users
+            $companyId = Auth::user()->company_id;
+            if ($payment->user && $payment->user->company_id !== $companyId) {
+                return abort(403, 'Unauthorized - You can only edit payments from your company');
+            }
         }
 
         if ($payment->status !== 'pending') {
@@ -104,8 +126,19 @@ class PaymentController extends Controller
 
     public function update(Request $request, Payment $payment)
     {
-        if ($payment->user_id !== Auth::user()->id) {
+        $roleKey = Auth::user()->role->role_key;
+
+        // Check authorization based on role
+        if ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
             return abort(403, 'Unauthorized');
+        }
+
+        if ($roleKey === 'company_admin') {
+            // Company admin can only update payments from their company users
+            $companyId = Auth::user()->company_id;
+            if ($payment->user && $payment->user->company_id !== $companyId) {
+                return abort(403, 'Unauthorized - You can only update payments from your company');
+            }
         }
 
         if ($payment->status !== 'pending') {
@@ -123,7 +156,22 @@ class PaymentController extends Controller
             'attachment'               => 'nullable|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
-        if ($request->hasFile('attachment')) {
+        $roleKey = Auth::user()->role->role_key;
+
+        // Check authorization based on role
+        if ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
+            return abort(403, 'Unauthorized');
+        }
+
+        if ($roleKey === 'company_admin') {
+            // Company admin can only delete payments from their company users
+            $companyId = Auth::user()->company_id;
+            if ($payment->user && $payment->user->company_id !== $companyId) {
+                return abort(403, 'Unauthorized - You can only delete payments from your company');
+            }
+        }
+
+        if ($roleKey !== 'master_admin' && $payment->user_id !== Auth::user()->id
             $validated['attachment'] = $request->file('attachment')->store('payments', 'public');
         }
 
