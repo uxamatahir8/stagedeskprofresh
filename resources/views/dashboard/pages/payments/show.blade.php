@@ -9,7 +9,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item">
@@ -67,7 +67,7 @@
                         <div class="col-md-6">
                             <label class="text-muted mb-1">Payment Method</label>
                             <p class="mb-0">
-                                <i class="ti ti-credit-card"></i>
+                                <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i>
                                 {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
                             </p>
                         </div>
@@ -110,7 +110,7 @@
                                 <label class="text-muted mb-1">Receipt/Attachment</label>
                                 <p class="mb-0">
                                     <a href="{{ asset('storage/' . $payment->attachment) }}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="ti ti-download"></i> Download Receipt
+                                        <i data-lucide="download" style="width: 16px; height: 16px;"></i> Download Receipt
                                     </a>
                                 </p>
                             </div>
@@ -129,14 +129,14 @@
                 <div class="card-body">
                     @if($payment->status === 'pending')
                         <a href="{{ route('payments.edit', $payment) }}" class="btn btn-warning w-100 mb-2">
-                            <i class="ti ti-pencil"></i> Edit Payment
+                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Edit Payment
                         </a>
 
                         @if(Auth::user()->hasRole('master_admin'))
                             <form action="{{ route('payments.verify', $payment) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-success w-100 mb-2">
-                                    <i class="ti ti-check"></i> Verify Payment
+                                    <i data-lucide="check" style="width: 16px; height: 16px;"></i> Verify Payment
                                 </button>
                             </form>
 
@@ -144,13 +144,13 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you sure?')">
-                                    <i class="ti ti-trash"></i> Reject Payment
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Reject Payment
                                 </button>
                             </form>
                         @endif
                     @else
                         <div class="alert alert-info mb-0">
-                            <i class="ti ti-info-circle"></i>
+                            <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                             <strong>{{ ucfirst($payment->status) }} Payment</strong>
                             <p class="mb-0 mt-2">This payment cannot be edited as it has already been {{ $payment->status }}.</p>
                         </div>
@@ -194,7 +194,7 @@
 
                 <div class="card-body">
                     <a href="{{ route('payments.index') }}" class="btn btn-primary w-100">
-                        <i class="ti ti-arrow-left"></i> Back to Payments
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Payments
                     </a>
                 </div>
             </div>

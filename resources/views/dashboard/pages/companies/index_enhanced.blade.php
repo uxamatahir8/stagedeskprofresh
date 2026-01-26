@@ -11,10 +11,10 @@
 
         <div class="text-end">
             <a href="{{ route('subscriptions.index') }}" class="btn btn-warning btn-sm me-2">
-                <i data-lucide="credit-card" class="me-1"></i>Manage Subscriptions
+                <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i> Manage Subscriptions
             </a>
             <a href="{{ route('company.create') }}" class="btn btn-primary btn-sm">
-                <i class="ti ti-plus"></i> Add Company
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add Company
             </a>
         </div>
     </div>
@@ -226,18 +226,18 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="action-btn">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('subscription.create', $company) }}"
                                             class="btn btn-warning btn-sm" title="Manage Subscription">
-                                            <i class="ti ti-settings"></i>
+                                            <i data-lucide="credit-card" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         <a href="{{ route('company.show', $company) }}"
                                             class="btn btn-sm btn-primary" title="View Details">
-                                            <i class="ti ti-eye"></i>
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         <a href="{{ route('company.edit', $company) }}"
                                             class="btn btn-sm btn-info" title="Edit">
-                                            <i class="ti ti-pencil"></i>
+                                            <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         <form action="{{ route('company.destroy', $company) }}" method="POST"
                                             style="display: inline;"
@@ -245,7 +245,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                <i class="ti ti-trash text-white"></i>
+                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                             </button>
                                         </form>
                                     </div>

@@ -67,6 +67,8 @@ class ArtistController extends Controller
 
     public function store(Request $request)
     {
+        $roleKey = Auth::user()->role->role_key;
+
         $validated = $request->validate([
             'company_id'      => 'required|exists:companies,id',
             'user_id'         => 'required|exists:users,id|unique:artists,user_id',
@@ -79,6 +81,18 @@ class ArtistController extends Controller
         ], [
             'user_id.unique' => 'This user already has an artist profile.',
         ]);
+
+        // Company admin can only create artists for their company
+        if ($roleKey === 'company_admin') {
+            if ($validated['company_id'] !== Auth::user()->company_id) {
+                abort(403, 'You can only create artists for your company');
+            }
+            // Double check the user belongs to their company
+            $user = User::find($validated['user_id']);
+            if ($user->company_id !== Auth::user()->company_id) {
+                return back()->withInput()->with('error', 'Selected user must belong to your company');
+            }
+        }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('artists', 'public');
@@ -94,6 +108,13 @@ class ArtistController extends Controller
 
     public function show(Artist $artist)
     {
+        $roleKey = Auth::user()->role->role_key;
+
+        // Company admin can only view artists from their company
+        if ($roleKey === 'company_admin' && $artist->company_id !== Auth::user()->company_id) {
+            abort(403, 'You can only view artists from your company');
+        }
+
         $title = 'Artist Details';
 
         // Fetch artist stats
@@ -172,6 +193,11 @@ class ArtistController extends Controller
             'bio'             => 'nullable|string|max:1000',
             'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Company admin can only update to their own company
+        if ($roleKey === 'company_admin' && $validated['company_id'] !== Auth::user()->company_id) {
+            return abort(403, 'You can only assign artists to your company');
+        }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('artists', 'public');

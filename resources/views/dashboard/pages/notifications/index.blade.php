@@ -13,7 +13,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">{{ $title }}</li>
@@ -45,7 +45,7 @@
                         @csrf
                         @method('PATCH')
                         <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="ti ti-check"></i> Mark All Read
+                            <i data-lucide="check" style="width: 16px; height: 16px;"></i> Mark All Read
                         </button>
                     </form>
                 @endif
@@ -54,7 +54,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete all notifications?')">
-                            <i class="ti ti-trash"></i> Clear All
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Clear All
                         </button>
                     </form>
                 @endif

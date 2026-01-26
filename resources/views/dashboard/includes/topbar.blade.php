@@ -27,12 +27,12 @@
 
             <!-- Sidebar Menu Toggle Button -->
             <button class="sidenav-toggle-button btn btn-default btn-icon">
-                <i class="ti ti-menu-4 fs-22"></i>
+                <i data-lucide="menu" class="fs-22" style="width: 22px; height: 22px;"></i>
             </button>
 
             <!-- Horizontal Menu Toggle Button -->
             <button class="topnav-toggle-button px-2" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
-                <i class="ti ti-menu-4 fs-22"></i>
+                <i data-lucide="menu" class="fs-22" style="width: 22px; height: 22px;"></i>
             </button>
 
         </div> <!-- .d-flex-->
@@ -72,7 +72,7 @@
                                     <span class="d-flex align-items-center gap-2">
                                         <span class="flex-shrink-0 position-relative">
                                             <div class="avatar-sm rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center">
-                                                <i class="ti ti-bell text-primary"></i>
+                                                <i data-lucide="bell" class="text-primary" style="width: 18px; height: 18px;"></i>
                                             </div>
                                             @if(!$notification->is_read)
                                                 <span class="position-absolute rounded-pill bg-danger notification-badge" style="width: 8px; height: 8px; bottom: 0; right: 0;"></span>
@@ -81,13 +81,13 @@
                                         <span class="flex-grow-1">
                                             <span class="fw-medium text-body d-block">{{ $notification->title }}</span>
                                             <span class="text-muted small">{{ Str::limit($notification->message, 40) }}</span><br>
-                                            <span class="fs-xs text-muted"><i class="ti ti-clock"></i> {{ $notification->created_at->diffForHumans() }}</span>
+                                            <span class="fs-xs text-muted"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> {{ $notification->created_at->diffForHumans() }}</span>
                                         </span>
                                         @if(!$notification->is_read)
                                             <form action="{{ route('notifications.read', $notification) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="flex-shrink-0 text-muted btn btn-link p-0" title="Mark as read">
-                                                    <i class="ti ti-check fs-md"></i>
+                                                    <i data-lucide="check" class="fs-md" style="width: 16px; height: 16px;"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -174,7 +174,7 @@
                             <h5 class="my-0">
                                 {{ Auth::user()->name }}
                             </h5>
-                            <i class="ti ti-chevron-down align-middle"></i>
+                            <i data-lucide="chevron-down" class="align-middle" style="width: 16px; height: 16px;"></i>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
@@ -194,25 +194,25 @@
                             };
                         @endphp
                         <a href="{{ $profileRoute }}" class="dropdown-item">
-                            <i class="ti ti-user-circle me-1 fs-17 align-middle"></i>
+                            <i data-lucide="user-circle" class="me-1 fs-17 align-middle" style="width: 17px; height: 17px;"></i>
                             <span class="align-middle">My Profile</span>
                         </a>
 
                         <!-- Notifications -->
                         <a href="{{ route('notifications.index') }}" class="dropdown-item">
-                            <i class="ti ti-bell-ringing me-1 fs-17 align-middle"></i>
+                            <i data-lucide="bell" class="me-1 fs-17 align-middle" style="width: 17px; height: 17px;"></i>
                             <span class="align-middle">Notifications</span>
                         </a>
 
                         <!-- Settings -->
                         <a href="{{ route('settings') }}" class="dropdown-item">
-                            <i class="ti ti-settings-2 me-1 fs-17 align-middle"></i>
+                            <i data-lucide="settings" class="me-1 fs-17 align-middle" style="width: 17px; height: 17px;"></i>
                             <span class="align-middle">Account Settings</span>
                         </a>
 
                         <!-- Support -->
                         <a href="{{ route('support.tickets') }}" class="dropdown-item">
-                            <i class="ti ti-headset me-1 fs-17 align-middle"></i>
+                            <i data-lucide="headphones" class="me-1 fs-17 align-middle" style="width: 17px; height: 17px;"></i>
                             <span class="align-middle">Support Center</span>
                         </a>
 
@@ -221,7 +221,7 @@
 
                         <!-- Logout -->
                         <a href="{{ route('logout') }}" class="dropdown-item fw-semibold">
-                            <i class="ti ti-logout-2 me-1 fs-17 align-middle"></i>
+                            <i data-lucide="log-out" class="me-1 fs-17 align-middle" style="width: 17px; height: 17px;"></i>
                             <span class="align-middle">Log Out</span>
                         </a>
                     </div>

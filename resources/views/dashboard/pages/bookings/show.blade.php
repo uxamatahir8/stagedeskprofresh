@@ -150,8 +150,8 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="avatar-lg me-3">
-                            @if($booking->assignedArtist->profile_image)
-                                <img src="{{ asset('storage/' . $booking->assignedArtist->profile_image) }}"
+                            @if($booking->assignedArtist->image)
+                                <img src="{{ asset('storage/' . $booking->assignedArtist->image) }}"
                                      alt="{{ $booking->assignedArtist->user->name }}"
                                      class="rounded-circle"
                                      style="width: 64px; height: 64px; object-fit: cover;">

@@ -13,7 +13,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">{{ $title }}</li>
@@ -151,9 +151,9 @@
                             <div class="rating mb-1">
                                 @for($i = 1; $i <= 5; $i++)
                                     @if($i <= $review->rating)
-                                        <i class="ti ti-star-filled text-warning"></i>
+                                        <i data-lucide="star" class="fill-current text-warning" style="width: 16px; height: 16px;"></i>
                                     @else
-                                        <i class="ti ti-star text-muted"></i>
+                                        <i data-lucide="star" class="text-muted" style="width: 16px; height: 16px;"></i>
                                     @endif
                                 @endfor
                                 <span class="badge bg-primary ms-2">{{ $review->rating }}/5</span>

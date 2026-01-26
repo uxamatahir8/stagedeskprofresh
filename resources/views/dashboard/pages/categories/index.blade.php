@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">{{ $title }}</li>
@@ -56,10 +56,10 @@
                                         <td>{{ $category->id }}</td>
                                         <td>{{ $category->name }}</td>
                                         <td>
-                                            <div class="action-btn">
+                                            <div class="btn-group" role="group">
                                                 <a href="{{ route('category.edit', $category) }}" class="btn btn-sm btn-info"
                                                     title="Edit">
-                                                    <i class="ti ti-pencil"></i>
+                                                    <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                                 </a>
                                                 <form action="{{ route('category.destroy', $category) }}" method="POST"
                                                     style="display: inline;"
@@ -67,7 +67,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                        <i class="ti ti-trash text-white"></i>
+                                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                     </button>
                                                 </form>
                                             </div>

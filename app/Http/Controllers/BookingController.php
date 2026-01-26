@@ -20,7 +20,17 @@ class BookingController extends Controller
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
-        // Safety check: Verify access permission
+        // Artists should use their own portal
+        if ($roleKey === 'artist') {
+            return redirect()->route('artist.bookings.details', $booking);
+        }
+
+        // Customers should use their own portal
+        if ($roleKey === 'customer') {
+            return redirect()->route('customer.bookings.details', $booking);
+        }
+
+        // Safety check: Verify access permission (for admins)
         if (!$this->canAccessBooking($booking, $user, $roleKey)) {
             abort(403, 'You do not have permission to view this booking');
         }
@@ -31,8 +41,6 @@ class BookingController extends Controller
         $booking->load(['user', 'eventType', 'company', 'assignedArtist.user', 'artistRequests.artist.user', 'payments', 'reviews']);
 
         // Get artists for assignment (admin only)
-        $user = Auth::user();
-        $roleKey = $user->role->role_key;
         $artists = match ($roleKey) {
             'company_admin' => Artist::where('company_id', $user->company_id)->with('user')->get(),
             'master_admin'  => Artist::with(['user', 'company'])->get(),
@@ -46,18 +54,25 @@ class BookingController extends Controller
 
     public function index()
     {
-        $title = 'Booking Requests';
         $user = Auth::user();
         $roleKey = $user->role->role_key;
+
+        // Redirect to role-specific portals
+        if ($roleKey === 'artist') {
+            return redirect()->route('artist.bookings');
+        }
+
+        if ($roleKey === 'customer') {
+            return redirect()->route('customer.bookings');
+        }
+
+        // Only admins should reach here
+        $title = 'Booking Requests';
 
         $bookingResolvers = [
             'master_admin'  => fn()  => BookingRequest::with(['user', 'eventType', 'company', 'assignedArtist']),
             'company_admin' => fn() => BookingRequest::where('company_id', $user->company_id)
                                                       ->with(['user', 'eventType', 'assignedArtist']),
-            'customer'      => fn()  => BookingRequest::where('user_id', $user->id)
-                                                       ->with(['eventType', 'company', 'assignedArtist']),
-            'artist'        => fn()  => BookingRequest::where('assigned_artist_id', optional($user->artist)->id)
-                                                       ->with(['user', 'eventType', 'company']),
         ];
 
         $bookings = isset($bookingResolvers[$roleKey])
@@ -76,15 +91,22 @@ class BookingController extends Controller
 
     public function create()
     {
-        $title = 'Create Booking Request';
-        $mode  = 'create';
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
-        // Safety check: Only admins and customers can create bookings
-        if (!in_array($roleKey, ['master_admin', 'company_admin', 'customer'])) {
-            abort(403, 'You do not have permission to create bookings');
+        // Customers should use their own portal
+        if ($roleKey === 'customer') {
+            return redirect()->route('customer.bookings.create');
         }
+
+        // Artists cannot create bookings
+        if ($roleKey === 'artist') {
+            abort(403, 'Artists cannot create bookings');
+        }
+
+        // Only admins should reach here
+        $title = 'Create Booking Request';
+        $mode  = 'create';
 
         $customers = match ($roleKey) {
             'company_admin' => User::companyCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
@@ -94,7 +116,6 @@ class BookingController extends Controller
                 $customer->phone = $customer->profile->phone ?? '';
                 return $customer;
             }),
-            'customer'      => collect([]),  // Customers create for themselves
             default         => User::allCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
                 $nameParts = explode(' ', $customer->name, 2);
                 $customer->first_name = $nameParts[0] ?? '';
@@ -130,15 +151,27 @@ class BookingController extends Controller
 
     public function edit(BookingRequest $booking)
     {
-        $title = 'Edit Booking Request';
-        $mode  = 'edit';
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
-        // Safety check: Verify edit permission
+        // Artists cannot edit bookings
+        if ($roleKey === 'artist') {
+            abort(403, 'Artists cannot edit bookings');
+        }
+
+        // Customers should use their own portal (if they have one)
+        // Currently customers don't have edit functionality, so block them
+        if ($roleKey === 'customer') {
+            abort(403, 'Customers cannot edit bookings directly. Please contact support.');
+        }
+
+        // Safety check: Verify edit permission (for admins)
         if (!$this->canEditBooking($booking, $user, $roleKey)) {
             abort(403, 'You do not have permission to edit this booking');
         }
+
+        $title = 'Edit Booking Request';
+        $mode  = 'edit';
 
         $customers = match ($roleKey) {
             'company_admin' => User::companyCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
@@ -148,7 +181,6 @@ class BookingController extends Controller
                 $customer->phone = $customer->profile->phone ?? '';
                 return $customer;
             }),
-            'customer'      => collect([]),
             default         => User::allCustomers()->with('profile:user_id,phone')->select('id', 'name', 'email', 'company_id')->get()->map(function($customer) {
                 $nameParts = explode(' ', $customer->name, 2);
                 $customer->first_name = $nameParts[0] ?? '';
@@ -342,6 +374,14 @@ class BookingController extends Controller
             return redirect()->route('bookings.index')->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'booking_creation_error', 'error', [
+                'user_id' => Auth::id(),
+                'action' => 'create_booking',
+                'validated_data' => $validated ?? null,
+            ]);
+
             return back()->withInput()->with('error', 'Failed to create booking: ' . $e->getMessage());
         }
     }
@@ -443,6 +483,14 @@ class BookingController extends Controller
             return redirect()->route('bookings.index')->with('success', 'Booking updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'booking_update_error', 'error', [
+                'booking_id' => $booking->id,
+                'user_id' => Auth::id(),
+                'action' => 'update_booking',
+            ]);
+
             return back()->withInput()->with('error', 'Failed to update booking: ' . $e->getMessage());
         }
     }
@@ -567,7 +615,9 @@ class BookingController extends Controller
                 }
             }
 
-            // Notify previous artist if reassignment
+            // TODO: Notify previous artist if reassignment
+            // Requires BookingReassigned mail class to be created
+            /*
             if ($isReassignment && $previousArtist && $previousArtist->user && $previousArtist->user->email) {
                 try {
                     \Mail::to($previousArtist->user->email)->send(
@@ -577,12 +627,21 @@ class BookingController extends Controller
                     \Log::error('Failed to send reassignment notification: ' . $e->getMessage());
                 }
             }
+            */
 
             DB::commit();
 
             return back()->with('success', 'Artist assigned successfully! The artist will be notified to accept or reject the booking.');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log error to database
+            \App\Services\ErrorLogger::log($e, 'artist_assignment_error', 'error', [
+                'booking_id' => $booking->id,
+                'artist_id' => $request->artist_id ?? null,
+                'user_id' => Auth::id(),
+            ]);
+
             return back()->with('error', 'Failed to assign artist: ' . $e->getMessage());
         }
     }

@@ -10,7 +10,7 @@
             <ol class="breadcrumb m-0 py-0">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="ti ti-home"></i>
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i>
                     </a>
                 </li>
 
@@ -117,7 +117,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <button type="submit" class="btn btn-{{ isset($subscription) ? 'warning' : 'primary' }}">
-                                        <i class="ti ti-{{ isset($subscription) ? 'pencil' : 'plus' }}"></i>
+                                        <i data-lucide="{{ isset($subscription) ? 'pencil' : 'plus' }}" style="width: 16px; height: 16px;"></i>
                                         {{ isset($subscription) ? 'Update' : 'Create' }} Subscription
                                     </button>
                                 </div>
