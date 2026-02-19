@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\BookingCreated;
+use App\Listeners\CreateBookingCreatedNotification;
 use App\Models\Settings;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Explicitly register booking-created event listener
+        Event::listen(BookingCreated::class, CreateBookingCreatedNotification::class);
+
         try {
             if (Schema::hasTable('settings')) {
                 $settings = Settings::query()->pluck('value', 'key')->toArray();

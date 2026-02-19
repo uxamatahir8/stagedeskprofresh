@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\BookingRequest;
+use App\Policies\BookingRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        // Add your model policies here
+        BookingRequest::class => BookingRequestPolicy::class,
     ];
 
     public function boot()

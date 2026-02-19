@@ -18,7 +18,7 @@ class SecurityHeadersMiddleware
         // Content Security Policy
         $response->headers->set('Content-Security-Policy',
             "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; " .
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
             "img-src 'self' data: https:; " .
             "font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
