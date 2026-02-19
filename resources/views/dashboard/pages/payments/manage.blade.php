@@ -65,12 +65,12 @@
 
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Subscription</label>
-                        <select name="company_subscription_id" class="form-control form-select">
+                        <select name="subscription_id" class="form-control form-select">
                             <option value="">Select Subscription (Optional)</option>
                             @if(isset($subscriptions))
                                 @foreach ($subscriptions as $subscription)
                                     <option value="{{ $subscription->id }}"
-                                        {{ old('company_subscription_id', $payment->company_subscription_id ?? '') == $subscription->id ? 'selected' : '' }}>
+                                        {{ old('subscription_id', $payment->subscription_id ?? '') == $subscription->id ? 'selected' : '' }}>
                                         {{ $subscription->plan }} ({{ $subscription->package_name }})
                                     </option>
                                 @endforeach

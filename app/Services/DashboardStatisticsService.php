@@ -22,7 +22,7 @@ class DashboardStatisticsService
         return match ($roleKey) {
             'master_admin' => $this->getMasterAdminStatistics(),
             'company_admin' => $this->getCompanyAdminStatistics(),
-            'artist', 'dj' => $this->getArtistStatistics(),
+            'artist' => $this->getArtistStatistics(),
             'customer' => $this->getCustomerStatistics(),
             'affiliate' => $this->getAffiliateStatistics(),
             default => [],

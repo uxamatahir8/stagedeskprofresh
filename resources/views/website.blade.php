@@ -706,7 +706,7 @@
                                         <div class="date">
                                             <div class="social">
                                                 <a
-                                                    href="{{ route('blog.details', $blog->slug) }}">{{ $blog->category->name }}</a>
+                                                    href="{{ route('blog-front.details', $blog->slug) }}">{{ $blog->category->name }}</a>
                                             </div>
                                             <div class="date-day">
                                                 <a href="#"><img
@@ -715,11 +715,11 @@
                                             </div>
                                         </div>
                                         <div class="space16"></div>
-                                        <a href="{{ route('blog.details', $blog->slug) }}">{{ $blog->title }}</a>
+                                        <a href="{{ route('blog-front.details', $blog->slug) }}">{{ $blog->title }}</a>
                                         <div class="space16"></div>
                                         <p>{!! Str::words($blog->content, 11, '...') !!}</p>
                                         <div class="space20"></div>
-                                        <a href="{{ route('blog.details', $blog->slug) }}" class="readmore">Read More <i
+                                        <a href="{{ route('blog-front.details', $blog->slug) }}" class="readmore">Read More <i
                                                 class="fa-solid fa-arrow-right"></i></a>
                                     </div>
                                 </div>

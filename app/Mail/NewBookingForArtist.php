@@ -20,7 +20,11 @@ class NewBookingForArtist extends Mailable
      */
     public function __construct(BookingRequest $booking)
     {
-        $this->booking = $booking;
+        $this->booking = $booking->loadMissing([
+            'eventType',
+            'assignedArtist.user',
+            'user.profile',
+        ]);
     }
 
     /**
@@ -29,7 +33,7 @@ class NewBookingForArtist extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Booking Assignment - ' . $this->booking->booking_id,
+            subject: 'New Booking Assignment - #' . $this->booking->id,
         );
     }
 

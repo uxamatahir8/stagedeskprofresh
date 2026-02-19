@@ -426,15 +426,56 @@
                         <div class="col-6">
                             <div class="card bg-soft-primary border-0">
                                 <div class="card-body p-3">
-                                    <h3 class="mb-1">{{ \Carbon\Carbon::parse($booking->event_date)->diffInDays(now(), false) > 0 ? \Carbon\Carbon::parse($booking->event_date)->diffInDays(now()) . ' days ago' : \Carbon\Carbon::parse($booking->event_date)->diffInDays(now()) . ' days' }}</h3>
-                                    <p class="text-muted mb-0 small">{{ \Carbon\Carbon::parse($booking->event_date)->isPast() ? 'Event Passed' : 'Until Event' }}</p>
+                                    @php
+                                        $eventDateTime = \Carbon\Carbon::parse($booking->event_date . ' ' . ($booking->start_time ?? $booking->wedding_time ?? '00:00:00'));
+                                        $now = now();
+
+                                        if ($eventDateTime->greaterThan($now)) {
+                                            $totalHours = $now->diffInHours($eventDateTime);
+                                            $days = intdiv($totalHours, 24);
+                                            $hours = $totalHours % 24;
+
+                                            $parts = [];
+                                            if ($days > 0) {
+                                                $parts[] = $days . ' day' . ($days === 1 ? '' : 's');
+                                            }
+                                            if ($hours > 0) {
+                                                $parts[] = $hours . ' hour' . ($hours === 1 ? '' : 's');
+                                            }
+
+                                            $timeUntilEvent = empty($parts) ? 'Less than 1 hour' : implode(' ', $parts);
+                                            $timeUntilLabel = 'Until Event';
+                                        } else {
+                                            $timeUntilEvent = 'Event Passed';
+                                            $timeUntilLabel = 'Event Status';
+                                        }
+                                    @endphp
+                                    <h3 class="mb-1">{{ $timeUntilEvent }}</h3>
+                                    <p class="text-muted mb-0 small">{{ $timeUntilLabel }}</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="card bg-soft-success border-0">
                                 <div class="card-body p-3">
-                                    <h3 class="mb-1">{{ $booking->created_at->diffInDays(now()) }}</h3>
+                                    @php
+                                        $bookedAt = $booking->created_at;
+                                        $nowForBooked = now();
+                                        $bookedTotalHours = $bookedAt->diffInHours($nowForBooked);
+                                        $bookedDays = intdiv($bookedTotalHours, 24);
+                                        $bookedHours = $bookedTotalHours % 24;
+
+                                        $bookedParts = [];
+                                        if ($bookedDays > 0) {
+                                            $bookedParts[] = $bookedDays . ' day' . ($bookedDays === 1 ? '' : 's');
+                                        }
+                                        if ($bookedHours > 0) {
+                                            $bookedParts[] = $bookedHours . ' hour' . ($bookedHours === 1 ? '' : 's');
+                                        }
+
+                                        $bookedDuration = empty($bookedParts) ? 'Less than 1 hour' : implode(' ', $bookedParts);
+                                    @endphp
+                                    <h3 class="mb-1">{{ $bookedDuration }}</h3>
                                     <p class="text-muted mb-0 small">Days Booked</p>
                                 </div>
                             </div>
@@ -642,5 +683,9 @@
             color: white;
         }
     </style>
+    @endpush
+
+    @push('scripts')
+    <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
     @endpush
 @endsection

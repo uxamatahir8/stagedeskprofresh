@@ -52,4 +52,5 @@
             overflow: hidden;
         }
     </style>
+    @stack('styles')
 </head>

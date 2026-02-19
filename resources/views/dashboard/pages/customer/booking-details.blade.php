@@ -113,6 +113,7 @@
                         @csrf
                         <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                         <input type="hidden" name="artist_id" value="{{ $booking->assigned_artist_id }}">
+                        <input type="hidden" name="company_id" value="{{ $booking->company_id }}">
 
                         <div class="mb-3">
                             <label class="form-label">Rating <span class="text-danger">*</span></label>
@@ -128,7 +129,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Your Review <span class="text-danger">*</span></label>
-                            <textarea name="comment" class="form-control" rows="4" required></textarea>
+                            <textarea name="review" class="form-control" rows="4" required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -175,6 +176,15 @@
                     <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelBookingModal">
                         <i data-lucide="x-circle"></i> Cancel Booking
                     </button>
+                    @if($booking->status === 'confirmed')
+                        <form action="{{ route('customer.bookings.complete', $booking->id) }}" method="POST" class="mt-2">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100"
+                                onclick="return confirm('Mark this booking as completed? After this, you can post your review.')">
+                                <i data-lucide="check-circle"></i> Mark as Completed
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
             @endif

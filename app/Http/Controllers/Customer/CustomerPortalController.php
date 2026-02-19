@@ -176,6 +176,51 @@ class CustomerPortalController extends Controller
     }
 
     /**
+     * Mark Booking as Completed (Customer confirmation)
+     */
+    public function markBookingCompleted(BookingRequest $booking)
+    {
+        $user = Auth::user();
+
+        if ($booking->user_id !== $user->id) {
+            abort(403, 'You can only complete your own bookings');
+        }
+
+        if ($booking->status !== 'confirmed') {
+            return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        DB::beginTransaction();
+        try {
+            $booking->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'company_notes' => trim(($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Marked completed by customer " . $user->name),
+            ]);
+
+            // Notify master admins by email
+            $masterAdmins = \App\Models\User::whereHas('role', fn($q) => $q->where('role_key', 'master_admin'))->get();
+            foreach ($masterAdmins as $admin) {
+                if (!empty($admin->email)) {
+                    try {
+                        \Mail::to($admin->email)->send(
+                            new \App\Mail\BookingCompletedByCustomerNotification($booking->fresh(), $admin)
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send customer-completed booking email to master admin: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            DB::commit();
+            return back()->with('success', 'Booking marked as completed successfully. You can now post a review.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to mark booking as completed: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * My Payments
      */
     public function myPayments(Request $request)
@@ -208,9 +253,13 @@ class CustomerPortalController extends Controller
     /**
      * Submit Review
      */
-    public function submitReview(Request $request, BookingRequest $booking)
+    public function submitReview(Request $request)
     {
         $user = Auth::user();
+
+        $booking = BookingRequest::with(['company', 'assignedArtist.user'])
+            ->where('id', $request->booking_id)
+            ->firstOrFail();
 
         // Safety checks
         if ($booking->user_id !== $user->id) {
@@ -229,15 +278,22 @@ class CustomerPortalController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|max:1000',
+            'comment' => 'nullable|string|max:1000',
             'artist_id' => 'nullable|exists:artists,id',
             'company_id' => 'nullable|exists:companies,id'
         ]);
+
+        if (empty($validated['review']) && !empty($validated['comment'])) {
+            $validated['review'] = $validated['comment'];
+        }
 
         DB::beginTransaction();
         try {
             $validated['user_id'] = $user->id;
             $validated['booking_id'] = $booking->id;
-            $validated['status'] = 'pending'; // Requires admin approval
+            $validated['artist_id'] = $validated['artist_id'] ?? $booking->assigned_artist_id;
+            $validated['company_id'] = $validated['company_id'] ?? $booking->company_id;
+            $validated['status'] = 'pending';
 
             Review::create($validated);
 
@@ -246,9 +302,20 @@ class CustomerPortalController extends Controller
                 $this->updateArtistRating($validated['artist_id']);
             }
 
+            // Notify company by email that customer posted a review
+            if ($booking->company && !empty($booking->company->email)) {
+                try {
+                    \Mail::to($booking->company->email)->send(
+                        new \App\Mail\ReviewPostedNotification($booking->fresh(), $user, $validated['rating'], $validated['review'] ?? null)
+                    );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send review notification email to company: ' . $e->getMessage());
+                }
+            }
+
             DB::commit();
 
-            return back()->with('success', 'Review submitted successfully! It will appear after admin approval.');
+            return back()->with('success', 'Review submitted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to submit review: ' . $e->getMessage());
@@ -316,12 +383,10 @@ class CustomerPortalController extends Controller
     private function updateArtistRating($artistId)
     {
         $avgRating = Review::where('artist_id', $artistId)
-            ->where('status', 'approved')
+            ->whereIn('status', ['pending', 'approved'])
             ->avg('rating');
 
-        if ($avgRating) {
-            \App\Models\Artist::where('id', $artistId)
-                ->update(['rating' => round($avgRating, 2)]);
-        }
+        \App\Models\Artist::where('id', $artistId)
+            ->update(['rating' => round($avgRating ?? 0, 2)]);
     }
 }

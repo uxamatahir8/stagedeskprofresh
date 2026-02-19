@@ -24,29 +24,27 @@
 
     <form method="POST" class="validate_form" action="{{ route('user_register') }}" enctype="multipart/form-data" autocomplete="off">
         @csrf
-        <div class="row d-felx justify-content-start align-items-center">
-            <div class="col-md-6">
-                <!-- Register As Toggle Buttons -->
-                <label class="form-label fw-bold d-block mb-2 text-start">Register As:</label>
-                <div class="text-center mb-4">
-                    <div class="btn-group d-flex" role="group" aria-label="Register As">
-                        @foreach (config('arrays.registerable_roles') as $role_id => $role)
-                            <input type="radio" class="btn-check" data-value="{{ strtolower($role) }}" name="register_as"
-                                id="as_{{ strtolower($role) }}" value="{{ $role_id }}"
-                                {{ old('register_as', strtolower($role) == 'affiliate' ? $role_id : null) == $role_id ? 'checked' : '' }} autocomplete="off">
-                            <label class="btn btn-outline-primary fw-semibold w-100"
-                                for="as_{{ strtolower($role) }}">{{ $role }}</label>
-                        @endforeach
-                    </div>
+        <div class="row justify-content-start align-items-center">
+            <div class="col-12">
+                <label class="form-label fw-bold d-block mb-2">Register As</label>
+                <div class="btn-group w-100 rounded overflow-hidden border" role="group" aria-label="Register As">
+                    @foreach (config('arrays.registerable_roles') as $role_id => $role)
+                        <input type="radio" class="btn-check" data-value="{{ strtolower($role) }}" name="register_as"
+                            id="as_{{ strtolower($role) }}" value="{{ $role_id }}"
+                            {{ old('register_as', strtolower($role) == 'affiliate' ? $role_id : null) == $role_id ? 'checked' : '' }} autocomplete="off">
+                        <label class="btn btn-outline-primary fw-semibold flex-fill py-2 mb-0 rounded-0"
+                            for="as_{{ strtolower($role) }}">{{ $role }}</label>
+                    @endforeach
                 </div>
             </div>
         </div>
 
-        <hr>
+        <hr class="my-4">
 
-        <!-- Common User Info -->
         <div id="user-fields">
-            <h5 class="fw-bold mb-3">User Information</h5>
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i data-lucide="user" class="text-primary" style="width:20px;height:20px;"></i> User Information
+            </h5>
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
@@ -153,10 +151,11 @@
             </div>
         </div>
 
-        <!-- Company Section -->
         <div id="company-fields" class="d-none mt-4">
-            <hr>
-            <h5 class="fw-bold mb-3">Company Information</h5>
+            <hr class="my-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i data-lucide="building-2" class="text-primary" style="width:20px;height:20px;"></i> Company Information
+            </h5>
 
             <div class="row">
                 <div class="col-md-4">

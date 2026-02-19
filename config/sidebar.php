@@ -24,7 +24,7 @@ return [
             [
                 'title' => 'My Bookings',
                 'route' => 'artist.bookings',
-                'roles' => ['artist', 'dj'],
+                'roles' => ['artist'],
             ],
             [
                 'title' => 'Event Types',
@@ -46,7 +46,7 @@ return [
             [
                 'title' => 'All Reviews',
                 'route' => 'reviews.index',
-                'roles' => ['master_admin', 'company_admin', 'artist', 'dj'],
+                'roles' => ['master_admin', 'company_admin', 'artist'],
             ],
             [
                 'title' => 'My Reviews',
@@ -67,7 +67,7 @@ return [
             [
                 'title' => 'Payments',
                 'route' => 'payments.index',
-                'roles' => ['master_admin', 'company_admin', 'artist', 'dj'],
+                'roles' => ['master_admin', 'company_admin', 'artist'],
             ],
             [
                 'title' => 'My Payments',

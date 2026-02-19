@@ -132,9 +132,11 @@
                             <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Edit Payment
                         </a>
 
-                        @if(Auth::user()->hasRole('master_admin'))
+                        @if(optional(Auth::user()->role)->role_key === 'master_admin')
                             <form action="{{ route('payments.verify', $payment) }}" method="POST" class="d-inline">
                                 @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="completed">
                                 <button type="submit" class="btn btn-success w-100 mb-2">
                                     <i data-lucide="check" style="width: 16px; height: 16px;"></i> Verify Payment
                                 </button>

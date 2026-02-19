@@ -77,7 +77,7 @@ class CompanyScopeMiddleware
         }
 
         // Validate company scope
-        if ($resourceCompanyId && $resourceCompanyId !== $user->company_id) {
+        if ($resourceCompanyId && (int) $resourceCompanyId !== (int) $user->company_id) {
             Log::warning('Company scope violation attempt', [
                 'user_id' => $user->id,
                 'user_company_id' => $user->company_id,

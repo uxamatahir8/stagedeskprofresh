@@ -268,6 +268,17 @@ class ArtistPortalController extends Controller
 
             // Notify and email company admins
             if ($booking->company) {
+                // Send status update directly to company email
+                if (!empty($booking->company->email)) {
+                    try {
+                        \Mail::to($booking->company->email)->send(
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send booking acceptance email to company email: ' . $e->getMessage());
+                    }
+                }
+
                 $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
                     ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
                     ->get();
@@ -384,6 +395,17 @@ class ArtistPortalController extends Controller
 
 // Notify company admins about rejection via email and in-app notification
             if ($booking->company) {
+                // Send status update directly to company email
+                if (!empty($booking->company->email)) {
+                    try {
+                        \Mail::to($booking->company->email)->send(
+                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send rejection email to company email: ' . $e->getMessage());
+                    }
+                }
+
                 $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
                     ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
                     ->get();

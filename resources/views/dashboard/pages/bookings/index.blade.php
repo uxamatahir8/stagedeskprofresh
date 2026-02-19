@@ -101,11 +101,11 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('bookings.show', $booking) }}"
-                                                class="btn btn-sm btn-primary"title="View">
+                                                class="btn btn-sm btn-primary" title="View">
                                                 <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <a href="{{ route('bookings.edit', $booking) }}"
-                                                class="btn btn-sm btn-info"title="Edit">
+                                                class="btn btn-sm btn-info" title="Edit">
                                                 <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <form action="{{ route('bookings.destroy', $booking) }}" method="POST"
@@ -182,4 +182,8 @@
             @endif
         </div>
     </div>
+
+    @push('scripts')
+    <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+    @endpush
 @endsection

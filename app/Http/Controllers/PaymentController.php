@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PaymentStatusUpdatedNotification;
+use App\Mail\PaymentSubmittedNotification;
 use App\Models\Payment;
 use App\Models\BookingRequest;
 use App\Models\CompanySubscription;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -23,6 +28,15 @@ class PaymentController extends Controller
             $paymentsQuery->whereHas('user', function ($q) {
                 $q->where('company_id', Auth::user()->company_id);
             });
+        } elseif ($roleKey === 'artist') {
+            $artist = Auth::user()->artist;
+            if ($artist) {
+                $paymentsQuery->whereHas('bookingRequest', function ($q) use ($artist) {
+                    $q->where('assigned_artist_id', $artist->id);
+                });
+            } else {
+                $paymentsQuery->whereRaw('1 = 0'); // No artist profile: show none
+            }
         }
 
         $payments = $paymentsQuery->orderBy('created_at', 'desc')->paginate(15);
@@ -51,7 +65,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'booking_requests_id'      => 'nullable|exists:booking_requests,id',
-            'company_subscription_id'  => 'nullable|exists:company_subscriptions,id',
+            'subscription_id'          => 'nullable|exists:company_subscriptions,id',
             'amount'                   => 'required|numeric|min:0.01',
             'currency'                 => 'required|string|size:3',
             'payment_method'           => 'required|in:credit_card,debit_card,bank_transfer,paypal,stripe',
@@ -67,7 +81,9 @@ class PaymentController extends Controller
             $validated['attachment'] = $request->file('attachment')->store('payments', 'public');
         }
 
-        Payment::create($validated);
+        $payment = Payment::create($validated);
+
+        $this->sendPaymentSubmissionNotifications($payment, Auth::user());
 
         return redirect()->route('payments.index')->with('success', 'Payment recorded successfully. Awaiting verification.');
     }
@@ -82,10 +98,16 @@ class PaymentController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            // Company admin can only view payments from their company users
             $companyId = Auth::user()->company_id;
             if ($payment->user && $payment->user->company_id !== $companyId) {
                 return abort(403, 'Unauthorized - You can only view payments from your company');
+            }
+        }
+
+        if ($roleKey === 'artist') {
+            $artist = Auth::user()->artist;
+            if (!$artist || !$payment->bookingRequest || $payment->bookingRequest->assigned_artist_id !== $artist->id) {
+                return abort(403, 'Unauthorized - You can only view payments for your assigned bookings');
             }
         }
 
@@ -104,10 +126,16 @@ class PaymentController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            // Company admin can only edit payments from their company users
             $companyId = Auth::user()->company_id;
             if ($payment->user && $payment->user->company_id !== $companyId) {
                 return abort(403, 'Unauthorized - You can only edit payments from your company');
+            }
+        }
+
+        if ($roleKey === 'artist') {
+            $artist = Auth::user()->artist;
+            if (!$artist || !$payment->bookingRequest || $payment->bookingRequest->assigned_artist_id !== $artist->id) {
+                return abort(403, 'Unauthorized - You can only edit payments for your assigned bookings');
             }
         }
 
@@ -134,10 +162,16 @@ class PaymentController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            // Company admin can only update payments from their company users
             $companyId = Auth::user()->company_id;
             if ($payment->user && $payment->user->company_id !== $companyId) {
                 return abort(403, 'Unauthorized - You can only update payments from your company');
+            }
+        }
+
+        if ($roleKey === 'artist') {
+            $artist = Auth::user()->artist;
+            if (!$artist || !$payment->bookingRequest || $payment->bookingRequest->assigned_artist_id !== $artist->id) {
+                return abort(403, 'Unauthorized - You can only update payments for your assigned bookings');
             }
         }
 
@@ -147,7 +181,7 @@ class PaymentController extends Controller
 
         $validated = $request->validate([
             'booking_requests_id'      => 'nullable|exists:booking_requests,id',
-            'company_subscription_id'  => 'nullable|exists:company_subscriptions,id',
+            'subscription_id'          => 'nullable|exists:company_subscriptions,id',
             'amount'                   => 'required|numeric|min:0.01',
             'currency'                 => 'required|string|size:3',
             'payment_method'           => 'required|in:credit_card,debit_card,bank_transfer,paypal,stripe',
@@ -167,7 +201,21 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
-        if ($payment->user_id !== Auth::user()->id && Auth::user()->role->role_key !== 'master_admin') {
+        $roleKey = Auth::user()->role->role_key;
+        if ($roleKey === 'master_admin') {
+            // allow
+        } elseif ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
+            return abort(403, 'Unauthorized');
+        } elseif ($roleKey === 'company_admin') {
+            if (!$payment->user || $payment->user->company_id !== Auth::user()->company_id) {
+                return abort(403, 'Unauthorized');
+            }
+        } elseif ($roleKey === 'artist') {
+            $artist = Auth::user()->artist;
+            if (!$artist || !$payment->bookingRequest || $payment->bookingRequest->assigned_artist_id !== $artist->id) {
+                return abort(403, 'Unauthorized');
+            }
+        } else {
             return abort(403, 'Unauthorized');
         }
 
@@ -193,6 +241,125 @@ class PaymentController extends Controller
 
         $payment->update(['status' => $validated['status']]);
 
+        if ($validated['status'] === 'completed') {
+            $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $validated['status'], $validated['notes'] ?? null);
+        }
+
         return redirect()->route('payments.index')->with('success', 'Payment status updated to ' . $validated['status']);
+    }
+
+    private function sendPaymentSubmissionNotifications(Payment $payment, User $submittedBy): void
+    {
+        $submittedBy->loadMissing('role');
+        $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user.company']);
+        $roleKey = optional($submittedBy->role)->role_key;
+
+        try {
+            if ($roleKey === 'customer' && $payment->type === 'booking' && $payment->bookingRequest) {
+                $this->notifyMasterAdminsOnSubmission($payment, $submittedBy);
+                $this->notifyCompanyAdminsOnBookingPayment($payment, $submittedBy);
+                return;
+            }
+
+            if ($roleKey === 'company_admin' && $payment->type === 'subscription') {
+                $this->notifyMasterAdminsOnSubmission($payment, $submittedBy);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to send payment submission notifications', [
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendPaymentStatusConfirmationToCompanyAdmins(Payment $payment, string $status, ?string $notes = null): void
+    {
+        $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user.company']);
+        $companyId = $this->resolveCompanyIdFromPayment($payment);
+
+        if (!$companyId) {
+            return;
+        }
+
+        $companyAdmins = User::where('company_id', $companyId)
+            ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+            ->whereNotNull('email')
+            ->get();
+
+        foreach ($companyAdmins as $companyAdmin) {
+            try {
+                Mail::to($companyAdmin->email)->send(
+                    new PaymentStatusUpdatedNotification($payment, $status, $notes, $companyAdmin)
+                );
+            } catch (\Throwable $e) {
+                Log::error('Failed to send payment status notification to company admin', [
+                    'payment_id' => $payment->id,
+                    'company_admin_id' => $companyAdmin->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function notifyMasterAdminsOnSubmission(Payment $payment, User $submittedBy): void
+    {
+        $masterAdmins = User::whereHas('role', fn($q) => $q->where('role_key', 'master_admin'))
+            ->whereNotNull('email')
+            ->get();
+
+        foreach ($masterAdmins as $admin) {
+            try {
+                Mail::to($admin->email)->send(
+                    new PaymentSubmittedNotification($payment, $submittedBy, $admin, 'master_admin')
+                );
+            } catch (\Throwable $e) {
+                Log::error('Failed to send payment notification to master admin', [
+                    'payment_id' => $payment->id,
+                    'master_admin_id' => $admin->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function notifyCompanyAdminsOnBookingPayment(Payment $payment, User $submittedBy): void
+    {
+        $companyId = $payment->bookingRequest?->company_id;
+
+        if (!$companyId) {
+            return;
+        }
+
+        $companyAdmins = User::where('company_id', $companyId)
+            ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+            ->whereNotNull('email')
+            ->get();
+
+        foreach ($companyAdmins as $companyAdmin) {
+            try {
+                Mail::to($companyAdmin->email)->send(
+                    new PaymentSubmittedNotification($payment, $submittedBy, $companyAdmin, 'company_admin')
+                );
+            } catch (\Throwable $e) {
+                Log::error('Failed to send booking payment notification to company admin', [
+                    'payment_id' => $payment->id,
+                    'company_admin_id' => $companyAdmin->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function resolveCompanyIdFromPayment(Payment $payment): ?int
+    {
+        if ($payment->type === 'booking') {
+            return $payment->bookingRequest?->company_id ? (int) $payment->bookingRequest->company_id : null;
+        }
+
+        if ($payment->type === 'subscription') {
+            return $payment->subscription?->company_id ? (int) $payment->subscription->company_id : null;
+        }
+
+        return $payment->user?->company_id ? (int) $payment->user->company_id : null;
     }
 }

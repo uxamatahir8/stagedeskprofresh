@@ -21,6 +21,7 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
 
     // Cancel Booking
     Route::post('/bookings/{booking}/cancel', [CustomerPortalController::class, 'cancelBooking'])->name('bookings.cancel');
+    Route::post('/bookings/{booking}/complete', [CustomerPortalController::class, 'markBookingCompleted'])->name('bookings.complete');
 
     // My Payments
     Route::get('/payments', [CustomerPortalController::class, 'myPayments'])->name('payments');

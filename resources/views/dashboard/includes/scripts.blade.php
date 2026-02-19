@@ -95,3 +95,5 @@
         }
     });
 </script>
+
+@stack('scripts')

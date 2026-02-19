@@ -23,7 +23,7 @@ class ReviewController extends Controller
 
         if ($roleKey === 'company_admin') {
             $query->where('company_id', $user->company_id);
-        } elseif ($roleKey === 'dj') {
+        } elseif ($roleKey === 'artist') {
             $artist = Artist::where('user_id', $user->id)->first();
             if ($artist) {
                 $query->where('artist_id', $artist->id);
@@ -102,6 +102,10 @@ class ReviewController extends Controller
 
         $review->update($validated);
 
+        if ($review->artist_id) {
+            $this->updateArtistRating($review->artist_id);
+        }
+
         return redirect()->back()->with('success', 'Review status updated successfully.');
     }
 
@@ -115,7 +119,12 @@ class ReviewController extends Controller
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
+        $artistId = $review->artist_id;
         $review->delete();
+
+        if ($artistId) {
+            $this->updateArtistRating($artistId);
+        }
 
         return redirect()->route('reviews.index')->with('success', 'Review deleted successfully.');
     }
@@ -126,11 +135,11 @@ class ReviewController extends Controller
     private function updateArtistRating($artistId)
     {
         $averageRating = Review::where('artist_id', $artistId)
-            ->where('status', 'approved')
+            ->whereIn('status', ['pending', 'approved'])
             ->avg('rating');
 
         Artist::where('id', $artistId)->update([
-            'rating' => round($averageRating, 2)
+            'rating' => round($averageRating ?? 0, 2)
         ]);
     }
 }
