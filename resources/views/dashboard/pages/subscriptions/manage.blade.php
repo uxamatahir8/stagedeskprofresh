@@ -48,7 +48,7 @@
                                         <option value="">Select Company</option>
                                         @foreach ($companies as $company)
                                             <option value="{{ $company->id }}" {{ old('company_id', $subscription->company_id ?? $id ?? '') == $company->id ? 'selected' : '' }}>
-                                                {{ $company->company_name }}</option>
+                                                {{ $company->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -62,7 +62,7 @@
                                         <option value="">Select Package</option>
                                         @foreach ($packages as $package)
                                             <option value="{{ $package->id }}" {{ old('package_id', $subscription->package_id ?? '') == $package->id ? 'selected' : '' }}>
-                                                {{ $package->package_name }} ({{ $package->price }}) - {{ ucfirst($package->duration_type) }}
+                                                {{ $package->name }} ({{ $package->price }}) - {{ ucfirst($package->duration_type ?? 'monthly') }}
                                             </option>
                                         @endforeach
                                     </select>
