@@ -156,22 +156,7 @@ class PaymentController extends Controller
             'attachment'               => 'nullable|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
-        $roleKey = Auth::user()->role->role_key;
-
-        // Check authorization based on role
-        if ($roleKey === 'customer' && $payment->user_id !== Auth::user()->id) {
-            return abort(403, 'Unauthorized');
-        }
-
-        if ($roleKey === 'company_admin') {
-            // Company admin can only delete payments from their company users
-            $companyId = Auth::user()->company_id;
-            if ($payment->user && $payment->user->company_id !== $companyId) {
-                return abort(403, 'Unauthorized - You can only delete payments from your company');
-            }
-        }
-
-        if ($roleKey !== 'master_admin' && $payment->user_id !== Auth::user()->id
+        if ($request->hasFile('attachment')) {
             $validated['attachment'] = $request->file('attachment')->store('payments', 'public');
         }
 
