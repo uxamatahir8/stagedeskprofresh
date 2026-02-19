@@ -242,8 +242,3 @@
         </div>
     </div>
 @endsection
-                </table>
-            </div>
-        </div>
-    </div>
-@endsection
