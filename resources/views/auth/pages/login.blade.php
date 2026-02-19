@@ -21,17 +21,14 @@
     <div class="tab-content" id="loginTabContent">
         <!-- Password Login -->
         <div class="tab-pane fade {{ (session('code_sent') || session('active_tab') === 'code-login') ? '' : 'show active' }}" id="password-login" role="tabpanel" aria-labelledby="password-tab">
-            <form method="post" class="validate_form" autocomplete="off" action="{{ route('user_login') }}">
+            <form method="post" autocomplete="off" action="{{ route('user_login') }}">
                 @csrf
                 <div class="mb-3">
                     <label for="userEmail" class="form-label">Email address <span class="text-danger">*</span></label>
                     <div class="input-group">
-                        <input type="email" class="form-control @error('email') is-invalid @enderror" name="email"
+                        <input type="email" class="form-control" name="email"
                             autocomplete="off" id="userEmail" placeholder="you@example.com"
                             value="{{ old('email') }}" required>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
                     </div>
                 </div>
 
@@ -39,11 +36,8 @@
                     <label for="userPassword" class="form-label">Password <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <input type="password" name="password" autocomplete="off"
-                            class="form-control @error('password') is-invalid @enderror"
+                            class="form-control"
                             id="userPassword" placeholder="••••••••" required>
-                        @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
                     </div>
                 </div>
 
