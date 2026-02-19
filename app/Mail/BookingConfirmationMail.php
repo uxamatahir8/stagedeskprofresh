@@ -9,11 +9,11 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingCreated extends Mailable
+class BookingConfirmationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $booking;
+    public BookingRequest $booking;
 
     /**
      * Create a new message instance.
@@ -28,8 +28,12 @@ class BookingCreated extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = 'Booking Confirmation';
+        if (isset($this->booking->id)) {
+            $subject .= ' #' . $this->booking->id;
+        }
         return new Envelope(
-            subject: 'Booking Confirmation - ' . $this->booking->booking_id,
+            subject: $subject,
         );
     }
 

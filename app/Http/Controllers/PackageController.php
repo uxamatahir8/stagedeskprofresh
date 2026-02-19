@@ -50,6 +50,7 @@ class PackageController extends Controller
         ]);
 
         $validated['status'] = $request->has('status') ? 'active' : 'inactive';
+        $validated['description'] = $validated['description'] ?? '';
 
         // Create package
         $package = Package::create($validated);
@@ -107,6 +108,7 @@ class PackageController extends Controller
         ]);
 
         $validated['status'] = $request->has('status') ? 'active' : 'inactive';
+        $validated['description'] = $validated['description'] ?? '';
 
         // Update package
         $package->update($validated);

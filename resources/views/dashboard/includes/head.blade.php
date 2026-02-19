@@ -11,6 +11,9 @@
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}">
 
+    <!-- Lucide Icons - load first so createIcons() can run when DOM is ready -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" crossorigin="anonymous" id="lucide-script"></script>
+
     {{-- Datatables css --}}
     <link href="{{ asset('plugins/datatables/responsive.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('plugins/datatables/buttons.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">

@@ -30,10 +30,7 @@ class BookingController extends Controller
             return redirect()->route('customer.bookings.details', $booking);
         }
 
-        // Safety check: Verify access permission (for admins)
-        if (!$this->canAccessBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to view this booking');
-        }
+        $this->authorize('view', $booking);
 
         $title = 'Booking Details';
 
@@ -165,10 +162,7 @@ class BookingController extends Controller
             abort(403, 'Customers cannot edit bookings directly. Please contact support.');
         }
 
-        // Safety check: Verify edit permission (for admins)
-        if (!$this->canEditBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to edit this booking');
-        }
+        $this->authorize('update', $booking);
 
         $title = 'Edit Booking Request';
         $mode  = 'edit';
@@ -338,7 +332,7 @@ class BookingController extends Controller
                 Mail::to($customerUser->email)->send(new \App\Mail\CustomerAccountCreated($customerUser, $generatedPassword, $booking));
             } elseif ($booking->user && $booking->user->email) {
                 // Send standard booking confirmation to existing customer
-                Mail::to($booking->user->email)->send(new \App\Mail\BookingCreated($booking));
+                Mail::to($booking->user->email)->send(new \App\Mail\BookingConfirmationMail($booking));
             }
 
             // Fire booking created event if company is assigned
@@ -416,13 +410,10 @@ class BookingController extends Controller
 
     public function update(Request $request, BookingRequest $booking)
     {
+        $this->authorize('update', $booking);
+
         $user = Auth::user();
         $roleKey = $user->role->role_key;
-
-        // Safety check: Verify edit permission
-        if (!$this->canEditBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to update this booking');
-        }
 
         $eventType = EventType::find($request->event_type_id);
         $isWedding = $eventType && str_contains(strtolower($eventType->event_type), 'wedding');
@@ -497,18 +488,9 @@ class BookingController extends Controller
 
     public function destroy(BookingRequest $booking)
     {
+        $this->authorize('delete', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins can delete bookings
-        if (!in_array($roleKey, ['master_admin', 'company_admin'])) {
-            abort(403, 'You do not have permission to delete bookings');
-        }
-
-        // Safety check: Company admin can only delete bookings from their company
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only delete bookings from your company');
-        }
 
         DB::beginTransaction();
         try {
@@ -535,18 +517,10 @@ class BookingController extends Controller
      */
     public function assignArtist(Request $request, BookingRequest $booking)
     {
+        $this->authorize('assignArtist', $booking);
+
         $user = Auth::user();
         $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins can assign artists
-        if (!in_array($roleKey, ['master_admin', 'company_admin'])) {
-            abort(403, 'You do not have permission to assign artists');
-        }
-
-        // Safety check: Verify company scope
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only assign artists to bookings from your company');
-        }
 
         $request->validate([
             'artist_id' => 'required|exists:artists,id',
@@ -651,16 +625,9 @@ class BookingController extends Controller
      */
     public function markCompleted(BookingRequest $booking)
     {
+        $this->authorize('markCompleted', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins and assigned artist can mark as completed
-        $canComplete = in_array($roleKey, ['master_admin', 'company_admin']) ||
-                      ($roleKey === 'artist' && $booking->assigned_artist_id == optional($user->artist)->id);
-
-        if (!$canComplete) {
-            abort(403, 'You do not have permission to mark this booking as completed');
-        }
 
         if ($booking->status !== 'confirmed') {
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
@@ -694,25 +661,9 @@ class BookingController extends Controller
      */
     public function cancel(Request $request, BookingRequest $booking)
     {
+        $this->authorize('cancel', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Admins and customers can cancel
-        $canCancel = in_array($roleKey, ['master_admin', 'company_admin', 'customer']);
-
-        if (!$canCancel) {
-            abort(403, 'You do not have permission to cancel this booking');
-        }
-
-        // Customer can only cancel their own bookings
-        if ($roleKey === 'customer' && $booking->user_id !== $user->id) {
-            abort(403, 'You can only cancel your own bookings');
-        }
-
-        // Company admin can only cancel bookings from their company
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only cancel bookings from your company');
-        }
 
         if (in_array($booking->status, ['completed', 'cancelled'])) {
             return back()->with('error', 'Cannot cancel a booking that is already ' . $booking->status);
@@ -744,38 +695,6 @@ class BookingController extends Controller
             DB::rollBack();
             return back()->with('error', 'Failed to cancel booking: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Helper method to check if user can access a booking
-     */
-    private function canAccessBooking(BookingRequest $booking, $user, string $roleKey): bool
-    {
-        return match ($roleKey) {
-            'master_admin' => true,
-            'company_admin' => $booking->company_id === $user->company_id,
-            'customer' => $booking->user_id === $user->id,
-            'artist' => $booking->assigned_artist_id == optional($user->artist)->id,
-            default => false
-        };
-    }
-
-    /**
-     * Helper method to check if user can edit a booking
-     */
-    private function canEditBooking(BookingRequest $booking, $user, string $roleKey): bool
-    {
-        // Completed or cancelled bookings cannot be edited
-        if (in_array($booking->status, ['completed', 'cancelled'])) {
-            return false;
-        }
-
-        return match ($roleKey) {
-            'master_admin' => true,
-            'company_admin' => $booking->company_id === $user->company_id,
-            'customer' => $booking->user_id === $user->id && $booking->status === 'pending',
-            default => false
-        };
     }
 
 }

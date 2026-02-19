@@ -30,6 +30,31 @@
 <!-- Page js -->
 <script src="{{ asset('js/pages/datatables-export-data.js') }}"></script>
 
+<!-- Lucide: replace all [data-lucide] with SVG icons (run when DOM ready and retry for late-load) -->
+<script>
+(function() {
+    function initLucideIcons() {
+        var lib = window.lucide || window.Lucide;
+        if (lib && typeof lib.createIcons === 'function') {
+            lib.createIcons({
+                attrs: { 'stroke-width': 2, width: 24, height: 24 }
+            });
+        }
+    }
+    function runWhenReady() {
+        initLucideIcons();
+        setTimeout(initLucideIcons, 50);
+        setTimeout(initLucideIcons, 200);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runWhenReady);
+    } else {
+        runWhenReady();
+    }
+    window.addEventListener('load', runWhenReady);
+})();
+</script>
+
 <!-- Fix dropdown/sidebar z-index conflict -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
