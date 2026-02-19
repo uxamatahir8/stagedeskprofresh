@@ -18,8 +18,14 @@ class ActivityLogController extends Controller
 
         $query = ActivityLog::with('user')->orderBy('created_at', 'desc');
 
-        // Filter by user role
-        if ($user->role->role_key !== 'master_admin') {
+        $roleKey = $user->role->role_key;
+        if ($roleKey === 'master_admin') {
+            // See all logs
+        } elseif ($roleKey === 'company_admin') {
+            $query->whereHas('user', function ($q) use ($user) {
+                $q->where('company_id', $user->company_id);
+            });
+        } else {
             $query->where('user_id', $user->id);
         }
 
@@ -51,6 +57,16 @@ class ActivityLogController extends Controller
      */
     public function show(ActivityLog $activityLog)
     {
+        $user = Auth::user();
+        $roleKey = $user->role->role_key;
+        if ($roleKey === 'company_admin') {
+            if (!$activityLog->user || $activityLog->user->company_id !== $user->company_id) {
+                abort(403, 'You can only view activity logs for your company.');
+            }
+        } elseif ($roleKey !== 'master_admin' && $activityLog->user_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $title = 'Activity Log Details';
         return view('dashboard.pages.activity-logs.show', compact('title', 'activityLog'));
     }

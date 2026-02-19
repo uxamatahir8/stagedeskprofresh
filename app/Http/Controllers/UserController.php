@@ -58,19 +58,14 @@ class UserController extends Controller
         // Get role to check requirements
         $role = Role::find($request->role_id);
 
-        // Base validation rules
+        // Generate temporary password (no password field on form)
+        $temporaryPassword = $this->generateSecurePassword();
+
+        // Base validation rules (no password - system generated and emailed)
         $rules = [
             'role_id'    => 'required|exists:roles,id',
             'name'       => 'required|string|max:255',
             'email'      => 'required|email|unique:users,email',
-            'password'   => [
-                'required',
-                'min:10',
-                'regex:/[a-z]/',
-                'regex:/[A-Z]/',
-                'regex:/[0-9]/',
-                'regex:/[@$!%*?&]/',
-            ],
             'phone'      => 'required|string|max:20',
             'address'    => 'required|string|max:255',
             'zipcode'    => 'required|string|max:10',
@@ -82,28 +77,28 @@ class UserController extends Controller
             'logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
 
-        // Add company_id validation for company_admin role
-        if ($role && $role->role_key === 'company_admin' && Auth::user()->role->role_key === 'master_admin') {
-            $rules['company_id'] = 'required|exists:companies,id';
+        // Add company_id validation when master_admin creates Company Admin or Artist
+        if (Auth::user()->role->role_key === 'master_admin' && $role) {
+            if ($role->role_key === 'company_admin' || $role->role_key === 'artist') {
+                $rules['company_id'] = 'required|exists:companies,id';
+            }
         }
 
         $validated = $request->validate($rules, [
-            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
-            'company_id.required' => 'Company selection is required for Company Admin role.',
+            'company_id.required' => 'Company selection is required for this role.',
         ]);
 
-        // ✅ Store temporary password before hashing
-        $temporaryPassword = $validated['password'];
-
-        // ✅ Create user
+        // ✅ Create user (dashboard-created users are verified, temp password emailed)
         $user = User::create([
             'role_id'    => $validated['role_id'],
             'name'       => $validated['name'],
             'email'      => $validated['email'],
-            'password'   => Hash::make($validated['password']),
-            'company_id' => Auth::user()->role->role_key == 'master_admin' ? $validated['company_id'] ?? null : Auth::user()->company_id,
+            'password'   => Hash::make($temporaryPassword),
+            // Company admin can only create users for their own company; master_admin uses selected company for Company Admin/Artist
+            'company_id' => Auth::user()->role->role_key === 'company_admin' ? Auth::user()->company_id : ($validated['company_id'] ?? null),
             'status'     => $request->status === 'active' ? 'active' : 'inactive',
-            'must_change_password' => 1, // Force password change on first login
+            'must_change_password' => 1,
+            'email_verified_at' => now(), // Dashboard-created users are verified
         ]);
 
         // ✅ Handle logo upload
@@ -132,7 +127,7 @@ class UserController extends Controller
         \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserCredentials($user, $temporaryPassword, $loginUrl));
 
         // Check if the role is artist and redirect to artist creation page
-        if ($role && in_array($role->role_key, ['artist', 'dj'])) {
+        if ($role && $role->role_key === 'artist') {
             return redirect()->route('artists.create', ['user_id' => $user->id])
                 ->with('success', 'User created successfully! Credentials have been sent to their email. Now complete the artist profile.');
         }
@@ -360,5 +355,26 @@ class UserController extends Controller
             ->orderBy('name')
             ->get();
         return response()->json($cities);
+    }
+
+    /**
+     * Generate a secure random password for new users (emailed as temporary password).
+     */
+    private function generateSecurePassword($length = 12): string
+    {
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $special = '!@#$%^&*';
+        $allChars = $uppercase . $lowercase . $numbers . $special;
+        $password = '';
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+        for ($i = 4; $i < $length; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+        return str_shuffle($password);
     }
 }

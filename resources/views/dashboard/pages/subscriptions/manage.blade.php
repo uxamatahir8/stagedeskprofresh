@@ -47,7 +47,7 @@
                                     <select name="company_id" id="company_id" class="form-control required form-select">
                                         <option value="">Select Company</option>
                                         @foreach ($companies as $company)
-                                            <option value="{{ $company->id }}" {{ old('company_id', $subscription->company_id ?? $id ?? '') == $company->id ? 'selected' : '' }}>
+                                            <option value="{{ $company->id }}" {{ old('company_id', $subscription->company_id ?? $id ?? (Auth::check() && Auth::user()->role->role_key === 'company_admin' ? Auth::user()->company_id : '')) == $company->id ? 'selected' : '' }}>
                                                 {{ $company->name }}</option>
                                         @endforeach
                                     </select>

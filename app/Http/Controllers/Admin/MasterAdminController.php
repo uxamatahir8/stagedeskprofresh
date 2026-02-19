@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Mail\PaymentStatusUpdatedNotification;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Company;
@@ -13,6 +14,8 @@ use App\Models\ActivityLog;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class MasterAdminController extends Controller
@@ -73,8 +76,9 @@ class MasterAdminController extends Controller
         $monthlyStats = $this->getMonthlyStatistics();
         $topCompanies = $this->getTopCompanies();
         $topArtists = $this->getTopArtists();
+        $recentActivities = ActivityLog::with('user')->latest()->take(15)->get();
 
-        return view('dashboard.pages.admin.master-dashboard', compact(
+        return view('dashboard.pages.admin.dashboard', compact(
             'title',
             'stats',
             'recentCompanies',
@@ -84,7 +88,8 @@ class MasterAdminController extends Controller
             'systemHealth',
             'monthlyStats',
             'topCompanies',
-            'topArtists'
+            'topArtists',
+            'recentActivities'
         ));
     }
 
@@ -135,6 +140,10 @@ class MasterAdminController extends Controller
                 'verified_at' => now(),
                 'admin_notes' => $request->notes
             ]);
+
+            if ($request->status === 'completed') {
+                $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $request->status, $request->notes);
+            }
 
             ActivityLog::log(
                 'updated',
@@ -267,5 +276,47 @@ class MasterAdminController extends Controller
             ->orderBy('assigned_bookings_count', 'desc')
             ->take($limit)
             ->get();
+    }
+
+    private function sendPaymentStatusConfirmationToCompanyAdmins(Payment $payment, string $status, ?string $notes = null): void
+    {
+        $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user.company']);
+        $companyId = $this->resolveCompanyIdFromPayment($payment);
+
+        if (!$companyId) {
+            return;
+        }
+
+        $companyAdmins = User::where('company_id', $companyId)
+            ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+            ->whereNotNull('email')
+            ->get();
+
+        foreach ($companyAdmins as $companyAdmin) {
+            try {
+                Mail::to($companyAdmin->email)->send(
+                    new PaymentStatusUpdatedNotification($payment, $status, $notes, $companyAdmin)
+                );
+            } catch (\Throwable $e) {
+                Log::error('Failed to send payment status notification from master admin flow', [
+                    'payment_id' => $payment->id,
+                    'company_admin_id' => $companyAdmin->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function resolveCompanyIdFromPayment(Payment $payment): ?int
+    {
+        if ($payment->type === 'booking') {
+            return $payment->bookingRequest?->company_id ? (int) $payment->bookingRequest->company_id : null;
+        }
+
+        if ($payment->type === 'subscription') {
+            return $payment->subscription?->company_id ? (int) $payment->subscription->company_id : null;
+        }
+
+        return $payment->user?->company_id ? (int) $payment->user->company_id : null;
     }
 }

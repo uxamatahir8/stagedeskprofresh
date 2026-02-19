@@ -188,7 +188,7 @@
                             $roleKey = Auth::user()->role->role_key;
                             $profileRoute = match($roleKey) {
                                 'customer' => route('customer.profile'),
-                                'artist', 'dj' => route('artist.profile'),
+                                'artist' => route('artist.profile'),
                                 'affiliate' => route('affiliate.profile'),
                                 default => route('settings')
                             };

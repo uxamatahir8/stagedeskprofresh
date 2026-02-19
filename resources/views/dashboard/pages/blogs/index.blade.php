@@ -190,7 +190,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('blog.show', $blog->slug) }}"
+                                        <a href="{{ route('blog.details', $blog) }}"
                                             class="btn btn-success btn-sm" title="View" target="_blank">
                                             <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                         </a>

@@ -138,7 +138,7 @@ class DashboardController extends Controller
                 })->count();
             $stats['total_companies'] = 1;
             $stats['total_event_types'] = EventType::count();
-        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+        } elseif ($roleKey === 'artist') {
             $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
             if ($artist) {
                 // Count bookings where this artist is assigned
@@ -208,7 +208,7 @@ class DashboardController extends Controller
             $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
-        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+        } elseif ($roleKey === 'artist') {
             // Artists see bookings assigned to them
             $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
             if ($artist) {
@@ -240,7 +240,7 @@ class DashboardController extends Controller
             $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
-        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+        } elseif ($roleKey === 'artist') {
             $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
             if ($artist) {
                 $query->where('assigned_artist_id', $artist->id);
@@ -273,7 +273,7 @@ class DashboardController extends Controller
             $query->where('company_id', Auth::user()->company_id);
         } elseif ($roleKey === 'customer') {
             $query->where('user_id', Auth::user()->id);
-        } elseif (in_array($roleKey, ['artist', 'dj'])) {
+        } elseif ($roleKey === 'artist') {
             $artist = \App\Models\Artist::where('user_id', Auth::user()->id)->first();
             if ($artist) {
                 $query->where('assigned_artist_id', $artist->id);

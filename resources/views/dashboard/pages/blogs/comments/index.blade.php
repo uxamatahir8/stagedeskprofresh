@@ -113,7 +113,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="{{ route('blog.details', $comment->blog->slug) }}" target="_blank">
+                                    <a href="{{ route('blog.details', $comment->blog) }}" target="_blank">
                                         {{ Str::limit($comment->blog->title ?? 'N/A', 40) }}
                                     </a>
                                 </td>
@@ -160,7 +160,7 @@
                                             </form>
                                         @endif
 
-                                        <a href="{{ route('blog.details', $comment->blog->slug) }}#comment-{{ $comment->id }}" target="_blank" class="btn btn-dark btn-sm" title="View">
+                                        <a href="{{ route('blog-front.details', $comment->blog->slug) }}#comment-{{ $comment->id }}" target="_blank" class="btn btn-dark btn-sm" title="View">
                                             <i data-lucide="eye" style="width: 14px;"></i>
                                         </a>
 

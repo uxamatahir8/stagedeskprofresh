@@ -33,7 +33,7 @@
                                     <option value="">Select Event Type</option>
                                     @foreach($eventTypes as $type)
                                         <option value="{{ $type->id }}" {{ old('event_type_id') == $type->id ? 'selected' : '' }}>
-                                            {{ $type->name }}
+                                            {{ $type->event_type ?? $type->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -127,6 +127,16 @@
                                 <label class="form-label">Contact Phone <span class="text-danger">*</span></label>
                                 <input type="tel" name="contact_phone" class="form-control" value="{{ old('contact_phone', Auth::user()->phone) }}" required>
                                 @error('contact_phone')
+                                    <div class="text-danger fs-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" name="date_of_birth" class="form-control"
+                                    value="{{ old('date_of_birth', Auth::user()->date_of_birth ?? optional(Auth::user()->profile)->date_of_birth) }}"
+                                    max="{{ now()->subYears(18)->format('Y-m-d') }}" required>
+                                @error('date_of_birth')
                                     <div class="text-danger fs-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>

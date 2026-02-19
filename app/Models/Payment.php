@@ -9,7 +9,7 @@ class Payment extends Model
     protected $fillable = [
         'booking_requests_id',
         'user_id',
-        'company_subscription_id',
+        'subscription_id',
         'amount',
         'currency',
         'transaction_id',
@@ -31,6 +31,6 @@ class Payment extends Model
 
     public function subscription()
     {
-        return $this->belongsTo(CompanySubscription::class, 'company_subscription_id');
+        return $this->belongsTo(CompanySubscription::class, 'subscription_id');
     }
 }

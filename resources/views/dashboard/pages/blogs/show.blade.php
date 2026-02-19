@@ -109,7 +109,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Blog Content</h4>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('blog.show', $blog->slug) }}" class="btn btn-sm btn-success" target="_blank">
+                        <a href="{{ route('blog-front.details', $blog->slug) }}" class="btn btn-sm btn-success" target="_blank">
                             <i data-lucide="external-link" class="icon-sm me-1"></i> View Live
                         </a>
                         <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-sm btn-warning">
@@ -354,7 +354,7 @@
                         <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-warning">
                             <i data-lucide="pencil" class="icon-sm me-1"></i> Edit Blog
                         </a>
-                        <a href="{{ route('blog.show', $blog->slug) }}" class="btn btn-success" target="_blank">
+                        <a href="{{ route('blog-front.details', $blog->slug) }}" class="btn btn-success" target="_blank">
                             <i data-lucide="external-link" class="icon-sm me-1"></i> View Live
                         </a>
                         <a href="{{ route('blog.comments', $blog->id) }}" class="btn btn-info">

@@ -214,8 +214,51 @@ class BookingController extends Controller
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
+        // Compatibility mapping for customer portal form fields
+        if ($roleKey === 'customer') {
+            $fullName = trim((string) $request->input('contact_name', ''));
+            $name = $request->input('name');
+            $surname = $request->input('surname');
+
+            if (empty($name) && !empty($fullName)) {
+                $parts = preg_split('/\s+/', $fullName, 2);
+                $name = $parts[0] ?? '';
+                $surname = $surname ?: ($parts[1] ?? 'Customer');
+            }
+
+            $request->merge([
+                'user_id' => $user->id,
+                'name' => $name ?: ($user->name ? explode(' ', $user->name, 2)[0] : 'Customer'),
+                'surname' => $surname ?: (preg_split('/\s+/', (string) ($user->name ?? ''), 2)[1] ?? 'User'),
+                'phone' => $request->input('phone', $request->input('contact_phone', optional($user->profile)->phone ?? '')),
+                'email' => $request->input('email', $request->input('contact_email', $user->email)),
+                'address' => $request->input('address', $request->input('venue_address', optional($user->profile)->address ?? '')),
+            ]);
+
+            // If customer DOB is not provided in form, use profile/user DOB if available
+            if (!$request->filled('date_of_birth')) {
+                $request->merge([
+                    'date_of_birth' => optional($user->profile)->date_of_birth ?? ($user->date_of_birth ?? null),
+                ]);
+            }
+        }
+
         $eventType = EventType::find($request->event_type_id);
         $isWedding = $eventType && str_contains(strtolower($eventType->event_type), 'wedding');
+
+        if ($roleKey === 'customer') {
+            $request->merge([
+                'additional_notes' => $request->input('additional_notes', $request->input('special_requests')),
+            ]);
+
+            if ($isWedding) {
+                $request->merge([
+                    'partner_name' => $request->input('partner_name', 'N/A'),
+                    'wedding_date' => $request->input('wedding_date', $request->input('event_date')),
+                    'wedding_time' => $request->input('wedding_time', $request->input('event_time')),
+                ]);
+            }
+        }
 
         // Modified validation - user_id is optional for admins creating bookings
         $validated = $request->validate([
@@ -226,7 +269,7 @@ class BookingController extends Controller
             'assigned_artist_id'  => 'nullable|exists:artists,id',
             'name'                => 'required|string|max:255',
             'surname'             => 'required|string|max:255',
-            'date_of_birth'       => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'       => 'required|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'phone'               => 'required|string|max:20',
             'email'               => 'required|email|max:255',
             'address'             => 'required|string|max:255',
@@ -239,6 +282,8 @@ class BookingController extends Controller
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
             'create_customer_account' => 'nullable|boolean', // New field for creating customer account
+        ], [
+            'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
 
         // Auto-assign company for company admins
@@ -426,7 +471,7 @@ class BookingController extends Controller
             'assigned_artist_id'  => 'nullable|exists:artists,id',
             'name'                => 'required|string|max:255',
             'surname'             => 'required|string|max:255',
-            'date_of_birth'       => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'       => 'required|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'phone'               => 'required|string|max:20',
             'email'               => 'required|email|max:255',
             'address'             => 'required|string|max:255',
@@ -438,6 +483,8 @@ class BookingController extends Controller
             'playlist_spotify'    => 'nullable|string',
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
+        ], [
+            'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
 
         DB::beginTransaction();

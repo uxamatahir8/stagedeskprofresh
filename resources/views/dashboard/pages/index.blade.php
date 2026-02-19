@@ -49,7 +49,7 @@
                 [
                     'title' => 'Companies',
                     'value' => $stats['total_companies'] ?? 0,
-                    'icon' => 'building',
+                    'icon' => 'building-2',
                     'color' => 'warning',
                     'trend' => '+5%',
                     'trendType' => 'up',
@@ -77,7 +77,7 @@
                                 <h2 class="mb-0 fw-bold counter" data-target="{{ $card['value'] }}">0</h2>
                             </div>
                             <div class="stats-icon-lg bg-{{ $card['color'] }}-subtle">
-                                <i data-lucide="{{ $card['icon'] }}" class="text-{{ $card['color'] }}"></i>
+                                <i data-lucide="{{ $card['icon'] }}" class="text-{{ $card['color'] }}" style="width: 28px; height: 28px;"></i>
                             </div>
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
@@ -111,7 +111,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-50 text-uppercase fw-semibold fs-xs mb-0">Total Revenue</h6>
-                                <i data-lucide="dollar-sign" class="text-white-50"></i>
+                                <i data-lucide="dollar-sign" class="text-white-50" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-0 fw-bold">$<span class="counter" data-target="{{ number_format($statistics['total_revenue'], 0, '', '') }}">0</span></h2>
                             <small class="text-white-75">All time earnings</small>
@@ -126,7 +126,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-50 text-uppercase fw-semibold fs-xs mb-0">Pending Bookings</h6>
-                                <i data-lucide="clock" class="text-white-50"></i>
+                                <i data-lucide="clock" class="text-white-50" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-0 fw-bold counter" data-target="{{ $statistics['pending_bookings'] }}">0</h2>
                             <small class="text-white-75">Awaiting response</small>
@@ -141,7 +141,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-50 text-uppercase fw-semibold fs-xs mb-0">Active Subscriptions</h6>
-                                <i data-lucide="credit-card" class="text-white-50"></i>
+                                <i data-lucide="credit-card" class="text-white-50" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-0 fw-bold counter" data-target="{{ $statistics['active_subscriptions'] }}">0</h2>
                             <small class="text-white-75">Currently active</small>
@@ -156,7 +156,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="text-white-50 text-uppercase fw-semibold fs-xs mb-0">Total Artists</h6>
-                                <i data-lucide="music" class="text-white-50"></i>
+                                <i data-lucide="music" class="text-white-50" style="width: 24px; height: 24px;"></i>
                             </div>
                             <h2 class="text-white mb-0 fw-bold counter" data-target="{{ $statistics['total_artists'] }}">0</h2>
                             <small class="text-white-75">DJs & Artists</small>
@@ -453,10 +453,14 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            // Initialize Lucide Icons
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            // Initialize Lucide Icons (stats cards and all data-lucide on page)
+            (function() {
+                var lib = window.lucide || window.Lucide;
+                if (lib && typeof lib.createIcons === 'function') {
+                    lib.createIcons();
+                    setTimeout(lib.createIcons, 100);
+                }
+            })();
 
             // Counter Animation
             document.querySelectorAll('.counter').forEach(counter => {

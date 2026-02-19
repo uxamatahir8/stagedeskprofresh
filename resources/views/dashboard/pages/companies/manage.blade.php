@@ -19,7 +19,9 @@
     <div class="card">
         <div class="card-header justify-content-between">
             <h4 class="card-title">{{ $title }}</h4>
-            <a href="{{ route('companies') }}" class="btn btn-primary">Companies List</a>
+            <a href="{{ route('companies') }}" class="btn btn-primary">
+                <i data-lucide="list" style="width: 16px; height: 16px;" class="me-1"></i> Companies List
+            </a>
         </div>
 
         <div class="card-body">
@@ -179,13 +181,19 @@
                 @endif
 
                 <div id="adminFields" style="display: none;">
+                    @if ($mode != 'edit')
+                    <div class="alert alert-info py-2 mb-2">
+                        <i data-lucide="info" class="me-2" style="width: 18px; height: 18px;"></i>
+                        A temporary password will be generated and sent to the contact email. The admin can change it after first login.
+                    </div>
+                    @else
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="row g-lg-4 g-2 mt-2">
-                                <div class="col-lg-4"><label class="col-form-label">Password</label></div>
+                                <div class="col-lg-4"><label class="col-form-label">New Password</label></div>
                                 <div class="col-lg-8">
-                                    <input type="password" name="password" class="form-control" id="password"
-                                        placeholder="Password">
+                                    <input type="password" name="password" class="form-control" id="admin_password"
+                                        placeholder="Leave blank to keep current">
                                 </div>
                             </div>
                         </div>
@@ -194,11 +202,12 @@
                                 <div class="col-lg-4"><label class="col-form-label">Confirm Password</label></div>
                                 <div class="col-lg-8">
                                     <input type="password" name="password_confirmation" class="form-control match"
-                                        id="confirm_password" data-match="password" placeholder="Confirm Password">
+                                        id="admin_confirm_password" data-match="admin_password" placeholder="Confirm">
                                 </div>
                             </div>
                         </div>
                     </div>
+                    @endif
 
                     <div class="row mt-2">
                         <div class="col-md-4">

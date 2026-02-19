@@ -17,10 +17,69 @@
 
     <!-- App css -->
     <link href="{{ asset('css/app.min.css') }}" rel="stylesheet" type="text/css">
-
-
+    <!-- Lucide Icons (same as dashboard - reliable icon set) -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 
     <style>
+        :root {
+            --auth-primary: #43054E;
+            --auth-primary-light: #6c3577;
+            --auth-accent: #089df1;
+            --auth-card-bg: #fff;
+            --auth-radius: 1rem;
+        }
+        body { min-height: 100vh; }
+        .auth-box {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a0a1e 0%, #2d1b3d 35%, #1e3a5f 70%, #0d2137 100%);
+            background-attachment: fixed;
+        }
+        .auth-box .card {
+            border: none;
+            border-radius: var(--auth-radius);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+        .auth-brand .logo-dark img, .auth-brand .logo-light img { transition: transform 0.2s; }
+        .auth-brand a:hover img { transform: scale(1.02); }
+        .auth-box .form-control:focus, .auth-box .form-select:focus {
+            border-color: var(--auth-accent);
+            box-shadow: 0 0 0 0.2rem rgba(8, 157, 241, 0.2);
+        }
+        .auth-box .btn-primary {
+            background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-primary-light) 100%);
+            border: none;
+            font-weight: 600;
+            padding: 0.6rem 1.25rem;
+        }
+        .auth-box .btn-primary:hover {
+            background: linear-gradient(135deg, var(--auth-primary-light) 0%, var(--auth-primary) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67, 5, 78, 0.4);
+        }
+        .auth-box .input-group-text {
+            border-radius: 0.375rem 0 0 0.375rem;
+            background: #f8f9fa;
+            border-right: 0;
+            color: #6c757d;
+        }
+        .auth-box .input-group .form-control { border-left: 0; }
+        .auth-box .input-group .form-control:focus + .input-group-text,
+        .auth-box .input-group:focus-within .input-group-text { border-color: var(--auth-accent); }
+        .auth-footer { color: rgba(255,255,255,0.8); font-size: 0.875rem; }
+        .auth-footer a { color: rgba(255,255,255,0.95); }
+        .auth-box .nav-pills .nav-link {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+        .auth-box .nav-pills .nav-link:hover { color: var(--auth-primary); border-color: #dee2e6; }
+        .auth-box .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-primary-light) 100%);
+            border-color: transparent;
+            color: #fff;
+        }
         .icon-wait {
             position: fixed;
             width: 100%;
@@ -30,23 +89,14 @@
             opacity: 0.85;
             transition-duration: 2s;
         }
-
-        .icon-wait .icon-wrapper {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
+        .icon-wait .icon-wrapper { width: 100%; height: 100%; position: relative; }
         .icon-wait .icon-wrapper .icon-main {
             min-height: 85px;
             height: 85px;
             overflow: auto;
             margin: auto;
             position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+            top: 0; left: 0; bottom: 0; right: 0;
             opacity: 0.8;
             text-align: center;
             color: #43054E;
@@ -59,18 +109,17 @@
     <div style="display:none;" id="icon-wait" class="icon-wait">
         <div class="icon-wrapper">
             <div class="icon-main">
-                <div class="spinner-border" style="width: 3rem; height: 3rem;" style="z-index:9999999999;"
-                    role="status">
+                <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         </div>
     </div>
-    <div class="auth-box overflow-hidden align-items-center d-flex">
+    <div class="auth-box overflow-hidden align-items-center d-flex py-4 py-md-5">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xxl-4 col-md-{{ Route::is('register') ? '10' : '5' }} col-sm-8">
-                    <div class="card p-4">
+                <div class="col-xxl-8 col-md-{{ Route::is('register') ? '8' : '8' }} col-sm-8">
+                    <div class="card p-4 p-md-5">
                         <div class="position-absolute top-0 end-0" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"
                                 viewBox="0 0 600 560" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -182,28 +231,31 @@
                         @yield('content')
                     </div>
 
-                    <p class="text-center text-muted mt-4 mb-0">
-                        ©
-                        <script>
-                            document.write(new Date().getFullYear())
-                        </script> StageDesk Pro — by <span class="fw-semibold">Softring Solutions</span>
+                    <p class="auth-footer text-center mt-4 mb-0">
+                        © <script>document.write(new Date().getFullYear())</script>
+                        <a href="{{ route('home') }}" class="text-decoration-none">StageDesk Pro</a>
+                        — by <span class="fw-semibold">Softring Solutions</span>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- end auth-fluid-->
     <!-- Vendor js -->
     <script src="{{ asset('js/vendors.min.js') }}"></script>
-
     <!-- App js -->
     <script src="{{ asset('js/app.js') }}"></script>
-
     <!-- Validation JS -->
     <script src="{{ asset('js/validation.js') }}"></script>
-
+    @stack('scripts')
+    <script>
+        (function(){ var lib = window.lucide || window.Lucide;
+            if (lib && typeof lib.createIcons === 'function') {
+                document.addEventListener('DOMContentLoaded', function() { lib.createIcons(); });
+                if (document.readyState !== 'loading') lib.createIcons();
+            }
+        })();
+    </script>
 </body>
 
 </html>

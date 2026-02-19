@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Mail\UserCredentials;
 use App\Models\Company;
 use App\Models\Countries;
 use App\Models\SocialLink;
@@ -9,6 +10,7 @@ use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
@@ -103,14 +105,17 @@ class CompanyController extends Controller
                 }
             }
 
-            // Handle company admin
+            // Handle company admin (system-generated temp password, emailed; user is verified)
             if ($request->boolean('is_admin')) {
+                $tempPassword = $this->generateSecurePassword();
                 $adminUser = User::create([
                     'name'       => $request->contact_name,
                     'email'      => $request->contact_email,
                     'role_id'    => 2,
                     'company_id' => $company->id,
-                    'password'   => Hash::make($request->password),
+                    'password'   => Hash::make($tempPassword),
+                    'must_change_password' => 1,
+                    'email_verified_at' => now(),
                 ]);
 
                 $profileData = [
@@ -131,13 +136,18 @@ class CompanyController extends Controller
                 }
 
                 UserProfile::create($profileData);
+
+                $loginUrl = url('/login');
+                Mail::to($adminUser->email)->send(new UserCredentials($adminUser, $tempPassword, $loginUrl));
             }
 
             DB::commit();
 
             return redirect()
                 ->route('companies')
-                ->with('success', 'Company created successfully.');
+                ->with('success', $request->boolean('is_admin')
+                    ? 'Company created successfully. Temporary login credentials have been sent to the admin email.'
+                    : 'Company created successfully.');
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -263,21 +273,27 @@ class CompanyController extends Controller
                     ->first();
 
                 if (! $adminUser) {
+                    $tempPassword = $this->generateSecurePassword();
                     $adminUser = User::create([
                         'name'       => $request->contact_name,
                         'email'      => $request->contact_email,
                         'role_id'    => 2,
                         'company_id' => $company->id,
-                        'password'   => Hash::make($request->password),
+                        'password'   => Hash::make($tempPassword),
+                        'must_change_password' => 1,
+                        'email_verified_at' => now(),
                     ]);
+                    $loginUrl = url('/login');
+                    Mail::to($adminUser->email)->send(new UserCredentials($adminUser, $tempPassword, $loginUrl));
                 } else {
-                    $adminUser->update([
-                        'name'     => $request->contact_name,
-                        'email'    => $request->contact_email,
-                        'password' => $request->filled('password')
-                            ? Hash::make($request->password)
-                            : $adminUser->password,
-                    ]);
+                    $updateData = [
+                        'name'  => $request->contact_name,
+                        'email' => $request->contact_email,
+                    ];
+                    if ($request->filled('password')) {
+                        $updateData['password'] = Hash::make($request->password);
+                    }
+                    $adminUser->update($updateData);
                 }
 
                 $profileData = [
@@ -373,7 +389,7 @@ class CompanyController extends Controller
         if ($request->has('is_admin') && $request->is_admin == 1) {
             $validated = array_merge($validated, $request->validate([
                 'is_admin'            => 'nullable|boolean',
-                'password'            => 'required_if:is_admin,1|confirmed|min:6',
+                'password'            => 'nullable|confirmed|min:6', // Optional: system generates and emails on create
                 'admin_address'       => 'nullable|string|max:255',
                 'admin_country_id'    => 'nullable|exists:countries,id',
                 'admin_state_id'      => 'nullable|exists:states,id',
@@ -384,5 +400,23 @@ class CompanyController extends Controller
 
         $validated['status'] = $request->has('status') ? $validated['status'] : 'inactive';
         return $validated;
+    }
+
+    private function generateSecurePassword($length = 12): string
+    {
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $special = '!@#$%^&*';
+        $allChars = $uppercase . $lowercase . $numbers . $special;
+        $password = '';
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+        for ($i = 4; $i < $length; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+        return str_shuffle($password);
     }
 }
