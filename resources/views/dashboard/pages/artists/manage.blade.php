@@ -124,6 +124,13 @@
                     </div>
 
                     <div class="col-lg-6 mb-3">
+                        <label class="col-form-label">Artist Share (%)</label>
+                        <input type="number" name="share_percentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 30"
+                            value="{{ old('share_percentage', $artist->share_percentage ?? '') }}">
+                        <small class="text-muted">Percentage of booking payment that goes to this artist when assigned.</small>
+                    </div>
+
+                    <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Profile Image</label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                         @if($mode === 'edit' && $artist->image)

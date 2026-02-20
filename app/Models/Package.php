@@ -14,6 +14,7 @@ class Package extends Model
         'name',
         'description',
         'price',
+        'duration_type',
         'max_users_allowed',
         'max_requests_allowed',
         'max_responses_allowed',

@@ -20,6 +20,7 @@ class Artist extends Model
         'rating',
         'image',
         'bio',
+        'share_percentage',
     ];
 
     public function company()
@@ -50,6 +51,16 @@ class Artist extends Model
     public function bookings()
     {
         return $this->hasMany(BookingRequest::class, 'assigned_artist_id');
+    }
+
+    public function earnings()
+    {
+        return $this->hasMany(ArtistEarning::class);
+    }
+
+    public function withdrawalRequests()
+    {
+        return $this->hasMany(ArtistWithdrawalRequest::class);
     }
 
     public function sharedWith()

@@ -36,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'company.scope' => \App\Http\Middleware\CompanyScopeMiddleware::class,
             'account.lock' => \App\Http\Middleware\CheckAccountLock::class,
+            'company.subscribed' => \App\Http\Middleware\EnsureCompanySubscribed::class,
         ]);
 
         // Add account lock check to web middleware group

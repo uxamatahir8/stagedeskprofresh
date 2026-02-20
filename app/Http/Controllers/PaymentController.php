@@ -10,6 +10,7 @@ use App\Models\CompanySubscription;
 use App\Models\PaymentMethod;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Models\ArtistEarning;
 use App\Services\ActivityLogger;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -72,12 +73,21 @@ class PaymentController extends Controller
         }
 
         if ($roleKey === 'company_admin') {
-            $subscriptions = CompanySubscription::where('company_id', $user->company_id)->get();
+            $subscriptions = CompanySubscription::where('company_id', $user->company_id)
+                ->with('package')
+                ->orderByDesc('id')
+                ->get();
         }
 
         $paymentMethods = $this->resolveAvailablePaymentMethods($roleKey, $user->company_id, $bookingRequests);
 
-        return view('dashboard.pages.payments.manage', compact('title', 'mode', 'bookingRequests', 'subscriptions', 'paymentMethods'));
+        $preselect = [
+            'subscription_id' => request()->query('subscription_id'),
+            'type' => request()->query('type', $roleKey === 'company_admin' ? 'subscription' : 'booking'),
+            'amount' => request()->query('amount'),
+        ];
+
+        return view('dashboard.pages.payments.manage', compact('title', 'mode', 'bookingRequests', 'subscriptions', 'paymentMethods', 'preselect'));
     }
 
     public function store(Request $request)
@@ -329,7 +339,19 @@ class PaymentController extends Controller
 
     public function verifyPayment(Request $request, Payment $payment)
     {
-        if (Auth::user()->role->role_key !== 'master_admin') {
+        $user = Auth::user();
+        $roleKey = $user->role->role_key;
+
+        if ($roleKey === 'master_admin') {
+            // Master can verify any payment
+        } elseif ($roleKey === 'company_admin') {
+            if ($payment->type !== 'booking' || !$payment->bookingRequest) {
+                return abort(403, 'You can only verify booking payments for your company.');
+            }
+            if ((int) $payment->bookingRequest->company_id !== (int) $user->company_id) {
+                return abort(403, 'This payment does not belong to your company.');
+            }
+        } else {
             return abort(403, 'Unauthorized');
         }
 
@@ -340,13 +362,13 @@ class PaymentController extends Controller
 
         $payment->update([
             'status' => $validated['status'],
-            'verified_by' => Auth::id(),
+            'verified_by' => $user->id,
             'verified_at' => now(),
             'admin_notes' => $validated['notes'] ?? null,
         ]);
         ActivityLogger::info(
             'payment.verify.updated',
-            'Payment status updated by master admin',
+            'Payment status updated by ' . $roleKey,
             [
                 'category' => 'payment',
                 'action' => 'verify',
@@ -356,12 +378,45 @@ class PaymentController extends Controller
         );
 
         if ($validated['status'] === 'completed') {
-            $this->syncSubscriptionLifecycleFromPayment($payment);
-            $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $validated['status'], $validated['notes'] ?? null);
+            if ($payment->type === 'booking' && $payment->booking_requests_id) {
+                BookingRequest::where('id', $payment->booking_requests_id)->update(['payment_status' => 'paid']);
+                $this->createArtistEarningForBookingPayment($payment);
+            }
+            if ($payment->type === 'subscription') {
+                $this->syncSubscriptionLifecycleFromPayment($payment);
+                $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $validated['status'], $validated['notes'] ?? null);
+            }
         }
         $this->createPaymentVerificationNotifications($payment, $validated['status']);
 
         return redirect()->route('payments.index')->with('success', 'Payment status updated to ' . $validated['status']);
+    }
+
+    private function createArtistEarningForBookingPayment(Payment $payment): void
+    {
+        $payment->loadMissing(['bookingRequest.assignedArtist']);
+        $booking = $payment->bookingRequest;
+        if (!$booking || !$booking->assigned_artist_id) {
+            return;
+        }
+        $artist = $booking->assignedArtist;
+        if (!$artist || $artist->share_percentage === null || (float) $artist->share_percentage <= 0) {
+            return;
+        }
+        $amount = (float) $payment->amount;
+        $sharePct = (float) $artist->share_percentage;
+        $earningAmount = round($amount * ($sharePct / 100), 2);
+        if ($earningAmount <= 0) {
+            return;
+        }
+        ArtistEarning::create([
+            'artist_id' => $artist->id,
+            'booking_request_id' => $booking->id,
+            'payment_id' => $payment->id,
+            'amount' => $earningAmount,
+            'share_percentage' => $sharePct,
+            'status' => 'available',
+        ]);
     }
 
     private function sendPaymentSubmissionNotifications(Payment $payment, User $submittedBy): void

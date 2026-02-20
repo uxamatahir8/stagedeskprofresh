@@ -32,6 +32,7 @@
         </div>
 
         <div class="card-body">
+            @php $preselect = $preselect ?? []; @endphp
             <form class="validate_form"
                 action="{{ $mode === 'edit' ? route('payments.update', $payment) : route('payments.store') }}"
                 method="POST"
@@ -46,7 +47,7 @@
                         <label class="col-form-label">Payment Type <span class="text-danger">*</span></label>
                         @php
                             $roleKey = auth()->user()->role->role_key;
-                            $selectedType = old('type', $payment->type ?? ($roleKey === 'company_admin' ? 'subscription' : 'booking'));
+                            $selectedType = old('type', $payment->type ?? ($preselect['type'] ?? ($roleKey === 'company_admin' ? 'subscription' : 'booking')));
                         @endphp
                         <select name="type" class="form-control form-select required">
                             <option value="">Select Type</option>
@@ -78,14 +79,14 @@
                     </div>
 
                     <div class="col-lg-6 mb-3 payment-subscription-wrap">
-                        <label class="col-form-label">Subscription</label>
+                        <label class="col-form-label">Subscription <span class="text-danger">*</span> (for subscription payment)</label>
                         <select name="subscription_id" class="form-control form-select">
-                            <option value="">Select Subscription (Optional)</option>
+                            <option value="">Select Subscription</option>
                             @if(isset($subscriptions))
-                                @foreach ($subscriptions as $subscription)
-                                    <option value="{{ $subscription->id }}"
-                                        {{ old('subscription_id', $payment->subscription_id ?? '') == $subscription->id ? 'selected' : '' }}>
-                                        {{ $subscription->plan }} ({{ $subscription->package_name }})
+                                @foreach ($subscriptions as $sub)
+                                    <option value="{{ $sub->id }}"
+                                        {{ old('subscription_id', $payment->subscription_id ?? ($preselect['subscription_id'] ?? '')) == $sub->id ? 'selected' : '' }}>
+                                        {{ $sub->package->name ?? 'Package #' . $sub->package_id }} — {{ $sub->start_date->format('M d, Y') }} to {{ $sub->end_date->format('M d, Y') }}
                                     </option>
                                 @endforeach
                             @endif
@@ -96,7 +97,7 @@
                         <label class="col-form-label">Amount <span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control required" step="0.01" min="0.01"
                             placeholder="Enter amount"
-                            value="{{ old('amount', $payment->amount ?? '') }}">
+                            value="{{ old('amount', $payment->amount ?? ($preselect['amount'] ?? '')) }}">
                     </div>
 
                     <div class="col-lg-6 mb-3">

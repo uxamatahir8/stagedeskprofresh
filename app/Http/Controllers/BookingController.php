@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Artist;
 use App\Models\Company;
 use App\Models\ActivityLog;
+use App\Models\PaymentMethod;
 use App\Events\BookingCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -297,6 +298,26 @@ class BookingController extends Controller
         // Auto-assign company for company admins
         if ($roleKey === 'company_admin') {
             $validated['company_id'] = $user->company_id;
+            $company = \App\Models\Company::find($user->company_id);
+            if ($company && !$company->canAddBooking()) {
+                return back()->withInput()->with('error', 'Your subscription package limit for booking requests has been reached. Please upgrade your package to add more bookings.');
+            }
+            if (!empty($validated['assigned_artist_id']) && $company && !$company->canAddArtistResponse()) {
+                return back()->withInput()->with('error', 'Your subscription package limit for artist assignments has been reached. Please upgrade your package to assign more artists.');
+            }
+            // Company must have at least one payment method so customer can pay
+            $companyPaymentMethods = PaymentMethod::where('scope', 'company')->where('company_id', $user->company_id)->where('is_active', true)->count();
+            if ($companyPaymentMethods === 0) {
+                return redirect()->route('payment-methods.index')->with('error', 'Please add at least one payment method for your company before creating bookings. Customers will pay to these accounts.');
+            }
+        }
+
+        // Master admin creating for a company: that company must have payment methods
+        if ($roleKey === 'master_admin' && !empty($request->company_id)) {
+            $companyPaymentMethods = PaymentMethod::where('scope', 'company')->where('company_id', $request->company_id)->where('is_active', true)->count();
+            if ($companyPaymentMethods === 0) {
+                return back()->withInput()->with('error', 'Selected company has no payment methods. Add payment methods for the company before creating bookings.');
+            }
         }
 
         // Auto-set user_id for customers
@@ -365,11 +386,15 @@ class BookingController extends Controller
                 }
             }
 
-            // Set initial status
+            // Set initial status and payment status
             $validated['status'] = 'pending';
+            $validated['payment_status'] = $request->input('payment_status', 'unpaid');
 
-            // If artist is assigned immediately, update status
+            // Allow assigning artist only if payment status is paid or internal_paid
             if (!empty($validated['assigned_artist_id'])) {
+                if (!in_array($validated['payment_status'], ['paid', 'internal_paid'], true)) {
+                    return back()->withInput()->with('error', 'Artist can only be assigned when booking payment status is Paid or Internal Paid. Set payment status or leave artist unassigned.');
+                }
                 if (!$this->canAssignArtistToBooking((int) $validated['assigned_artist_id'], (int) $validated['company_id'])) {
                     return back()->withInput()->with('error', 'Selected artist is not available for this company booking.');
                 }
@@ -391,12 +416,22 @@ class BookingController extends Controller
             );
 
             // Send appropriate emails
+            $customerEmail = $booking->user->email ?? $booking->email;
             if ($newCustomerCreated && $customerUser && $generatedPassword) {
-                // Send account creation email with credentials
                 Mail::to($customerUser->email)->send(new \App\Mail\CustomerAccountCreated($customerUser, $generatedPassword, $booking));
             } elseif ($booking->user && $booking->user->email) {
-                // Send standard booking confirmation to existing customer
                 Mail::to($booking->user->email)->send(new \App\Mail\BookingConfirmationMail($booking));
+            }
+            // Email customer to make payment (company bookings only; company has payment methods)
+            if ($booking->company_id && $customerEmail) {
+                $companyPaymentMethods = PaymentMethod::where('scope', 'company')->where('company_id', $booking->company_id)->where('is_active', true)->get();
+                if ($companyPaymentMethods->isNotEmpty()) {
+                    try {
+                        Mail::to($customerEmail)->send(new \App\Mail\CustomerMakePaymentForBooking($booking, $companyPaymentMethods));
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send make-payment email to customer: ' . $e->getMessage());
+                    }
+                }
             }
 
             // Fire booking created event if company is assigned
@@ -494,6 +529,9 @@ class BookingController extends Controller
         }
 
         if ($isArtistChangeRequested) {
+            if (!in_array($booking->payment_status ?? 'unpaid', ['paid', 'internal_paid'], true)) {
+                return back()->withInput()->with('error', 'Artist cannot be assigned until the booking payment status is Paid or Internal Paid.');
+            }
             $eventDate = Carbon::parse($booking->event_date)->startOfDay();
             if ($eventDate->lt(today())) {
                 ActivityLog::log('updated', $booking, 'Artist assignment blocked after event date', [
@@ -529,6 +567,7 @@ class BookingController extends Controller
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
             'status'              => 'nullable|in:pending,confirmed,in_progress,completed,cancelled,rejected',
+            'payment_status'      => 'nullable|in:unpaid,paid,internal_paid',
         ], [
             'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
@@ -549,6 +588,7 @@ class BookingController extends Controller
             $validated['assigned_artist_id'] = $booking->assigned_artist_id;
             $validated['company_notes'] = $booking->company_notes;
             $validated['status'] = $booking->status;
+            $validated['payment_status'] = $booking->payment_status;
         }
 
         if (array_key_exists('status', $validated) && $validated['status'] !== null && $validated['status'] !== $booking->status) {
@@ -570,10 +610,15 @@ class BookingController extends Controller
             return back()->withInput()->with('error', 'Selected artist is not available for this booking company.');
         }
 
+        $company = $booking->company_id ? \App\Models\Company::find($booking->company_id) : null;
+        $wasArtistAssigned = empty($booking->assigned_artist_id) && !empty($validated['assigned_artist_id']);
+        if ($wasArtistAssigned && $company && !$company->canAddArtistResponse()) {
+            return back()->withInput()->with('error', 'Your subscription package limit for artist assignments has been reached. Please upgrade your package to assign more artists.');
+        }
+
         DB::beginTransaction();
         try {
-            // Track if artist was newly assigned
-            $wasArtistAssigned = empty($booking->assigned_artist_id) && !empty($validated['assigned_artist_id']);
+            // Track if artist was newly assigned (already set above)
 
             $booking->update($validated);
 
@@ -649,6 +694,10 @@ class BookingController extends Controller
     {
         $this->authorize('assignArtist', $booking);
 
+        if (!in_array($booking->payment_status ?? 'unpaid', ['paid', 'internal_paid'], true)) {
+            return back()->with('error', 'Artist cannot be assigned until the booking payment status is Paid or Internal Paid.');
+        }
+
         if (in_array($booking->status, ['completed', 'cancelled'])) {
             ActivityLog::log('updated', $booking, 'Artist assignment blocked for closed booking', [
                 'booking_id' => $booking->id,
@@ -680,9 +729,16 @@ class BookingController extends Controller
             return back()->with('error', 'Selected artist is not available for this booking company.');
         }
 
+        $isReassignment = $booking->assigned_artist_id !== null;
+        if (!$isReassignment && $booking->company_id) {
+            $company = \App\Models\Company::find($booking->company_id);
+            if ($company && !$company->canAddArtistResponse()) {
+                return back()->with('error', 'Your subscription package limit for artist assignments has been reached. Please upgrade your package to assign more artists.');
+            }
+        }
+
         DB::beginTransaction();
         try {
-            $isReassignment = $booking->assigned_artist_id !== null;
             $previousArtist = $isReassignment ? Artist::find($booking->assigned_artist_id) : null;
 
             // Assign artist but keep status as PENDING (waiting for artist acceptance)

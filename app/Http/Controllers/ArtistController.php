@@ -77,6 +77,7 @@ class ArtistController extends Controller
             'genres'          => 'required|string|max:255',
             'specialization'  => 'required|string|max:255',
             'bio'             => 'nullable|string|max:1000',
+            'share_percentage' => 'nullable|numeric|min:0|max:100',
             'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'user_id.unique' => 'This user already has an artist profile.',
@@ -194,6 +195,7 @@ class ArtistController extends Controller
             'genres'          => 'required|string|max:255',
             'specialization'  => 'required|string|max:255',
             'bio'             => 'nullable|string|max:1000',
+            'share_percentage' => 'nullable|numeric|min:0|max:100',
             'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
