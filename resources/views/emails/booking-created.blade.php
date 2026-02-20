@@ -9,7 +9,7 @@
 
     <div class="success-box">
         <strong>✓ Booking Successfully Created</strong><br>
-        Your booking ID: <strong>#{{ $booking->id }}</strong>
+        Your booking ID: <strong>#{{ $booking->tracking_code ?? $booking->id }}</strong>
     </div>
 
     <h3 style="color: #333; margin: 25px 0 15px 0;">Booking Details</h3>
@@ -17,7 +17,7 @@
     <table class="details-table">
         <tr>
             <th>Booking ID</th>
-            <td><strong>#{{ $booking->id }}</strong></td>
+            <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
         </tr>
         <tr>
             <th>Event Type</th>

@@ -29,7 +29,7 @@
                             <img src="{{ asset('storage/' . $artist->image) }}" alt="{{ $artist->stage_name }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                         @else
                             <div class="avatar avatar-xl mb-3 mx-auto">
-                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ substr($artist->stage_name, 0, 1) }}</span>
+                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ $artist->initials }}</span>
                             </div>
                         @endif
                         <h5 class="mb-1">{{ $artist->stage_name }}</h5>
@@ -227,7 +227,7 @@
                             <tbody>
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
-                                        <td><strong>#{{ $booking->id }}</strong></td>
+                                        <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
                                         <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->company->name ?? 'N/A' }}</td>
@@ -242,7 +242,7 @@
                                         </td>
                                         <td>${{ number_format($booking->total_amount ?? 0, 2) }}</td>
                                         <td>
-                                            <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i>
                                             </a>
                                         </td>
@@ -273,7 +273,7 @@
                         <div class="d-flex mb-3 pb-3 border-bottom">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
-                                    <span class="avatar-title">{{ substr($review->user->name ?? 'U', 0, 1) }}</span>
+                                    <span class="avatar-title">{{ $review->user->initials ?? 'U' }}</span>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
@@ -338,7 +338,7 @@
                                             </div>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Booking #{{ $booking->id }}</h6>
+                                            <h6 class="mb-1">Booking #{{ $booking->tracking_code ?? $booking->id }}</h6>
                                             <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
                                             <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
                                         </div>

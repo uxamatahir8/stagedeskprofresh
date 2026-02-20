@@ -8,9 +8,12 @@ use App\Models\Payment;
 use App\Models\Review;
 use App\Models\EventType;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerPortalController extends Controller
 {
@@ -144,6 +147,7 @@ class CustomerPortalController extends Controller
     public function cancelBooking(Request $request, BookingRequest $booking)
     {
         $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         // Safety check
         if ($booking->user_id !== $user->id) {
@@ -154,17 +158,25 @@ class CustomerPortalController extends Controller
             return back()->with('error', 'Only pending or confirmed bookings can be cancelled');
         }
 
+        if ($eventDate->lt(today())) {
+            return back()->with('error', 'Booking cannot be cancelled after the event date.');
+        }
+
         $request->validate([
             'reason' => 'required|string|max:500'
         ]);
 
         DB::beginTransaction();
         try {
+            $reason = $request->reason;
+
             $booking->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
-                'company_notes' => "Customer cancellation: " . $request->reason
+                'company_notes' => "Customer cancellation: " . $reason
             ]);
+
+            $this->notifyAdminsOfCustomerCancellation($booking->fresh(['company', 'eventType', 'user']), $user, $reason);
 
             DB::commit();
 
@@ -181,6 +193,7 @@ class CustomerPortalController extends Controller
     public function markBookingCompleted(BookingRequest $booking)
     {
         $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if ($booking->user_id !== $user->id) {
             abort(403, 'You can only complete your own bookings');
@@ -188,6 +201,10 @@ class CustomerPortalController extends Controller
 
         if ($booking->status !== 'confirmed') {
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        if ($eventDate->gt(today())) {
+            return back()->with('error', 'Booking cannot be marked as completed before the event date.');
         }
 
         DB::beginTransaction();
@@ -388,5 +405,33 @@ class CustomerPortalController extends Controller
 
         \App\Models\Artist::where('id', $artistId)
             ->update(['rating' => round($avgRating ?? 0, 2)]);
+    }
+
+    private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
+    {
+        $recipients = User::whereHas('role', function ($q) {
+                $q->where('role_key', 'master_admin');
+            })
+            ->when($booking->company_id, function ($q) use ($booking) {
+                $q->orWhere(function ($sub) use ($booking) {
+                    $sub->where('company_id', $booking->company_id)
+                        ->whereHas('role', function ($roleQ) {
+                            $roleQ->where('role_key', 'company_admin');
+                        });
+                });
+            })
+            ->whereNotNull('email')
+            ->get()
+            ->unique('email');
+
+        foreach ($recipients as $recipient) {
+            try {
+                Mail::to($recipient->email)->send(
+                    new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
+                );
+            } catch (\Exception $e) {
+                \Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+            }
+        }
     }
 }

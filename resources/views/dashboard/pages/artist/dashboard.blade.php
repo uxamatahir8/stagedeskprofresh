@@ -123,15 +123,15 @@
                                         </td>
                                         <td>
                                             @if($booking->status === 'pending')
-                                                <form action="{{ route('artist.bookings.accept', $booking->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('artist.bookings.accept', $booking) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-success">Accept</button>
                                                 </form>
-                                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $booking->id }}">
+                                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $booking->tracking_code ?? $booking->id }}">
                                                     Reject
                                                 </button>
                                             @else
-                                                <a href="{{ route('artist.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                                <a href="{{ route('artist.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                                     <i data-lucide="eye"></i> View
                                                 </a>
                                             @endif
@@ -197,7 +197,7 @@
                             <tbody>
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
-                                        <td>#{{ $booking->id }}</td>
+                                        <td>#{{ $booking->tracking_code ?? $booking->id }}</td>
                                         <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ $booking->user->name ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
@@ -207,7 +207,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('artist.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('artist.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i> View
                                             </a>
                                         </td>

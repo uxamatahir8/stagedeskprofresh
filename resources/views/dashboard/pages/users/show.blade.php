@@ -29,7 +29,7 @@
                             <img src="{{ asset('storage/' . $user->profile->profile_image) }}" alt="{{ $user->name }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                         @else
                             <div class="avatar avatar-xl mb-3 mx-auto">
-                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ substr($user->name, 0, 1) }}</span>
+                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ $user->initials }}</span>
                             </div>
                         @endif
                         <h5 class="mb-1">{{ $user->name }}</h5>
@@ -291,7 +291,7 @@
                                 <tbody>
                                     @forelse($recentBookings ?? [] as $booking)
                                         <tr>
-                                            <td><strong>#{{ $booking->id }}</strong></td>
+                                            <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
                                             <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                             <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                             <td>
@@ -304,7 +304,7 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-light">
+                                                <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-light">
                                                     <i data-lucide="eye"></i>
                                                 </a>
                                             </td>

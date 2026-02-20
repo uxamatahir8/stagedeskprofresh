@@ -29,7 +29,7 @@
                             <img src="{{ asset('storage/' . $company->logo) }}" alt="{{ $company->name }}" class="rounded mb-3" style="max-width: 120px;">
                         @else
                             <div class="avatar avatar-xl mb-3">
-                                <span class="avatar-title rounded bg-primary fs-1">{{ substr($company->name, 0, 1) }}</span>
+                                <span class="avatar-title rounded bg-primary fs-1">{{ $company->initials }}</span>
                             </div>
                         @endif
                         <h5 class="mb-1">{{ $company->name }}</h5>
@@ -215,7 +215,7 @@
                                                     <img src="{{ asset('storage/' . $artist->profile_image) }}" class="rounded-circle me-2" width="32" height="32">
                                                 @else
                                                     <div class="avatar avatar-sm me-2">
-                                                        <span class="avatar-title rounded-circle bg-primary">{{ substr($artist->user->name ?? 'A', 0, 1) }}</span>
+                                                        <span class="avatar-title rounded-circle bg-primary">{{ $artist->user->initials ?? 'A' }}</span>
                                                     </div>
                                                 @endif
                                                 <span>{{ $artist->user->name ?? 'N/A' }}</span>
@@ -274,7 +274,7 @@
                             <tbody>
                                 @forelse($bookings as $booking)
                                     <tr>
-                                        <td><strong>#{{ $booking->id }}</strong></td>
+                                        <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
                                         <td>{{ $booking->name }} {{ $booking->surname }}</td>
                                         <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
@@ -289,7 +289,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i>
                                             </a>
                                         </td>

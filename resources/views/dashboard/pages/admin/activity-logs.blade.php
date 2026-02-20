@@ -82,8 +82,8 @@
                                     @if($log->user)
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm me-2">
-                                                <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                    {{ substr($log->user->name, 0, 1) }}
+                                                <span class="avatar-title rounded-circle bg-primary">
+                                                    {{ $log->user->initials }}
                                                 </span>
                                             </div>
                                             <div>

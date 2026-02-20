@@ -69,7 +69,7 @@
                     <tbody>
                         @forelse($bookings as $booking)
                             <tr>
-                                <td>#{{ $booking->id }}</td>
+                                <td>#{{ $booking->tracking_code ?? $booking->id }}</td>
                                 <td>
                                     <div>
                                         <h6 class="mb-0 fs-sm">{{ $booking->user->name ?? 'N/A' }}</h6>
@@ -82,7 +82,7 @@
                                     @if($booking->assignedArtist)
                                         <span class="badge bg-info">{{ $booking->assignedArtist->user->name }}</span>
                                     @else
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->id }}">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->tracking_code ?? $booking->id }}">
                                             Assign Artist
                                         </button>
                                     @endif
@@ -98,7 +98,7 @@
                                 </td>
                                 <td>${{ number_format($booking->total_amount ?? 0, 2) }}</td>
                                 <td>
-                                    <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-light">
+                                    <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-light">
                                         <i data-lucide="eye"></i> View
                                     </a>
                                 </td>
@@ -106,13 +106,13 @@
 
                             <!-- Assign Artist Modal -->
                             @if(!$booking->assignedArtist)
-                            <div class="modal fade" id="assignArtistModal{{ $booking->id }}" tabindex="-1">
+                            <div class="modal fade" id="assignArtistModal{{ $booking->tracking_code ?? $booking->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('company.bookings.assign-artist', $booking->id) }}" method="POST">
+                                        <form action="{{ route('company.bookings.assign-artist', $booking) }}" method="POST">
                                             @csrf
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Assign Artist to Booking #{{ $booking->id }}</h5>
+                                                <h5 class="modal-title">Assign Artist to Booking #{{ $booking->tracking_code ?? $booking->id }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">

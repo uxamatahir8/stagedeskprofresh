@@ -34,8 +34,8 @@
                         @if($review->artist)
                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
                             <div class="avatar-sm me-2">
-                                <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                    {{ substr($review->artist->user->name ?? 'A', 0, 1) }}
+                                <span class="avatar-title rounded-circle bg-primary">
+                                    {{ $review->artist->user->initials ?? 'A' }}
                                 </span>
                             </div>
                             <div>

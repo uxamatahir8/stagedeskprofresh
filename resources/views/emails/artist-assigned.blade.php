@@ -19,7 +19,7 @@
 
     <div class="success-box">
         <strong>✓ Artist {{ $isReassignment ? 'Reassigned' : 'Assigned' }}</strong><br>
-        Booking ID: <strong>{{ $booking->booking_id }}</strong>
+        Booking ID: <strong>{{ $booking->tracking_code ?? $booking->id }}</strong>
     </div>
 
     <h3 style="color: #333; margin: 25px 0 15px 0;">Artist Information</h3>

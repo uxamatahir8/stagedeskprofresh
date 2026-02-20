@@ -191,13 +191,22 @@ class CompanyController extends Controller
             ->orderBy('end_date', 'desc')
             ->first();
 
-        // Fetch recent activity logs
-        $activityLogs = \App\Models\ActivityLog::whereHas('user', function($q) use ($company) {
-                $q->where('company_id', $company->id);
+        // Fetch recent activity logs relevant to this company
+        $activityLogs = \App\Models\ActivityLog::query()
+            ->where(function ($query) use ($company) {
+                $query->whereHas('user', function ($q) use ($company) {
+                    $q->where('company_id', $company->id);
+                })
+                ->orWhere(function ($q) use ($company) {
+                    $q->where('model_type', \App\Models\Company::class)
+                        ->where('model_id', $company->id);
+                })
+                ->orWhere('properties->company_id', $company->id)
+                ->orWhere('properties->shared_with_company', $company->id);
             })
             ->with('user')
             ->latest()
-            ->take(10)
+            ->take(20)
             ->get();
 
         return view('dashboard.pages.companies.show_enhanced', compact(

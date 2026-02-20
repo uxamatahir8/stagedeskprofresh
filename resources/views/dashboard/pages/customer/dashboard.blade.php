@@ -122,7 +122,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('customer.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('customer.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i> View
                                             </a>
                                         </td>
@@ -189,7 +189,7 @@
                             <tbody>
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
-                                        <td>#{{ $booking->id }}</td>
+                                        <td>#{{ $booking->tracking_code ?? $booking->id }}</td>
                                         <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ $booking->company->name ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
@@ -200,7 +200,7 @@
                                         </td>
                                         <td>${{ number_format($booking->total_amount ?? 0, 2) }}</td>
                                         <td>
-                                            <a href="{{ route('customer.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('customer.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i> View
                                             </a>
                                         </td>

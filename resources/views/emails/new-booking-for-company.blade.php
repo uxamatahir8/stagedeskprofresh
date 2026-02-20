@@ -9,7 +9,7 @@
 
     <div class="success-box">
         <strong>✓ New Booking Assigned to Your Company</strong><br>
-        Booking ID: <strong>{{ $booking->booking_id }}</strong>
+        Booking ID: <strong>{{ $booking->tracking_code ?? $booking->id }}</strong>
     </div>
 
     <h3 style="color: #333; margin: 25px 0 15px 0;">Booking Details</h3>
@@ -17,7 +17,7 @@
     <table class="details-table">
         <tr>
             <th>Booking ID</th>
-            <td><strong>{{ $booking->booking_id }}</strong></td>
+            <td><strong>{{ $booking->tracking_code ?? $booking->id }}</strong></td>
         </tr>
         <tr>
             <th>Event Type</th>
@@ -71,7 +71,7 @@
     @endif
 
     <div class="button-container">
-        <a href="{{ url('/bookings/' . $booking->id) }}" class="cta-button">View Booking Details</a>
+        <a href="{{ route('bookings.show', $booking) }}" class="cta-button">View Booking Details</a>
     </div>
 
     <p style="margin-top: 30px;">

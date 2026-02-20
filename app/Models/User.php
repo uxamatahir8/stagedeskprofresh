@@ -143,4 +143,18 @@ class User extends Authenticatable
     {
         return $this->morphMany(ActivityLog::class, 'subject');
     }
+
+    public function getInitialsAttribute(): string
+    {
+        $name = trim((string) $this->name);
+        if ($name === '') {
+            return 'U';
+        }
+
+        $parts = preg_split('/\s+/', $name) ?: [];
+        $first = strtoupper(substr($parts[0] ?? '', 0, 1));
+        $last = count($parts) > 1 ? strtoupper(substr($parts[count($parts) - 1], 0, 1)) : '';
+
+        return $first . $last;
+    }
 }

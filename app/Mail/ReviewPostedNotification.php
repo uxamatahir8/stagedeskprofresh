@@ -27,7 +27,7 @@ class ReviewPostedNotification extends Mailable
 
     public function build()
     {
-        return $this->subject('New Customer Review Posted - Booking #' . $this->booking->id)
+        return $this->subject('New Customer Review Posted - Booking #' . ($this->booking->tracking_code ?? $this->booking->id))
             ->view('emails.review-posted-notification');
     }
 }

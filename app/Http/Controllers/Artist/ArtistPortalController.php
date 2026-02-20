@@ -11,6 +11,7 @@ use App\Models\Review;
 use App\Models\ActivityLog;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -163,6 +164,7 @@ class ArtistPortalController extends Controller
     public function markBookingCompleted(Request $request, BookingRequest $booking)
     {
         $artist = Auth::user()->artist;
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         // Safety checks
         if ($booking->assigned_artist_id !== $artist->id) {
@@ -171,6 +173,10 @@ class ArtistPortalController extends Controller
 
         if ($booking->status !== 'confirmed') {
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        if ($eventDate->gt(today())) {
+            return back()->with('error', 'Booking cannot be marked as completed before the event date.');
         }
 
         $request->validate([
@@ -203,10 +209,10 @@ class ArtistPortalController extends Controller
                     $this->notificationService->createForUser(
                         $admin->id,
                         'Booking Completed',
-                        $artist->user->name . ' marked booking #' . $booking->id . ' as completed',
+                        $artist->user->name . ' marked booking #' . ($booking->tracking_code ?? $booking->id) . ' as completed',
                         'booking_completed',
                         'booking',
-                        route('bookings.show', $booking->id),
+                        route('bookings.show', $booking),
                         3,
                         $booking->company_id,
                         [
@@ -290,10 +296,10 @@ class ArtistPortalController extends Controller
                     $this->notificationService->createForUser(
                         $admin->id,
                         'Booking Accepted',
-                        $artist->user->name . ' accepted booking #' . $booking->id,
+                        $artist->user->name . ' accepted booking #' . ($booking->tracking_code ?? $booking->id),
                         'booking_accepted',
                         'booking',
-                        route('bookings.show', $booking->id),
+                        route('bookings.show', $booking),
                         3,
                         $booking->company_id,
                         [
@@ -320,10 +326,10 @@ class ArtistPortalController extends Controller
                 $this->notificationService->createForUser(
                     $admin->id,
                     'Booking Accepted',
-                    $artist->user->name . ' accepted booking #' . $booking->id,
+                    $artist->user->name . ' accepted booking #' . ($booking->tracking_code ?? $booking->id),
                     'booking_accepted',
                     'booking',
-                    route('bookings.show', $booking->id),
+                    route('bookings.show', $booking),
                     3,
                     $booking->company_id,
                     [
@@ -344,7 +350,7 @@ class ArtistPortalController extends Controller
 
             DB::commit();
 
-            return redirect()->route('artist.bookings.details', $booking->id)
+            return redirect()->route('artist.bookings.details', $booking)
                 ->with('success', '✅ Booking accepted successfully! Customer has been notified.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -431,10 +437,10 @@ class ArtistPortalController extends Controller
                     $this->notificationService->createForUser(
                         $admin->id,
                         'Booking Rejected by Artist',
-                        $artistName . ' rejected booking #' . $booking->id . ' for ' . $booking->name . ' ' . $booking->surname . '. Reason: ' . $request->reason,
+                        $artistName . ' rejected booking #' . ($booking->tracking_code ?? $booking->id) . ' for ' . $booking->name . ' ' . $booking->surname . '. Reason: ' . $request->reason,
                         'booking_rejected',
                         'booking',
-                        route('bookings.show', $booking->id),
+                        route('bookings.show', $booking),
                         3,
                         $booking->company_id,
                         [

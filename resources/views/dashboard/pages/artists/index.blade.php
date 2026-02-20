@@ -59,8 +59,8 @@
                                                      class="avatar-sm rounded-circle me-2">
                                             @else
                                                 <div class="avatar-sm flex-shrink-0 me-2">
-                                                    <span class="avatar-title rounded-circle bg-primary-light">
-                                                        {{ substr($artist->stage_name, 0, 1) }}
+                                                    <span class="avatar-title rounded-circle bg-primary">
+                                                        {{ $artist->initials }}
                                                     </span>
                                                 </div>
                                             @endif

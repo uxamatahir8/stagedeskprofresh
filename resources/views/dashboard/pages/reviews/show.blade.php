@@ -30,7 +30,7 @@
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                 <div class="d-flex align-items-center">
                     <div class="avatar me-3">
-                        <span class="avatar-title rounded-circle bg-primary">{{ substr($review->user->name ?? 'U', 0, 1) }}</span>
+                        <span class="avatar-title rounded-circle bg-primary">{{ $review->user->initials ?? 'U' }}</span>
                     </div>
                     <div>
                         <h6 class="mb-0">{{ $review->user->name ?? 'Unknown' }}</h6>

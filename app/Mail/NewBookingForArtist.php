@@ -33,7 +33,7 @@ class NewBookingForArtist extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Booking Assignment - #' . $this->booking->id,
+            subject: 'New Booking Assignment - #' . ($this->booking->tracking_code ?? $this->booking->id),
         );
     }
 

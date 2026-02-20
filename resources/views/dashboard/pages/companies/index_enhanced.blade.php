@@ -95,7 +95,7 @@
                                             <img src="{{ asset('storage/' . $company->logo) }}" class="rounded me-2" width="32" height="32" style="object-fit: cover;">
                                         @else
                                             <div class="avatar avatar-sm me-2">
-                                                <span class="avatar-title rounded bg-primary">{{ substr($company->name, 0, 1) }}</span>
+                                                <span class="avatar-title rounded bg-primary">{{ $company->initials }}</span>
                                             </div>
                                         @endif
                                         <div>

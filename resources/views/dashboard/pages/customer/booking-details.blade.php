@@ -6,7 +6,7 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i data-lucide="file-text" class="me-2"></i>Booking Details
             </h4>
-            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->id }}</p>
+            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->tracking_code ?? $booking->id }}</p>
         </div>
         <div class="text-end">
             <a href="{{ route('customer.bookings') }}" class="btn btn-light btn-sm">
@@ -85,7 +85,7 @@
                                 <img src="{{ Storage::url($booking->assignedArtist->profile_image) }}" alt="{{ $booking->assignedArtist->user->name }}" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
                             @else
                                 <span class="avatar-title rounded-circle bg-primary fs-3">
-                                    {{ substr($booking->assignedArtist->user->name ?? 'A', 0, 1) }}
+                                    {{ $booking->assignedArtist->user->initials ?? 'A' }}
                                 </span>
                             @endif
                         </div>
@@ -177,7 +177,7 @@
                         <i data-lucide="x-circle"></i> Cancel Booking
                     </button>
                     @if($booking->status === 'confirmed')
-                        <form action="{{ route('customer.bookings.complete', $booking->id) }}" method="POST" class="mt-2">
+                        <form action="{{ route('customer.bookings.complete', $booking) }}" method="POST" class="mt-2">
                             @csrf
                             <button type="submit" class="btn btn-success w-100"
                                 onclick="return confirm('Mark this booking as completed? After this, you can post your review.')">
@@ -195,7 +195,7 @@
     <div class="modal fade" id="cancelBookingModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('customer.bookings.cancel', $booking->id) }}" method="POST">
+                <form action="{{ route('customer.bookings.cancel', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Cancel Booking</h5>

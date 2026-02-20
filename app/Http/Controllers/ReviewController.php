@@ -42,8 +42,11 @@ class ReviewController extends Controller
      */
     public function create(Request $request)
     {
-        $bookingId = $request->query('booking_id');
-        $booking = BookingRequest::with(['assignedArtist', 'company'])->findOrFail($bookingId);
+        $bookingRef = $request->query('booking_id');
+        $booking = BookingRequest::with(['assignedArtist', 'company'])
+            ->where('tracking_code', $bookingRef)
+            ->orWhere('id', $bookingRef)
+            ->firstOrFail();
 
         // Check if user can review
         if (!$booking->canBeReviewed()) {
@@ -77,7 +80,9 @@ class ReviewController extends Controller
             $this->updateArtistRating($review->artist_id);
         }
 
-        return redirect()->route('bookings.show', $validated['booking_id'])
+        $booking = BookingRequest::findOrFail($validated['booking_id']);
+
+        return redirect()->route('bookings.show', $booking)
             ->with('success', 'Review submitted successfully and is pending approval.');
     }
 

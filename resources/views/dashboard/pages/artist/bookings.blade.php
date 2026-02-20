@@ -57,7 +57,7 @@
                     <tbody>
                         @forelse($bookings as $booking)
                             <tr>
-                                <td>#{{ $booking->id }}</td>
+                                <td>#{{ $booking->tracking_code ?? $booking->id }}</td>
                                 <td>{{ $booking->user->name ?? 'N/A' }}</td>
                                 <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y h:i A') }}</td>
@@ -72,14 +72,14 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('artist.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                    <a href="{{ route('artist.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                         <i data-lucide="eye"></i> View
                                     </a>
                                     @if($booking->status === 'pending')
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal{{ $booking->id }}">
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal{{ $booking->tracking_code ?? $booking->id }}">
                                             Accept
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $booking->id }}">
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $booking->tracking_code ?? $booking->id }}">
                                             Reject
                                         </button>
                                     @endif
@@ -87,13 +87,13 @@
                             </tr>
 
                             <!-- Accept Modal -->
-                            <div class="modal fade" id="acceptModal{{ $booking->id }}" tabindex="-1">
+                            <div class="modal fade" id="acceptModal{{ $booking->tracking_code ?? $booking->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('artist.bookings.accept', $booking->id) }}" method="POST">
+                                        <form action="{{ route('artist.bookings.accept', $booking) }}" method="POST">
                                             @csrf
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Accept Booking #{{ $booking->id }}</h5>
+                                                <h5 class="modal-title">Accept Booking #{{ $booking->tracking_code ?? $booking->id }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
@@ -109,13 +109,13 @@
                             </div>
 
                             <!-- Reject Modal -->
-                            <div class="modal fade" id="rejectModal{{ $booking->id }}" tabindex="-1">
+                            <div class="modal fade" id="rejectModal{{ $booking->tracking_code ?? $booking->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('artist.bookings.reject', $booking->id) }}" method="POST">
+                                        <form action="{{ route('artist.bookings.reject', $booking) }}" method="POST">
                                             @csrf
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Reject Booking #{{ $booking->id }}</h5>
+                                                <h5 class="modal-title">Reject Booking #{{ $booking->tracking_code ?? $booking->id }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">

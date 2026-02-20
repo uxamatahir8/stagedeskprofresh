@@ -22,7 +22,7 @@
                                     <img src="{{ Storage::url($artist->profile_image) }}" alt="{{ $artist->user->name }}" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
                                 @else
                                     <span class="avatar-title rounded-circle bg-primary fs-3">
-                                        {{ substr($artist->user->name ?? 'A', 0, 1) }}
+                                        {{ $artist->user->initials ?? 'A' }}
                                     </span>
                                 @endif
                             </div>

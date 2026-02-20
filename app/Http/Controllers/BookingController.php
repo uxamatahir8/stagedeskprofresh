@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
 
 class BookingController extends Controller
 {
@@ -44,7 +45,19 @@ class BookingController extends Controller
             default         => collect([]),
         };
 
-        return view('dashboard.pages.bookings.show', compact('title', 'booking', 'artists'));
+        $bookingActivityLogs = ActivityLog::query()
+            ->where(function ($query) use ($booking) {
+                $query->where(function ($q) use ($booking) {
+                    $q->where('model_type', BookingRequest::class)
+                        ->where('model_id', $booking->id);
+                })->orWhere('properties->booking_id', $booking->id);
+            })
+            ->with('user')
+            ->latest()
+            ->take(25)
+            ->get();
+
+        return view('dashboard.pages.bookings.show', compact('title', 'booking', 'artists', 'bookingActivityLogs'));
     }
 
     //
@@ -453,6 +466,15 @@ class BookingController extends Controller
 
         $user = Auth::user();
         $roleKey = $user->role->role_key;
+        $isStatusLocked = in_array($booking->status, ['completed', 'cancelled']);
+        $isArtistChangeRequested = $request->has('assigned_artist_id')
+            && (string) $request->input('assigned_artist_id', '') !== (string) ($booking->assigned_artist_id ?? '');
+        $isStatusChangeRequested = $request->filled('status')
+            && (string) $request->input('status') !== (string) $booking->status;
+
+        if ($isStatusLocked && ($isArtistChangeRequested || $isStatusChangeRequested)) {
+            return back()->withInput()->with('error', 'Artist and status updates are not allowed for completed or cancelled bookings.');
+        }
 
         $eventType = EventType::find($request->event_type_id);
         $isWedding = $eventType && str_contains(strtolower($eventType->event_type), 'wedding');
@@ -477,6 +499,7 @@ class BookingController extends Controller
             'playlist_spotify'    => 'nullable|string',
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
+            'status'              => 'nullable|in:pending,confirmed,in_progress,completed,cancelled,rejected',
         ], [
             'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
@@ -490,6 +513,22 @@ class BookingController extends Controller
             $validated['company_id'] = $booking->company_id;
             $validated['assigned_artist_id'] = $booking->assigned_artist_id;
             $validated['company_notes'] = $booking->company_notes;
+            $validated['status'] = $booking->status;
+        }
+
+        if (array_key_exists('status', $validated) && $validated['status'] !== null && $validated['status'] !== $booking->status) {
+            $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+
+            if ($validated['status'] === 'completed' && $eventDate->gt(today())) {
+                return back()->withInput()->with('error', 'Booking cannot be marked as completed before the event date.');
+            }
+
+            if ($validated['status'] === 'cancelled' && $eventDate->lt(today())) {
+                return back()->withInput()->with('error', 'Booking cannot be cancelled after the event date.');
+            }
+
+            $validated['completed_at'] = $validated['status'] === 'completed' ? now() : null;
+            $validated['cancelled_at'] = $validated['status'] === 'cancelled' ? now() : null;
         }
 
         DB::beginTransaction();
@@ -570,6 +609,10 @@ class BookingController extends Controller
     public function assignArtist(Request $request, BookingRequest $booking)
     {
         $this->authorize('assignArtist', $booking);
+
+        if (in_array($booking->status, ['completed', 'cancelled'])) {
+            return back()->with('error', 'Artist update is not allowed for completed or cancelled bookings.');
+        }
 
         $user = Auth::user();
         $roleKey = $user->role->role_key;
@@ -680,9 +723,14 @@ class BookingController extends Controller
         $this->authorize('markCompleted', $booking);
 
         $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if ($booking->status !== 'confirmed') {
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        if ($eventDate->gt(today())) {
+            return back()->with('error', 'Booking cannot be marked as completed before the event date.');
         }
 
         DB::beginTransaction();
@@ -716,9 +764,14 @@ class BookingController extends Controller
         $this->authorize('cancel', $booking);
 
         $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if (in_array($booking->status, ['completed', 'cancelled'])) {
             return back()->with('error', 'Cannot cancel a booking that is already ' . $booking->status);
+        }
+
+        if ($eventDate->lt(today())) {
+            return back()->with('error', 'Booking cannot be cancelled after the event date.');
         }
 
         $request->validate([
@@ -727,18 +780,24 @@ class BookingController extends Controller
 
         DB::beginTransaction();
         try {
+            $cancellationReason = $request->cancellation_reason ?? 'No reason provided';
+
             $booking->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
-                'company_notes' => ($booking->company_notes ?? '') . "\n\nCancellation reason: " . ($request->cancellation_reason ?? 'No reason provided')
+                'company_notes' => ($booking->company_notes ?? '') . "\n\nCancellation reason: " . $cancellationReason
             ]);
 
             ActivityLog::log(
                 'updated',
                 $booking,
                 'Booking cancelled by ' . $user->name,
-                ['booking_id' => $booking->id, 'reason' => $request->cancellation_reason]
+                ['booking_id' => $booking->id, 'reason' => $cancellationReason]
             );
+
+            if ($user->role?->role_key === 'customer') {
+                $this->notifyAdminsOfCustomerCancellation($booking->fresh(['company', 'eventType', 'user']), $user, $cancellationReason);
+            }
 
             DB::commit();
 
@@ -746,6 +805,34 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to cancel booking: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
+    {
+        $recipients = User::whereHas('role', function ($q) {
+                $q->where('role_key', 'master_admin');
+            })
+            ->when($booking->company_id, function ($q) use ($booking) {
+                $q->orWhere(function ($sub) use ($booking) {
+                    $sub->where('company_id', $booking->company_id)
+                        ->whereHas('role', function ($roleQ) {
+                            $roleQ->where('role_key', 'company_admin');
+                        });
+                });
+            })
+            ->whereNotNull('email')
+            ->get()
+            ->unique('email');
+
+        foreach ($recipients as $recipient) {
+            try {
+                Mail::to($recipient->email)->send(
+                    new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
+                );
+            } catch (\Exception $e) {
+                \Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+            }
         }
     }
 

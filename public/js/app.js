@@ -446,9 +446,22 @@ class LayoutCustomizer {
                 .querySelector(".sidenav-toggle-button")),
             e = (e && e.addEventListener("click", () => this._toggleSidebar()),
                 document.querySelector(".button-close-offcanvas"));
-        e && e.addEventListener("click", () => {
-            this.html.classList.remove("sidebar-enable"), this.hideBackdrop()
-        }), document.querySelectorAll(".button-on-hover").forEach(e => {
+        e && e.addEventListener("click", () => this.closeSidebar()), document
+            .querySelector(".sidenav-toggle-button") && document.querySelector(
+                ".sidenav-toggle-button").addEventListener("click", () => this
+                    .closeTopbarDropdowns()), document.querySelector(
+                        ".sidenav-menu") && document.querySelector(".sidenav-menu")
+                            .addEventListener("click", e => {
+                                e = e.target.closest(".side-nav-link");
+                                e && !e.hasAttribute("data-bs-toggle") && "offcanvas" ===
+                                    this.html.getAttribute("data-sidenav-size") && this
+                                        .closeSidebar()
+                            }), document.addEventListener("keydown", e => {
+                                "Escape" === e.key && "offcanvas" === this.html
+                                    .getAttribute("data-sidenav-size") && this.html
+                                        .classList.contains("sidebar-enable") && this
+                                            .closeSidebar()
+                            }), document.querySelectorAll(".button-on-hover").forEach(e => {
             e.addEventListener("click", () => {
                 var e = this.html.getAttribute("data-sidenav-size");
                 this.changeLeftbarSize("on-hover-active" === e ? "on-hover" :
@@ -458,19 +471,32 @@ class LayoutCustomizer {
     }
     _toggleSidebar() {
         var e = this.html.getAttribute("data-sidenav-size"),
-            t = this.config.sidenav.size;
-        "offcanvas" === e ? this.showBackdrop() : "compact" === t ? this
+            t = this.config.sidenav.size,
+            i = this.html.classList.contains("sidebar-enable");
+        if ("offcanvas" === e) return i ? this.closeSidebar() : (this.html
+            .classList.add("sidebar-enable"), void this.showBackdrop());
+        "compact" === t ? this
             .changeLeftbarSize("condensed" === e ? "compact" : "condensed", !1) :
             this.changeLeftbarSize("condensed" === e ? "default" : "condensed", !0),
-            this.html.classList.toggle("sidebar-enable")
+            this.html.classList.toggle("sidebar-enable"), this.hideBackdrop()
+    }
+    closeSidebar() {
+        this.html.classList.remove("sidebar-enable"), this.hideBackdrop()
+    }
+    closeTopbarDropdowns() {
+        document.querySelectorAll(".app-topbar .dropdown-toggle").forEach(e => {
+            e = bootstrap.Dropdown.getInstance(e);
+            e && e.hide()
+        })
     }
     showBackdrop() {
+        if (document.getElementById("custom-backdrop")) return;
         var e = document.createElement("div");
         e.id = "custom-backdrop", e.className = "offcanvas-backdrop fade show",
             document.body.appendChild(e), document.body.style.overflow = "hidden",
             767 < window.innerWidth && (document.body.style.paddingRight = "15px"),
             e.addEventListener("click", () => {
-                this.html.classList.remove("sidebar-enable"), this.hideBackdrop()
+                this.closeSidebar()
             })
     }
     hideBackdrop() {
@@ -801,7 +827,7 @@ class CustomChartJs {
         try {
             var e, t, a, i;
             this.element = this.selector instanceof HTMLElement ? this.selector :
-                document.querySelector(this.selector), this.element ? (this.chart &&
+                document.querySelector(this.selector), this.element && (this.chart &&
                     this.chart.destroy(), {
                         type: e,
                         data: t,
@@ -812,7 +838,7 @@ class CustomChartJs {
                         data: t,
                         options: {
                             ...structuredClone(CustomChartJs.getDefaultOptions()),
-                            ...a || {}
+                            ...(a || {})
                         },
                         plugins: i || []
                     }), window.addEventListener("resize", debounce(() => {

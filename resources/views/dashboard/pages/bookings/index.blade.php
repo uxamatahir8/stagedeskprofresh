@@ -53,7 +53,7 @@
                             @foreach ($bookings as $booking)
                                 <tr>
                                     <td>
-                                        <strong>#{{ $booking->id }}</strong>
+                                        <strong>#{{ $booking->tracking_code ?? $booking->id }}</strong>
                                     </td>
                                     <td>
                                         {{ $booking->name }} {{ $booking->surname }}
@@ -75,7 +75,7 @@
                                         @if($booking->assignedArtist)
                                             <span class="badge bg-info">{{ $booking->assignedArtist->user->name }}</span>
                                         @else
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->id }}">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->tracking_code ?? $booking->id }}">
                                                 <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Assign
                                             </button>
                                         @endif
@@ -123,13 +123,13 @@
 
                                 {{-- Assign Artist Modal --}}
                                 @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']) && !$booking->assignedArtist)
-                                <div class="modal fade" id="assignArtistModal{{ $booking->id }}" tabindex="-1">
+                                <div class="modal fade" id="assignArtistModal{{ $booking->tracking_code ?? $booking->id }}" tabindex="-1">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                                            <form action="{{ route('bookings.assign-artist', $booking) }}" method="POST">
                                                 @csrf
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Assign Artist to Booking #{{ $booking->id }}</h5>
+                                                    <h5 class="modal-title">Assign Artist to Booking #{{ $booking->tracking_code ?? $booking->id }}</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">

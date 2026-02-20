@@ -5,11 +5,11 @@
     <div class="page-title-head d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fs-xl fw-bold m-0">
-                <i data-lucide="calendar-check" class="me-2"></i>Booking Details #{{ $booking->id }}
+                <i data-lucide="calendar-check" class="me-2"></i>Booking Details #{{ $booking->tracking_code ?? $booking->id }}
             </h4>
             <p class="text-muted mb-0 mt-1">Complete booking information and management</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('bookings.index') }}" class="btn btn-secondary btn-sm">
                 <i data-lucide="arrow-left" class="me-1"></i>Back to List
             </a>
@@ -26,7 +26,7 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="row align-items-center">
-                        <div class="col-md-3">
+                        <div class="col-6 col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Booking Status</h6>
                             @php
                                 $statusColors = [
@@ -56,15 +56,15 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-6 col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Booking ID</h6>
-                            <p class="mb-0 fw-bold">#{{ str_pad($booking->id, 6, '0', STR_PAD_LEFT) }}</p>
+                            <p class="mb-0 fw-bold">#{{ $booking->tracking_code ?? $booking->id }}</p>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-6 col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Created On</h6>
                             <p class="mb-0">{{ $booking->created_at->format('M d, Y') }}</p>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-6 col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Last Updated</h6>
                             <p class="mb-0">{{ $booking->updated_at->diffForHumans() }}</p>
                         </div>
@@ -157,7 +157,7 @@
                                      style="width: 64px; height: 64px; object-fit: cover;">
                             @else
                                 <span class="avatar-title rounded-circle bg-primary fs-3">
-                                    {{ substr($booking->assignedArtist->user->name, 0, 1) }}
+                                    {{ $booking->assignedArtist->user->initials ?? 'A' }}
                                 </span>
                             @endif
                         </div>
@@ -386,30 +386,94 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    @php
+                        $eventDateTime = \Carbon\Carbon::parse($booking->event_date . ' ' . ($booking->start_time ?? $booking->wedding_time ?? '00:00:00'));
+                        $timelineItems = collect();
+
+                        $timelineItems->push([
+                            'time' => $booking->created_at,
+                            'title' => 'Booking Created',
+                            'desc' => 'Booking request was created by ' . ($booking->user->name ?? ($booking->name . ' ' . $booking->surname)),
+                            'color' => 'success',
+                        ]);
+
+                        $timelineItems->push([
+                            'time' => $eventDateTime,
+                            'title' => $eventDateTime->isFuture() ? 'Event Scheduled' : 'Event Date Reached',
+                            'desc' => $eventDateTime->format('l, F j, Y \a\t h:i A'),
+                            'color' => $eventDateTime->isFuture() ? 'warning' : 'dark',
+                        ]);
+
+                        if ($booking->confirmed_at) {
+                            $timelineItems->push([
+                                'time' => $booking->confirmed_at,
+                                'title' => 'Booking Confirmed',
+                                'desc' => 'Booking was confirmed and moved to active processing.',
+                                'color' => 'info',
+                            ]);
+                        }
+
+                        if ($booking->completed_at) {
+                            $timelineItems->push([
+                                'time' => $booking->completed_at,
+                                'title' => 'Booking Completed',
+                                'desc' => 'Service marked as completed.',
+                                'color' => 'success',
+                            ]);
+                        }
+
+                        if ($booking->cancelled_at) {
+                            $timelineItems->push([
+                                'time' => $booking->cancelled_at,
+                                'title' => 'Booking Cancelled',
+                                'desc' => 'Booking was cancelled.',
+                                'color' => 'danger',
+                            ]);
+                        }
+
+                        foreach (($bookingActivityLogs ?? collect()) as $log) {
+                            $actionColor = match ($log->action) {
+                                'created' => 'success',
+                                'updated' => 'info',
+                                'deleted' => 'danger',
+                                default => 'primary',
+                            };
+
+                            $timelineItems->push([
+                                'time' => $log->created_at,
+                                'title' => ucfirst($log->action ?? 'activity') . ' by ' . ($log->user->name ?? 'System'),
+                                'desc' => $log->description ?? 'No additional details.',
+                                'color' => $actionColor,
+                            ]);
+                        }
+
+                        $timelineItems = $timelineItems
+                            ->filter(fn ($item) => !empty($item['time']))
+                            ->sortBy('time')
+                            ->values();
+                    @endphp
                     <ul class="timeline timeline-left">
-                        <li class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">Booking Created</h6>
-                                <p class="text-muted mb-0 small">{{ $booking->created_at->format('M d, Y \a\t h:i A') }}</p>
-                            </div>
-                        </li>
-                        @if($booking->updated_at != $booking->created_at)
-                        <li class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">Last Updated</h6>
-                                <p class="text-muted mb-0 small">{{ $booking->updated_at->format('M d, Y \a\t h:i A') }}</p>
-                            </div>
-                        </li>
-                        @endif
-                        <li class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">Event Date</h6>
-                                <p class="text-muted mb-0 small">{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</p>
-                            </div>
-                        </li>
+                        @forelse($timelineItems as $item)
+                            <li class="timeline-item">
+                                <div class="timeline-marker bg-{{ $item['color'] }}"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">{{ $item['title'] }}</h6>
+                                    <p class="text-muted mb-1 small">{{ $item['desc'] }}</p>
+                                    <p class="text-muted mb-0 small">
+                                        {{ \Carbon\Carbon::parse($item['time'])->format('M d, Y \a\t h:i A') }}
+                                        ({{ \Carbon\Carbon::parse($item['time'])->diffForHumans() }})
+                                    </p>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="timeline-item">
+                                <div class="timeline-marker bg-secondary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">No Timeline Data</h6>
+                                    <p class="text-muted mb-0 small">No events found for this booking yet.</p>
+                                </div>
+                            </li>
+                        @endforelse
                     </ul>
                 </div>
             </div>
@@ -529,7 +593,7 @@
     <div class="modal fade" id="assignArtistModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                <form action="{{ route('bookings.assign-artist', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Assign Artist to Booking</h5>
@@ -581,7 +645,7 @@
     <div class="modal fade" id="reassignArtistModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('bookings.assign-artist', $booking->id) }}" method="POST">
+                <form action="{{ route('bookings.assign-artist', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header bg-warning text-white">
                         <h5 class="modal-title">Reassign Artist</h5>
@@ -681,6 +745,12 @@
         .btn-spotify:hover {
             background: #1ed760;
             color: white;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-title-head .btn {
+                width: 100%;
+            }
         }
     </style>
     @endpush

@@ -273,13 +273,13 @@
                                     @foreach ($recentBookings as $booking)
                                         <tr>
                                             <td class="px-3">
-                                                <strong class="text-primary">#{{ $booking->id }}</strong>
+                                                <strong class="text-primary">#{{ $booking->tracking_code ?? $booking->id }}</strong>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar-sm flex-shrink-0 me-2">
                                                         <span class="avatar-title rounded-circle bg-primary text-white fw-bold">
-                                                            {{ substr($booking->name, 0, 1) }}{{ substr($booking->surname, 0, 1) }}
+                                                            {{ $booking->customer_initials }}
                                                         </span>
                                                     </div>
                                                     <div>

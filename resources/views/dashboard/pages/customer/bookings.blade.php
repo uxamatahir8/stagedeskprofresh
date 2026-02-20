@@ -64,7 +64,7 @@
                     <tbody>
                         @forelse($bookings as $booking)
                             <tr>
-                                <td>#{{ $booking->id }}</td>
+                                <td>#{{ $booking->tracking_code ?? $booking->id }}</td>
                                 <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                 <td>{{ $booking->company->name ?? 'N/A' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y h:i A') }}</td>
@@ -79,11 +79,11 @@
                                 </td>
                                 <td>${{ number_format($booking->total_amount ?? 0, 2) }}</td>
                                 <td>
-                                    <a href="{{ route('customer.bookings.details', $booking->id) }}" class="btn btn-sm btn-light">
+                                    <a href="{{ route('customer.bookings.details', $booking) }}" class="btn btn-sm btn-light">
                                         <i data-lucide="eye"></i> View
                                     </a>
                                     @if($booking->status === 'pending' || $booking->status === 'confirmed')
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ $booking->id }}">
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ $booking->tracking_code ?? $booking->id }}">
                                             Cancel
                                         </button>
                                     @endif
@@ -91,13 +91,13 @@
                             </tr>
 
                             <!-- Cancel Modal -->
-                            <div class="modal fade" id="cancelModal{{ $booking->id }}" tabindex="-1">
+                            <div class="modal fade" id="cancelModal{{ $booking->tracking_code ?? $booking->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('customer.bookings.cancel', $booking->id) }}" method="POST">
+                                        <form action="{{ route('customer.bookings.cancel', $booking) }}" method="POST">
                                             @csrf
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Cancel Booking #{{ $booking->id }}</h5>
+                                                <h5 class="modal-title">Cancel Booking #{{ $booking->tracking_code ?? $booking->id }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">

@@ -13,7 +13,7 @@
                 @endif
             </p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <button class="btn btn-light btn-sm" onclick="location.reload()">
                 <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh
             </button>
@@ -202,7 +202,7 @@
         {{-- Booking Trends Chart --}}
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="line-chart" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Booking Trends
@@ -280,7 +280,7 @@
         {{-- Activity Timeline --}}
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>Recent Activity
@@ -334,7 +334,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="list" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Recent Booking Requests
@@ -366,13 +366,13 @@
                                     @foreach ($recentBookings as $booking)
                                         <tr>
                                             <td class="px-3">
-                                                <strong class="text-primary">#{{ $booking->id }}</strong>
+                                                <strong class="text-primary">#{{ $booking->tracking_code ?? $booking->id }}</strong>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar-sm flex-shrink-0 me-2">
                                                         <span class="avatar-title rounded-circle bg-primary text-white fw-bold fs-xs">
-                                                            {{ substr($booking->name, 0, 1) }}{{ substr($booking->surname ?? '', 0, 1) }}
+                                                            {{ $booking->customer_initials }}
                                                         </span>
                                                     </div>
                                                     <div>
@@ -646,6 +646,27 @@
 
         .text-white-50 {
             color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-title-head .dropdown,
+            .page-title-head .btn {
+                width: 100%;
+            }
+
+            .page-title-head .dropdown .btn {
+                width: 100%;
+            }
+
+            .chart-container-line {
+                height: 260px;
+                min-height: 260px;
+            }
+
+            .chart-container-donut {
+                height: 240px;
+                min-height: 240px;
+            }
         }
     </style>
 

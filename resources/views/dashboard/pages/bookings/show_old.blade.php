@@ -35,7 +35,7 @@
                             <h6 class="mb-1">ID:</h6>
                         </div>
                         <div class="col-sm-8">
-                            <p class="text-muted mb-0">#{{ $booking->id }}</p>
+                            <p class="text-muted mb-0">#{{ $booking->tracking_code ?? $booking->id }}</p>
                         </div>
                     </div>
 

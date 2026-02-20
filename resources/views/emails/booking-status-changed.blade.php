@@ -41,7 +41,7 @@
     <table class="details-table">
         <tr>
             <th>Booking ID</th>
-            <td><strong>#{{ $booking->id }}</strong></td>
+            <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
         </tr>
         <tr>
             <th>Event Type</th>

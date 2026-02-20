@@ -197,8 +197,15 @@
                 <div class="dropdown">
                     <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown"
                         data-bs-offset="0,19" href="#!" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ Auth::user()->profile?->profile_image == '' ? asset('images/users/user-4.jpg') : asset('storage/' . Auth::user()->profile->profile_image) }}"
-                            width="32" class="rounded-circle me-lg-2 d-flex" alt="user-image">
+                        @if(!empty(Auth::user()->profile?->profile_image))
+                            <img src="{{ asset('storage/' . Auth::user()->profile->profile_image) }}"
+                                width="32" class="rounded-circle me-lg-2 d-flex" alt="user-image">
+                        @else
+                            <span class="avatar-title rounded-circle bg-primary me-lg-2 d-inline-flex"
+                                style="width: 32px; height: 32px; font-size: 12px;">
+                                {{ Auth::user()->initials }}
+                            </span>
+                        @endif
                         <div class="d-lg-flex align-items-center gap-1 d-none">
                             <h5 class="my-0">
                                 {{ Auth::user()->name }}
