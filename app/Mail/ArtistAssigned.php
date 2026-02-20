@@ -30,9 +30,10 @@ class ArtistAssigned extends Mailable
      */
     public function envelope(): Envelope
     {
+        $bookingRef = $this->booking->tracking_code ?? $this->booking->id;
         $subject = $this->isReassignment
-            ? 'Artist Reassigned - ' . $this->booking->booking_id
-            : 'Artist Assigned - ' . $this->booking->booking_id;
+            ? 'Artist Reassigned - ' . $bookingRef
+            : 'Artist Assigned - ' . $bookingRef;
 
         return new Envelope(
             subject: $subject,

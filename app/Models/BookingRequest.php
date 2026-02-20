@@ -3,11 +3,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BookingRequest extends Model
 {
     //
     protected $fillable = [
+        'tracking_code',
         'user_id',
         'company_id',
         'assigned_artist_id',
@@ -37,6 +39,45 @@ class BookingRequest extends Model
         'completed_at',
         'cancelled_at',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function (self $booking) {
+            if (empty($booking->tracking_code)) {
+                $booking->tracking_code = self::generateUniqueTrackingCode();
+            }
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'tracking_code';
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (($field ?? $this->getRouteKeyName()) === 'tracking_code') {
+            return $this->newQuery()
+                ->where('tracking_code', $value)
+                ->orWhere('id', $value)
+                ->firstOrFail();
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
+
+    public function getDisplayIdAttribute(): string
+    {
+        return (string) ($this->tracking_code ?: $this->id);
+    }
+
+    public function getCustomerInitialsAttribute(): string
+    {
+        $first = strtoupper(substr(trim((string) $this->name), 0, 1));
+        $last = strtoupper(substr(trim((string) $this->surname), 0, 1));
+
+        return $first . $last;
+    }
 
     public function user()
     {
@@ -106,6 +147,15 @@ class BookingRequest extends Model
     {
         return $this->status === 'completed' &&
                !$this->reviews()->where('user_id', Auth::user()->id)->exists();
+    }
+
+    private static function generateUniqueTrackingCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(8));
+        } while (self::where('tracking_code', $code)->exists());
+
+        return $code;
     }
 
 }

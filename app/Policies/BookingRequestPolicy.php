@@ -57,6 +57,10 @@ class BookingRequestPolicy
      */
     public function assignArtist(User $user, BookingRequest $booking): bool
     {
+        if (in_array($booking->status, ['completed', 'cancelled'])) {
+            return false;
+        }
+
         $roleKey = $user->role?->role_key;
 
         return match ($roleKey) {
@@ -71,6 +75,10 @@ class BookingRequestPolicy
      */
     public function markCompleted(User $user, BookingRequest $booking): bool
     {
+        if (in_array($booking->status, ['completed', 'cancelled'])) {
+            return false;
+        }
+
         $roleKey = $user->role?->role_key;
 
         return match ($roleKey) {

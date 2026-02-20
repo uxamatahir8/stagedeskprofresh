@@ -27,7 +27,7 @@
         <div class="row justify-content-start align-items-center">
             <div class="col-12">
                 <label class="form-label fw-bold d-block mb-2">Register As</label>
-                <div class="btn-group w-100 rounded overflow-hidden border" role="group" aria-label="Register As">
+                <div class="btn-group w-100 rounded overflow-hidden border flex-wrap" role="group" aria-label="Register As">
                     @foreach (config('arrays.registerable_roles') as $role_id => $role)
                         <input type="radio" class="btn-check" data-value="{{ strtolower($role) }}" name="register_as"
                             id="as_{{ strtolower($role) }}" value="{{ $role_id }}"
@@ -46,7 +46,7 @@
                 <i data-lucide="user" class="text-primary" style="width:20px;height:20px;"></i> User Information
             </h5>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Full Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control required @error('name') is-invalid @enderror" placeholder="Your Full Name"
@@ -56,7 +56,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Email Address <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control required @error('email') is-invalid @enderror" placeholder="you@example.com"
@@ -66,7 +66,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Phone <span class="text-danger">*</span></label>
                         <input type="text" name="phone" class="form-control required phone @error('phone') is-invalid @enderror" placeholder="+31 123456789"
@@ -88,7 +88,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-lg-4 col-md-6 mb-3">
                     <label class="form-label">Country</label>
                     <select name="country_id" id="country" class="form-select">
                         <option value="">Select Country</option>
@@ -97,13 +97,13 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-lg-4 col-md-6 mb-3">
                     <label class="form-label">State</label>
                     <select name="state_id" id="state" class="form-select">
                         <option value="">Select State</option>
                     </select>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-lg-4 col-md-6 mb-3">
                     <label class="form-label">City</label>
                     <select name="city_id" id="city" class="form-select">
                         <option value="">Select City</option>
@@ -158,7 +158,7 @@
             </h5>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Company Name <span class="text-danger">*</span></label>
                         <input type="text" name="company_name" id="company_name" class="form-control @error('company_name') is-invalid @enderror" placeholder="Company Name" value="{{ old('company_name') }}">
@@ -168,14 +168,14 @@
                     </div>
 
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Company Website</label>
                         <input type="text" name="company_website" class="form-control valid_url"
                             placeholder="https://example.com" value="{{ old('company_website') }}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">KVK Number</label>
                         <input type="text" name="kvk_number" class="form-control kvk_number" placeholder="KVK Number" value="{{ old('kvk_number') }}">
@@ -184,19 +184,19 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Company Email</label>
                         <input type="email" name="company_email" class="form-control" placeholder="Company Email" value="{{ old('company_email') }}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Company Phone</label>
                         <input type="text" name="company_phone" class="form-control" placeholder="Company Phone" value="{{ old('company_phone') }}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Upload Company Logo</label>
                         <input type="file" name="company_logo" id="company_logo" class="form-control" accept="image/*">

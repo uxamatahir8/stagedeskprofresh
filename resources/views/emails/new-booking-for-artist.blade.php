@@ -9,7 +9,7 @@
 
     <div class="info-box">
         <strong>🎭 New Event Assignment</strong><br>
-        Booking ID: <strong>#{{ $booking->id }}</strong>
+        Booking ID: <strong>#{{ $booking->tracking_code ?? $booking->id }}</strong>
     </div>
 
     <h3 style="color: #333; margin: 25px 0 15px 0;">Event Details</h3>

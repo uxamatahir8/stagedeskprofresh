@@ -33,7 +33,7 @@ class BookingStatusChanged extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Booking Status Updated - #' . $this->booking->id,
+            subject: 'Booking Status Updated - #' . ($this->booking->tracking_code ?? $this->booking->id),
         );
     }
 

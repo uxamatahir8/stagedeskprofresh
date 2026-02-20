@@ -25,7 +25,7 @@
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr style="background-color: #f8f9fa;">
                 <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: bold;">Booking ID</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6;">#{{ $booking->id }}</td>
+                <td style="padding: 10px; border: 1px solid #dee2e6;">#{{ $booking->tracking_code ?? $booking->id }}</td>
             </tr>
             <tr>
                 <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: bold;">Event Type</td>
@@ -69,7 +69,7 @@
         @endif
 
         <div style="margin: 30px 0;">
-            <a href="{{ route('bookings.show', $booking->id) }}"
+            <a href="{{ route('bookings.show', $booking) }}"
                style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
                 View Booking Details
             </a>

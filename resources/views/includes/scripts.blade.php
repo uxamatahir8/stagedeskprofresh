@@ -11,3 +11,17 @@
 <script src="{{ asset('landing/js/plugins/magnific-popup.js') }}"></script>
 <script src="{{ asset('landing/js/plugins/ScrollTrigger.min.js') }}"></script>
 <script src="{{ asset('landing/js/main.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileSidebar = document.querySelector('.mobile-sidebar');
+        if (!mobileSidebar) {
+            return;
+        }
+
+        mobileSidebar.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                mobileSidebar.classList.remove('mobile-menu-active');
+            });
+        });
+    });
+</script>

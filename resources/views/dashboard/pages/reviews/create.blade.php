@@ -20,7 +20,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">Booking: #{{ $booking->id }} — {{ $booking->eventType->name ?? 'Event' }}</h5>
+            <h5 class="card-title mb-0">Booking: #{{ $booking->tracking_code ?? $booking->id }} — {{ $booking->eventType->name ?? 'Event' }}</h5>
         </div>
         <div class="card-body">
             @if($booking->assignedArtist)

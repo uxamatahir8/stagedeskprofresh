@@ -101,6 +101,67 @@
             text-align: center;
             color: #43054E;
         }
+
+        @media (max-width: 991.98px) {
+            .auth-box {
+                background-attachment: scroll;
+                padding-top: 1.5rem !important;
+                padding-bottom: 1.5rem !important;
+            }
+
+            .auth-box .card {
+                padding: 1.5rem !important;
+            }
+
+            .auth-brand {
+                text-align: center !important;
+            }
+
+            .auth-brand .logo-dark img,
+            .auth-brand .logo-light img {
+                max-width: 180px;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .auth-box .container {
+                max-width: 100%;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .auth-box .card {
+                padding: 1rem !important;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .auth-box .position-absolute.top-0.end-0 {
+                width: 120px !important;
+            }
+        }
+
+        @media (max-width: 399.98px) {
+            .auth-box .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .auth-box .card {
+                padding: 0.85rem !important;
+                border-radius: 0.75rem;
+            }
+
+            .auth-box h4,
+            .auth-box h5 {
+                font-size: 1rem;
+            }
+
+            .auth-box .btn-group > .btn {
+                flex: 1 0 100%;
+            }
+        }
     </style>
 </head>
 
@@ -118,7 +179,7 @@
     <div class="auth-box overflow-hidden align-items-center d-flex py-4 py-md-5">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xxl-8 col-md-{{ Route::is('register') ? '8' : '8' }} col-sm-8">
+                <div class="col-xxl-8 col-xl-9 col-lg-10 col-md-10 col-sm-11 col-12">
                     <div class="card p-4 p-md-5">
                         <div class="position-absolute top-0 end-0" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"

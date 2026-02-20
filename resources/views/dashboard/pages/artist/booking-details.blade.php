@@ -6,7 +6,7 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i data-lucide="calendar-check" class="me-2"></i>Booking Details
             </h4>
-            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->id }} - {{ $booking->eventType->event_type ?? 'Event' }}</p>
+            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->tracking_code ?? $booking->id }} - {{ $booking->eventType->event_type ?? 'Event' }}</p>
         </div>
         <div class="text-end">
             <a href="{{ route('artist.bookings') }}" class="btn btn-light btn-sm">
@@ -20,7 +20,7 @@
     @if($booking->status === 'pending')
     <div class="alert alert-warning">
         <h5>Quick Actions (Always Visible - Status: Pending)</h5>
-        <form action="{{ route('artist.bookings.accept', $booking->id) }}" method="POST" class="d-inline">
+        <form action="{{ route('artist.bookings.accept', $booking) }}" method="POST" class="d-inline">
             @csrf
             <button type="submit" class="btn btn-success" onclick="return confirm('Accept this booking?')">
                 ✅ Accept Booking
@@ -191,7 +191,7 @@
                 <div class="card-body">
                     <p class="text-muted mb-3">This booking is waiting for your response.</p>
 
-                    <form action="{{ route('artist.bookings.accept', $booking->id) }}" method="POST" class="mb-2" onsubmit="return confirm('Are you sure you want to accept this booking?')">
+                    <form action="{{ route('artist.bookings.accept', $booking) }}" method="POST" class="mb-2" onsubmit="return confirm('Are you sure you want to accept this booking?')">
                         @csrf
                         <button type="submit" class="btn btn-success w-100 mb-2">
                             <i data-lucide="check-circle"></i> Accept Booking
@@ -291,7 +291,7 @@
     <div class="modal fade" id="rejectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('artist.bookings.reject', $booking->id) }}" method="POST">
+                <form action="{{ route('artist.bookings.reject', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header bg-danger text-white">
                         <h5 class="modal-title">
@@ -339,7 +339,7 @@
     <div class="modal fade" id="completeModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('artist.bookings.complete', $booking->id) }}" method="POST">
+                <form action="{{ route('artist.bookings.complete', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header bg-info text-white">
                         <h5 class="modal-title">

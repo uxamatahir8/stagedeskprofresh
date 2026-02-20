@@ -37,7 +37,7 @@ class BookingAcceptedNotification extends Mailable
      */
     public function build()
     {
-        return $this->subject('Booking Accepted by Artist - #' . $this->booking->id . ' - StageDesk Pro')
+        return $this->subject('Booking Accepted by Artist - #' . ($this->booking->tracking_code ?? $this->booking->id) . ' - StageDesk Pro')
             ->view('emails.booking-accepted-notification');
     }
 }

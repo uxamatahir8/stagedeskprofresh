@@ -29,8 +29,8 @@ class BookingConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = 'Booking Confirmation';
-        if (isset($this->booking->id)) {
-            $subject .= ' #' . $this->booking->id;
+        if (isset($this->booking->tracking_code) || isset($this->booking->id)) {
+            $subject .= ' #' . ($this->booking->tracking_code ?? $this->booking->id);
         }
         return new Envelope(
             subject: $subject,

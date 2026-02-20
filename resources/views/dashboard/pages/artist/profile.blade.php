@@ -27,7 +27,7 @@
                             @else
                                 <div class="avatar-lg me-3">
                                     <span class="avatar-title rounded-circle bg-primary fs-1">
-                                        {{ substr($artist->user->name ?? 'A', 0, 1) }}
+                                        {{ $artist->user->initials ?? 'A' }}
                                     </span>
                                 </div>
                             @endif

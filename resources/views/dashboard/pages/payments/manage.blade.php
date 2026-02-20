@@ -57,7 +57,7 @@
                             @foreach ($bookingRequests as $booking)
                                 <option value="{{ $booking->id }}"
                                     {{ old('booking_requests_id', $payment->booking_requests_id ?? '') == $booking->id ? 'selected' : '' }}>
-                                    #{{ $booking->id }} - {{ $booking->name }} {{ $booking->surname }}
+                                    #{{ $booking->tracking_code ?? $booking->id }} - {{ $booking->name }} {{ $booking->surname }}
                                 </option>
                             @endforeach
                         </select>

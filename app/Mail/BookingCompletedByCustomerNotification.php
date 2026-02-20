@@ -23,7 +23,7 @@ class BookingCompletedByCustomerNotification extends Mailable
 
     public function build()
     {
-        return $this->subject('Customer Marked Booking Completed - #' . $this->booking->id)
+        return $this->subject('Customer Marked Booking Completed - #' . ($this->booking->tracking_code ?? $this->booking->id))
             ->view('emails.booking-completed-by-customer');
     }
 }

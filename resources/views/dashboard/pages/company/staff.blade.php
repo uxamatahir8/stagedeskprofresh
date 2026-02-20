@@ -35,8 +35,8 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm me-2">
-                                            <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                {{ substr($member->name, 0, 1) }}
+                                            <span class="avatar-title rounded-circle bg-primary">
+                                                {{ $member->initials ?? 'U' }}
                                             </span>
                                         </div>
                                         <div>

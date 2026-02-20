@@ -87,14 +87,14 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;">#</th>
+                            <th>#</th>
                             <th>User</th>
                             <th>Blog Post</th>
                             <th>Comment</th>
                             <th>Type</th>
                             <th>Status</th>
                             <th>Date</th>
-                            <th style="width: 200px;">Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,7 +104,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-2">
-                                            <span class="avatar-title rounded-circle bg-primary">{{ substr($comment->user->name ?? 'U', 0, 1) }}</span>
+                                            <span class="avatar-title rounded-circle bg-primary">{{ $comment->user->initials ?? 'U' }}</span>
                                         </div>
                                         <div>
                                             <strong>{{ $comment->user->name ?? 'Unknown' }}</strong>
@@ -188,7 +188,7 @@
             </div>
         </div>
         @if($comments->hasPages())
-            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center">
+            <div class="card-footer bg-white border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div class="text-muted">
                     Showing {{ $comments->firstItem() }} to {{ $comments->lastItem() }} of {{ $comments->total() }} comments
                 </div>

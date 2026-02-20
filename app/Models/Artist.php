@@ -73,4 +73,18 @@ class Artist extends Model
     {
         return $query->where('deleted_at', null);
     }
+
+    public function getInitialsAttribute(): string
+    {
+        $source = trim((string) ($this->stage_name ?: ($this->user->name ?? '')));
+        if ($source === '') {
+            return 'A';
+        }
+
+        $parts = preg_split('/\s+/', $source) ?: [];
+        $first = strtoupper(substr($parts[0] ?? '', 0, 1));
+        $last = count($parts) > 1 ? strtoupper(substr($parts[count($parts) - 1], 0, 1)) : '';
+
+        return $first . $last;
+    }
 }
