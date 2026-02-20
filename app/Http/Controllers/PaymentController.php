@@ -8,6 +8,8 @@ use App\Models\Payment;
 use App\Models\BookingRequest;
 use App\Models\CompanySubscription;
 use App\Models\User;
+use App\Services\ActivityLogger;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +17,10 @@ use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
+    public function __construct(private NotificationService $notificationService)
+    {
+    }
+
     public function index()
     {
         $title = 'Payments';
@@ -82,8 +88,19 @@ class PaymentController extends Controller
         }
 
         $payment = Payment::create($validated);
+        ActivityLogger::success(
+            'payment.create.success',
+            'Payment submitted successfully',
+            [
+                'category' => 'payment',
+                'action' => 'create',
+                'target' => $payment,
+                'user_id' => Auth::id(),
+            ]
+        );
 
         $this->sendPaymentSubmissionNotifications($payment, Auth::user());
+        $this->createPaymentSubmissionInAppNotifications($payment, Auth::user());
 
         return redirect()->route('payments.index')->with('success', 'Payment recorded successfully. Awaiting verification.');
     }
@@ -240,10 +257,21 @@ class PaymentController extends Controller
         ]);
 
         $payment->update(['status' => $validated['status']]);
+        ActivityLogger::info(
+            'payment.verify.updated',
+            'Payment status updated by master admin',
+            [
+                'category' => 'payment',
+                'action' => 'verify',
+                'target' => $payment,
+                'metadata' => ['status' => $validated['status']],
+            ]
+        );
 
         if ($validated['status'] === 'completed') {
             $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $validated['status'], $validated['notes'] ?? null);
         }
+        $this->createPaymentVerificationNotifications($payment, $validated['status']);
 
         return redirect()->route('payments.index')->with('success', 'Payment status updated to ' . $validated['status']);
     }
@@ -361,5 +389,84 @@ class PaymentController extends Controller
         }
 
         return $payment->user?->company_id ? (int) $payment->user->company_id : null;
+    }
+
+    private function createPaymentSubmissionInAppNotifications(Payment $payment, User $submittedBy): void
+    {
+        $payment->loadMissing(['bookingRequest.company', 'subscription.company']);
+        $roleKey = optional($submittedBy->role)->role_key;
+
+        if ($roleKey === 'customer' && $payment->type === 'booking') {
+            $this->notificationService->notifyMasterAdmins(
+                'New Booking Payment Submitted',
+                'Customer submitted payment #' . $payment->id . ' for booking #' . ($payment->booking_requests_id ?? 'N/A'),
+                'payment_submitted',
+                'payment',
+                route('payments.show', $payment),
+                4,
+                ['payment_id' => $payment->id]
+            );
+
+            $companyId = $payment->bookingRequest?->company_id;
+            if ($companyId) {
+                $this->notificationService->notifyCompanyAdmins(
+                    (int) $companyId,
+                    'Customer Booking Payment Submitted',
+                    'A customer submitted booking payment #' . $payment->id . '.',
+                    'payment_submitted',
+                    'payment',
+                    route('payments.show', $payment),
+                    3,
+                    ['payment_id' => $payment->id]
+                );
+            }
+        }
+
+        if ($roleKey === 'company_admin' && $payment->type === 'subscription') {
+            $this->notificationService->notifyMasterAdmins(
+                'Subscription Payment Submitted',
+                'Company submitted subscription payment #' . $payment->id . '.',
+                'payment_submitted',
+                'payment',
+                route('payments.show', $payment),
+                4,
+                ['payment_id' => $payment->id]
+            );
+        }
+    }
+
+    private function createPaymentVerificationNotifications(Payment $payment, string $status): void
+    {
+        $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user']);
+
+        if ($payment->user_id) {
+            $this->notificationService->createForUser(
+                (int) $payment->user_id,
+                'Payment ' . ucfirst($status),
+                'Your payment #' . $payment->id . ' was marked as ' . $status . '.',
+                'payment_' . $status,
+                'payment',
+                route('payments.show', $payment),
+                $status === 'completed' ? 3 : 2,
+                $this->resolveCompanyIdFromPayment($payment),
+                ['payment_id' => $payment->id, 'status' => $status]
+            );
+        }
+
+        if ($status === 'completed') {
+            $companyId = $this->resolveCompanyIdFromPayment($payment);
+            if ($companyId) {
+                $this->notificationService->notifyCompanyAdmins(
+                    $companyId,
+                    'Payment Approved',
+                    'Payment #' . $payment->id . ' has been approved by master admin.',
+                    'payment_completed',
+                    'payment',
+                    route('payments.show', $payment),
+                    3,
+                    ['payment_id' => $payment->id]
+                );
+            }
+        }
     }
 }

@@ -11,7 +11,9 @@ use App\Models\Payment;
 use App\Models\Artist;
 use App\Models\CompanySubscription;
 use App\Models\ActivityLog;
+use App\Services\ActivityLogger;
 use App\Services\DashboardStatisticsService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,11 +23,13 @@ use Carbon\Carbon;
 class MasterAdminController extends Controller
 {
     protected $dashboardService;
+    protected $notificationService;
 
-    public function __construct(DashboardStatisticsService $dashboardService)
+    public function __construct(DashboardStatisticsService $dashboardService, NotificationService $notificationService)
     {
         $this->middleware('role:master_admin');
         $this->dashboardService = $dashboardService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -140,9 +144,32 @@ class MasterAdminController extends Controller
                 'verified_at' => now(),
                 'admin_notes' => $request->notes
             ]);
+            ActivityLogger::info(
+                'payment.verify.admin_update',
+                'Master admin updated payment status',
+                [
+                    'category' => 'payment',
+                    'action' => 'verify',
+                    'target' => $payment,
+                    'metadata' => ['status' => $request->status],
+                ]
+            );
 
             if ($request->status === 'completed') {
                 $this->sendPaymentStatusConfirmationToCompanyAdmins($payment, $request->status, $request->notes);
+            }
+            if ($payment->user_id) {
+                $this->notificationService->createForUser(
+                    (int) $payment->user_id,
+                    'Payment ' . ucfirst($request->status),
+                    'Payment #' . $payment->id . ' was marked as ' . $request->status . ' by admin.',
+                    'payment_' . $request->status,
+                    'payment',
+                    route('payments.show', $payment),
+                    $request->status === 'completed' ? 3 : 2,
+                    $this->resolveCompanyIdFromPayment($payment),
+                    ['payment_id' => $payment->id, 'status' => $request->status]
+                );
             }
 
             ActivityLog::log(

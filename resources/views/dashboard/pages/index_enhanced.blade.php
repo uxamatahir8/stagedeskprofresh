@@ -239,7 +239,8 @@
         </div>
     </div>
 
-    {{-- Quick Actions & Recent Activity --}}
+    {{-- Quick Actions & Recent Activity (Master Admin only) --}}
+    @if(Auth::user()->role->role_key === 'master_admin')
     <div class="row g-3 mb-4">
         {{-- Quick Actions --}}
         <div class="col-lg-4">
@@ -292,32 +293,42 @@
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline">
-                        @php
-                            $activities = [
-                                ['icon' => 'calendar-check', 'color' => 'success', 'title' => 'New booking received', 'desc' => 'Wedding event for Sarah & John', 'time' => '2 hours ago'],
-                                ['icon' => 'user-plus', 'color' => 'info', 'title' => 'New user registered', 'desc' => 'John Doe joined as customer', 'time' => '5 hours ago'],
-                                ['icon' => 'edit', 'color' => 'warning', 'title' => 'Booking updated', 'desc' => 'Corporate event details changed', 'time' => '1 day ago'],
-                                ['icon' => 'check', 'color' => 'primary', 'title' => 'Booking completed', 'desc' => 'Birthday party at Grand Hotel', 'time' => '2 days ago'],
-                            ];
-                        @endphp
-
-                        @foreach($activities as $activity)
+                        @forelse(($recentActivities ?? collect()) as $activity)
+                            @php
+                                $action = strtolower((string) ($activity->action ?? 'updated'));
+                                $activityMap = [
+                                    'created' => ['icon' => 'plus-circle', 'color' => 'success', 'title' => 'Record created'],
+                                    'updated' => ['icon' => 'edit', 'color' => 'warning', 'title' => 'Record updated'],
+                                    'deleted' => ['icon' => 'trash-2', 'color' => 'danger', 'title' => 'Record deleted'],
+                                    'login' => ['icon' => 'log-in', 'color' => 'info', 'title' => 'User login'],
+                                    'logout' => ['icon' => 'log-out', 'color' => 'secondary', 'title' => 'User logout'],
+                                ];
+                                $meta = $activityMap[$action] ?? ['icon' => 'activity', 'color' => 'primary', 'title' => ucfirst($action)];
+                            @endphp
                             <div class="timeline-item">
-                                <div class="timeline-icon bg-{{ $activity['color'] }}-subtle text-{{ $activity['color'] }}">
-                                    <i data-lucide="{{ $activity['icon'] }}" style="width: 18px; height: 18px;"></i>
+                                <div class="timeline-icon bg-{{ $meta['color'] }}-subtle text-{{ $meta['color'] }}">
+                                    <i data-lucide="{{ $meta['icon'] }}" style="width: 18px; height: 18px;"></i>
                                 </div>
                                 <div class="timeline-content">
-                                    <h6 class="mb-1">{{ $activity['title'] }}</h6>
-                                    <p class="text-muted mb-1">{{ $activity['desc'] }}</p>
-                                    <small class="text-muted"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $activity['time'] }}</small>
+                                    <h6 class="mb-1">{{ $meta['title'] }}</h6>
+                                    <p class="text-muted mb-1">
+                                        {{ $activity->description ?: (($activity->user->name ?? 'System') . ' performed an action') }}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                        {{ $activity->created_at?->diffForHumans() }}
+                                    </small>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <p class="text-muted mb-0">No recent activity found.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Recent Bookings Table --}}
     <div class="row">

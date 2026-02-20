@@ -1,7 +1,7 @@
 <?php
 namespace App\Providers;
 
-use App\Models\Notification;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -28,27 +28,19 @@ class ViewServiceProvider extends ServiceProvider
                 return;
             }
 
-            $userId = Auth::user()->id;
-            $roleKey = Auth::user()->role->role_key;
+            /** @var NotificationService $notificationService */
+            $notificationService = app(NotificationService::class);
+            $scoped = $notificationService->scopedQueryForUser(Auth::user());
 
-            // Master admin sees all notifications
-            if ($roleKey === 'master_admin') {
-                $notifications = Notification::orderBy('created_at', 'desc')
-                    ->take(5)
-                    ->get();
+            $notifications = (clone $scoped)
+                ->orderByDesc('priority')
+                ->orderBy('created_at', 'desc')
+                ->take(8)
+                ->get();
 
-                $unreadCount = Notification::where('is_read', false)->count();
-            } else {
-                // Other users see only their own notifications
-                $notifications = Notification::where('user_id', $userId)
-                    ->orderBy('created_at', 'desc')
-                    ->take(5)
-                    ->get();
-
-                $unreadCount = Notification::where('user_id', $userId)
-                    ->where('is_read', false)
-                    ->count();
-            }
+            $unreadCount = (clone $scoped)
+                ->where('is_read', false)
+                ->count();
 
             $view->with([
                 'topbarNotifications'     => $notifications,

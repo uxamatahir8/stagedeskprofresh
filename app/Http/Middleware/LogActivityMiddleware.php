@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ActivityLog;
+use App\Services\ActivityLogger;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogActivityMiddleware
@@ -17,6 +18,10 @@ class LogActivityMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (!$request->attributes->has('request_id')) {
+            $request->attributes->set('request_id', (string) Str::uuid());
+        }
+
         $response = $next($request);
 
         // Only log for authenticated users
@@ -26,14 +31,24 @@ class LogActivityMiddleware
 
             // Skip logging for certain routes
             if (!$this->shouldSkipLogging($request)) {
-                ActivityLog::log(
-                    $action,
-                    null,
+                $statusCode = $response->getStatusCode();
+                $severity = $statusCode >= 500 ? 'error' : ($statusCode >= 400 ? 'warning' : 'info');
+
+                ActivityLogger::write(
+                    $severity,
+                    'request.' . strtolower($request->method()) . '.' . $action,
+                    $statusCode >= 400 ? 'failed' : 'success',
                     $this->getDescription($request),
                     [
+                        'category' => 'system',
+                        'action' => $action,
+                        'status' => $statusCode >= 400 ? 'failed' : 'success',
                         'method' => $request->method(),
                         'url' => $request->fullUrl(),
                         'route' => $request->route()?->getName(),
+                        'context' => [
+                            'status_code' => $statusCode,
+                        ],
                     ]
                 );
             }
@@ -68,6 +83,7 @@ class LogActivityMiddleware
         $skipRoutes = [
             'notifications.unread',
             'notifications.read',
+            'notifications.refresh',
         ];
 
         $routeName = $request->route()?->getName();

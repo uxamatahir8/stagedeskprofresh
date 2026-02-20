@@ -40,7 +40,27 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Add account lock check to web middleware group
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckAccountLock::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\LogActivityMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->report(function (\Throwable $e) {
+            try {
+                \App\Services\ActivityLogger::error(
+                    'system.exception',
+                    'Unhandled exception: ' . $e->getMessage(),
+                    [
+                        'category' => 'system',
+                        'action' => 'exception',
+                        'exception' => [
+                            'class' => get_class($e),
+                            'message' => $e->getMessage(),
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                        ],
+                    ]
+                );
+            } catch (\Throwable $inner) {
+                // Avoid recursive exception reporting failures.
+            }
+        });
     })->create();

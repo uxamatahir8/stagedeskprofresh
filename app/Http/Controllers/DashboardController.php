@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BookingRequest;
 use App\Models\User;
 use App\Models\Company;
+use App\Models\ActivityLog;
 use App\Models\EventType;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Http\Request;
@@ -53,6 +54,15 @@ class DashboardController extends Controller
             ->where('is_read', false)
             ->count();
 
+        // Show real recent activity only for master admin
+        $recentActivities = collect();
+        if ($roleKey === 'master_admin') {
+            $recentActivities = ActivityLog::with('user')
+                ->latest()
+                ->take(10)
+                ->get();
+        }
+
         return view('dashboard.pages.index_enhanced', compact(
             'title',
             'stats',
@@ -61,6 +71,7 @@ class DashboardController extends Controller
             'bookingStats',
             'eventTypeCounts',
             'unreadNotifications',
+            'recentActivities',
             'filter',
             'dateRange'
         ));
