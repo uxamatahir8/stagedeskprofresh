@@ -22,23 +22,33 @@
 
     <style>
         :root {
-            --auth-primary: #43054E;
-            --auth-primary-light: #6c3577;
-            --auth-accent: #089df1;
+            --auth-primary: #4c1d95;
+            --auth-primary-light: #6d28d9;
+            --auth-accent: #2563eb;
             --auth-card-bg: #fff;
             --auth-radius: 1rem;
         }
         body { min-height: 100vh; }
         .auth-box {
             min-height: 100vh;
-            background: linear-gradient(135deg, #1a0a1e 0%, #2d1b3d 35%, #1e3a5f 70%, #0d2137 100%);
+            background: radial-gradient(circle at top left, #312e81 0%, #1e293b 45%, #0f172a 100%);
             background-attachment: fixed;
         }
         .auth-box .card {
             border: none;
             border-radius: var(--auth-radius);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05);
+            box-shadow: 0 24px 50px -20px rgba(2, 6, 23, 0.65);
             overflow: hidden;
+        }
+        .auth-shell-title {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            margin-bottom: .25rem;
+        }
+        .auth-shell-subtitle {
+            color: #64748b;
+            margin-bottom: 1.2rem;
         }
         .auth-brand .logo-dark img, .auth-brand .logo-light img { transition: transform 0.2s; }
         .auth-brand a:hover img { transform: scale(1.02); }
@@ -46,16 +56,18 @@
             border-color: var(--auth-accent);
             box-shadow: 0 0 0 0.2rem rgba(8, 157, 241, 0.2);
         }
-        .auth-box .btn-primary {
+        .auth-box .btn-primary,
+        .auth-box .btn-success {
             background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-primary-light) 100%);
             border: none;
             font-weight: 600;
             padding: 0.6rem 1.25rem;
         }
-        .auth-box .btn-primary:hover {
+        .auth-box .btn-primary:hover,
+        .auth-box .btn-success:hover {
             background: linear-gradient(135deg, var(--auth-primary-light) 0%, var(--auth-primary) 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(67, 5, 78, 0.4);
+            box-shadow: 0 8px 16px rgba(76, 29, 149, 0.35);
         }
         .auth-box .input-group-text {
             border-radius: 0.375rem 0 0 0.375rem;
@@ -181,7 +193,7 @@
             <div class="row justify-content-center">
                 <div class="col-xxl-8 col-xl-9 col-lg-10 col-md-10 col-sm-11 col-12">
                     <div class="card p-4 p-md-5">
-                        <div class="position-absolute top-0 end-0" style="width: 180px;">
+                        <div class="position-absolute top-0 end-0 d-none d-xl-block" style="width: 180px;">
                             <svg style="opacity: 0.075; width: 100%; height: auto;" width="600" height="560"
                                 viewBox="0 0 600 560" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_948_1464)">
@@ -271,6 +283,8 @@
                                     width="190">
                             </a>
                         </div>
+                        <h4 class="auth-shell-title">Welcome to StageDesk Pro</h4>
+                        <p class="auth-shell-subtitle">Secure access for companies, customers, artists, and admins.</p>
 
                         @if ($errors->any())
                             <div class="alert alert-danger">

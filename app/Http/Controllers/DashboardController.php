@@ -7,9 +7,11 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\ActivityLog;
 use App\Models\EventType;
+use App\Models\Payment;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -54,14 +56,11 @@ class DashboardController extends Controller
             ->where('is_read', false)
             ->count();
 
-        // Show real recent activity only for master admin
-        $recentActivities = collect();
-        if ($roleKey === 'master_admin') {
-            $recentActivities = ActivityLog::with('user')
-                ->latest()
-                ->take(10)
-                ->get();
-        }
+        // Show concise, meaningful activity stream in dashboard
+        $recentActivities = $this->getMeaningfulRecentActivities($roleKey, $user);
+        $insights = $this->getRoleInsights($roleKey, $dateRange);
+        $dashboardAlerts = $this->getDashboardAlerts($roleKey, $insights);
+        $paymentInsights = $this->getPaymentInsights($roleKey);
 
         return view('dashboard.pages.index_enhanced', compact(
             'title',
@@ -72,6 +71,9 @@ class DashboardController extends Controller
             'eventTypeCounts',
             'unreadNotifications',
             'recentActivities',
+            'insights',
+            'dashboardAlerts',
+            'paymentInsights',
             'filter',
             'dateRange'
         ));
@@ -124,8 +126,12 @@ class DashboardController extends Controller
             $stats['total_companies'] = Company::count();
             $stats['active_companies'] = Company::where('status', 'active')->count();
             $stats['total_event_types'] = EventType::count();
-            $stats['total_revenue'] = \App\Models\Payment::where('status', 'completed')->sum('amount');
+            // Master-admin finance reflects B2B subscription collection from companies.
+            $stats['total_revenue'] = \App\Models\Payment::where('status', 'completed')
+                ->where('type', 'subscription')
+                ->sum('amount');
             $stats['monthly_revenue'] = \App\Models\Payment::where('status', 'completed')
+                ->where('type', 'subscription')
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->sum('amount');
@@ -308,5 +314,238 @@ class DashboardController extends Controller
         }
 
         return $eventTypeCounts;
+    }
+
+    private function getMeaningfulRecentActivities(string $roleKey, User $user)
+    {
+        $query = ActivityLog::with('user')
+            ->whereNotNull('description')
+            ->where(function ($q) {
+                $q->whereIn('action', ['created', 'updated', 'deleted'])
+                    ->orWhereNotNull('event_key')
+                    ->orWhereNotNull('model_type')
+                    ->orWhereNotNull('target_type');
+            })
+            ->whereNotIn('action', ['login', 'logout', 'viewed', 'read'])
+            ->where(function ($q) {
+                $q->where('description', 'not like', '%login%')
+                    ->where('description', 'not like', '%logout%');
+            });
+
+        if ($roleKey === 'company_admin' && $user->company_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('properties->company_id', $user->company_id)
+                    ->orWhere('properties->shared_with_company_id', $user->company_id)
+                    ->orWhere('properties->owner_company_id', $user->company_id)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->where('model_type', Company::class)->where('model_id', $user->company_id);
+                    });
+            });
+        } elseif ($roleKey === 'customer') {
+            $query->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhere('properties->user_id', $user->id);
+            });
+        } elseif ($roleKey === 'artist') {
+            $artistId = optional($user->artist)->id;
+            if ($artistId) {
+                $query->where(function ($q) use ($artistId, $user) {
+                    $q->where('properties->artist_id', $artistId)
+                        ->orWhere('user_id', $user->id);
+                });
+            } else {
+                $query->where('user_id', $user->id);
+            }
+        }
+
+        return $query->latest()->take(10)->get();
+    }
+
+    private function getRoleInsights(string $roleKey, array $dateRange): array
+    {
+        $bookingQuery = BookingRequest::query();
+
+        if ($dateRange['start']) {
+            $bookingQuery->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        }
+
+        if ($roleKey === 'company_admin') {
+            $bookingQuery->where('company_id', Auth::user()->company_id);
+        } elseif ($roleKey === 'customer') {
+            $bookingQuery->where('user_id', Auth::id());
+        } elseif ($roleKey === 'artist') {
+            $artistId = optional(Auth::user()->artist)->id;
+            $bookingQuery->where('assigned_artist_id', $artistId ?: 0);
+        } elseif ($roleKey === 'affiliate') {
+            return [
+                'status_labels' => [],
+                'status_values' => [],
+                'monthly_labels' => [],
+                'monthly_values' => [],
+                'kpis' => [],
+            ];
+        }
+
+        $statusRows = (clone $bookingQuery)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $statusOrder = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'rejected'];
+        $statusLabels = [];
+        $statusValues = [];
+        foreach ($statusOrder as $status) {
+            $statusLabels[] = ucfirst(str_replace('_', ' ', $status));
+            $statusValues[] = (int) ($statusRows[$status] ?? 0);
+        }
+
+        $monthlyRows = (clone $bookingQuery)
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m-01') as month_key, COUNT(*) as total")
+            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->get()
+            ->keyBy('month_key');
+
+        $monthlyLabels = [];
+        $monthlyValues = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $m = now()->subMonths($i)->startOfMonth();
+            $key = $m->format('Y-m-01');
+            $monthlyLabels[] = $m->format('M Y');
+            $monthlyValues[] = (int) ($monthlyRows[$key]->total ?? 0);
+        }
+
+        $total = array_sum($statusValues);
+        $completed = (int) ($statusRows['completed'] ?? 0);
+        $cancelled = (int) ($statusRows['cancelled'] ?? 0);
+        $upcoming = (clone $bookingQuery)->whereDate('event_date', '>=', today())->count();
+        $overdue = (clone $bookingQuery)
+            ->whereDate('event_date', '<', today())
+            ->whereNotIn('status', ['completed', 'cancelled', 'rejected'])
+            ->count();
+
+        $kpis = [
+            'completion_rate' => $total > 0 ? round(($completed / $total) * 100, 1) : 0,
+            'cancellation_rate' => $total > 0 ? round(($cancelled / $total) * 100, 1) : 0,
+            'upcoming_events' => $upcoming,
+            'overdue_open' => $overdue,
+        ];
+
+        if ($roleKey === 'master_admin') {
+            $revenueThisMonth = Payment::where('status', 'completed')
+                ->where('type', 'subscription')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount');
+            $kpis['revenue_this_month'] = (float) $revenueThisMonth;
+        }
+
+        return [
+            'status_labels' => $statusLabels,
+            'status_values' => $statusValues,
+            'monthly_labels' => $monthlyLabels,
+            'monthly_values' => $monthlyValues,
+            'kpis' => $kpis,
+        ];
+    }
+
+    private function getDashboardAlerts(string $roleKey, array $insights): array
+    {
+        $alerts = [];
+        $kpis = $insights['kpis'] ?? [];
+        $overdue = (int) ($kpis['overdue_open'] ?? 0);
+        $cancelRate = (float) ($kpis['cancellation_rate'] ?? 0);
+        $upcoming = (int) ($kpis['upcoming_events'] ?? 0);
+
+        if ($overdue > 0) {
+            $alerts[] = [
+                'type' => 'danger',
+                'icon' => 'alert-triangle',
+                'title' => 'Overdue Open Bookings',
+                'message' => $overdue . ' booking(s) are past event date and still open.',
+            ];
+        }
+
+        if ($cancelRate >= 20) {
+            $alerts[] = [
+                'type' => 'warning',
+                'icon' => 'shield-alert',
+                'title' => 'High Cancellation Rate',
+                'message' => 'Cancellation rate is ' . number_format($cancelRate, 1) . '%. Review causes and follow-up.',
+            ];
+        }
+
+        if ($upcoming >= 15) {
+            $alerts[] = [
+                'type' => 'info',
+                'icon' => 'calendar-clock',
+                'title' => 'Heavy Upcoming Schedule',
+                'message' => $upcoming . ' upcoming events require resource readiness.',
+            ];
+        }
+
+        if ($roleKey === 'master_admin' && empty($alerts)) {
+            $alerts[] = [
+                'type' => 'success',
+                'icon' => 'badge-check',
+                'title' => 'System Snapshot Healthy',
+                'message' => 'No major operational alert detected in current period.',
+            ];
+        }
+
+        return array_slice($alerts, 0, 3);
+    }
+
+    private function getPaymentInsights(string $roleKey): array
+    {
+        $query = Payment::query()->where('created_at', '>=', now()->subMonths(5)->startOfMonth());
+
+        if ($roleKey === 'master_admin') {
+            $query->where('type', 'subscription');
+        } elseif ($roleKey === 'company_admin') {
+            $query->where(function ($q) {
+                $q->where('submitted_to_company_id', Auth::user()->company_id)
+                    ->orWhereHas('user', function ($sub) {
+                        $sub->where('company_id', Auth::user()->company_id);
+                    });
+            });
+        } elseif ($roleKey === 'customer') {
+            $query->where('user_id', Auth::id());
+        } elseif ($roleKey === 'artist' || $roleKey === 'affiliate') {
+            return ['labels' => [], 'values' => [], 'status_labels' => [], 'status_values' => []];
+        }
+
+        $monthly = (clone $query)
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m-01') as month_key, SUM(amount) as total")
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->get()
+            ->keyBy('month_key');
+
+        $labels = [];
+        $values = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $m = now()->subMonths($i)->startOfMonth();
+            $k = $m->format('Y-m-01');
+            $labels[] = $m->format('M Y');
+            $values[] = (float) ($monthly[$k]->total ?? 0);
+        }
+
+        $status = (clone $query)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return [
+            'labels' => $labels,
+            'values' => $values,
+            'status_labels' => ['Pending', 'Completed', 'Failed'],
+            'status_values' => [
+                (int) ($status['pending'] ?? 0),
+                (int) ($status['completed'] ?? 0),
+                (int) ($status['failed'] ?? 0),
+            ],
+        ];
     }
 }

@@ -347,18 +347,25 @@
                 </h5>
             </div>
             <div class="card-body">
+                @php
+                    $eventDateForActions = \Carbon\Carbon::parse($booking->event_date)->startOfDay();
+                    $canAssignArtistByDate = $eventDateForActions->gte(today());
+                    $canCompleteByDate = $eventDateForActions->lte(today());
+                    $canCancelByDate = $eventDateForActions->gte(today());
+                    $isClosedStatus = in_array($booking->status, ['completed', 'cancelled']);
+                @endphp
                 <div class="d-grid gap-2">
-                    @if($booking->status != 'completed')
-                    @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
-                    @if(!$booking->assignedArtist)
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignArtistModal">
-                        <i data-lucide="user-plus" class="me-1"></i>Assign Artist
-                    </button>
-                    @else
-                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#reassignArtistModal">
-                        <i data-lucide="user-check" class="me-1"></i>Reassign Artist
-                    </button>
-                    @endif
+                    @if(!$isClosedStatus)
+                    @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']) && $canAssignArtistByDate)
+                        @if(!$booking->assignedArtist)
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignArtistModal">
+                            <i data-lucide="user-plus" class="me-1"></i>Assign Artist
+                        </button>
+                        @else
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#reassignArtistModal">
+                            <i data-lucide="user-check" class="me-1"></i>Reassign Artist
+                        </button>
+                        @endif
                     @endif
                     <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-warning">
                         <i data-lucide="edit" class="me-1"></i>Edit Booking
@@ -366,6 +373,24 @@
                     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
                         <i data-lucide="refresh-cw" class="me-1"></i>Update Status
                     </button>
+
+                    @if(auth()->user()->can('markCompleted', $booking) && $booking->status === 'confirmed' && $canCompleteByDate)
+                        <form action="{{ route('bookings.mark-completed', $booking) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100" onclick="return confirm('Mark this booking as completed?')">
+                                <i data-lucide="check-check" class="me-1"></i>Mark as Completed
+                            </button>
+                        </form>
+                    @endif
+
+                    @if(auth()->user()->can('cancel', $booking) && !$isClosedStatus && $canCancelByDate)
+                        <form action="{{ route('bookings.cancel', $booking) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Cancel this booking?')">
+                                <i data-lucide="x-circle" class="me-1"></i>Cancel Booking
+                            </button>
+                        </form>
+                    @endif
                     @endif
                     <a href="mailto:{{ $booking->email }}" class="btn btn-primary">
                         <i data-lucide="mail" class="me-1"></i>Email Customer
@@ -571,13 +596,22 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">New Status</label>
+                        @php
+                            $eventDateForStatus = \Carbon\Carbon::parse($booking->event_date)->startOfDay();
+                            $canSetCompleted = $eventDateForStatus->lte(today());
+                            $canSetCancelled = $eventDateForStatus->gte(today());
+                        @endphp
                         <select name="status" class="form-select" required>
                             <option value="">Select Status...</option>
                             <option value="pending">Pending</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="in_progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="completed" {{ !$canSetCompleted ? 'disabled' : '' }}>
+                                Completed{{ !$canSetCompleted ? ' (Before event date not allowed)' : '' }}
+                            </option>
+                            <option value="cancelled" {{ !$canSetCancelled ? 'disabled' : '' }}>
+                                Cancelled{{ !$canSetCancelled ? ' (After event date not allowed)' : '' }}
+                            </option>
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>

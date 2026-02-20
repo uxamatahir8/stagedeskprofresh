@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class CustomerPortalController extends Controller
@@ -215,16 +216,18 @@ class CustomerPortalController extends Controller
                 'company_notes' => trim(($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Marked completed by customer " . $user->name),
             ]);
 
-            // Notify master admins by email
-            $masterAdmins = \App\Models\User::whereHas('role', fn($q) => $q->where('role_key', 'master_admin'))->get();
-            foreach ($masterAdmins as $admin) {
+            // Notify owning company admins by email
+            $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
+                ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                ->get();
+            foreach ($companyAdmins as $admin) {
                 if (!empty($admin->email)) {
                     try {
-                        \Mail::to($admin->email)->send(
+                        Mail::to($admin->email)->send(
                             new \App\Mail\BookingCompletedByCustomerNotification($booking->fresh(), $admin)
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send customer-completed booking email to master admin: ' . $e->getMessage());
+                        Log::error('Failed to send customer-completed booking email to company admin: ' . $e->getMessage());
                     }
                 }
             }
@@ -322,11 +325,11 @@ class CustomerPortalController extends Controller
             // Notify company by email that customer posted a review
             if ($booking->company && !empty($booking->company->email)) {
                 try {
-                    \Mail::to($booking->company->email)->send(
+                    Mail::to($booking->company->email)->send(
                         new \App\Mail\ReviewPostedNotification($booking->fresh(), $user, $validated['rating'], $validated['review'] ?? null)
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send review notification email to company: ' . $e->getMessage());
+                    Log::error('Failed to send review notification email to company: ' . $e->getMessage());
                 }
             }
 
@@ -409,16 +412,12 @@ class CustomerPortalController extends Controller
 
     private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
     {
-        $recipients = User::whereHas('role', function ($q) {
-                $q->where('role_key', 'master_admin');
-            })
+        $recipients = User::query()
             ->when($booking->company_id, function ($q) use ($booking) {
-                $q->orWhere(function ($sub) use ($booking) {
-                    $sub->where('company_id', $booking->company_id)
-                        ->whereHas('role', function ($roleQ) {
-                            $roleQ->where('role_key', 'company_admin');
-                        });
-                });
+                $q->where('company_id', $booking->company_id)
+                    ->whereHas('role', function ($roleQ) {
+                        $roleQ->where('role_key', 'company_admin');
+                    });
             })
             ->whereNotNull('email')
             ->get()
@@ -430,7 +429,7 @@ class CustomerPortalController extends Controller
                     new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
                 );
             } catch (\Exception $e) {
-                \Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+                Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
             }
         }
     }

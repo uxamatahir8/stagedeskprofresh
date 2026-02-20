@@ -54,6 +54,23 @@
         </div>
     </div>
 
+    {{-- Important Alerts --}}
+    @if(!empty($dashboardAlerts ?? []))
+        <div class="row g-3 mb-4">
+            @foreach($dashboardAlerts as $alert)
+                <div class="col-lg-4">
+                    <div class="alert alert-{{ $alert['type'] }} border-0 shadow-sm mb-0 d-flex align-items-start">
+                        <i data-lucide="{{ $alert['icon'] }}" class="me-2 mt-1" style="width:18px;height:18px;"></i>
+                        <div>
+                            <h6 class="mb-1">{{ $alert['title'] }}</h6>
+                            <p class="mb-0 small">{{ $alert['message'] }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     {{-- Main Stats Cards --}}
     <div class="row g-3 mb-4">
         @php
@@ -99,7 +116,7 @@
 
         @foreach($mainStats as $index => $stat)
             <div class="col-md-6 col-xl-3">
-                <div class="card stats-card border-0 shadow-sm h-100" style="animation-delay: {{ $index * 0.1 }}s;">
+                <div class="card stats-card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div class="flex-grow-1">
@@ -124,7 +141,7 @@
                             </span>
                         </div>
                         <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-{{ $stat['color'] }}" role="progressbar" style="width: {{ rand(60, 95) }}%" aria-valuenow="{{ rand(60, 95) }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-{{ $stat['color'] }}" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
@@ -197,6 +214,119 @@
         </div>
     @endif
 
+    {{-- Infographics + Ops Tables --}}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="wallet-cards" class="me-2 text-success" style="width:20px;height:20px;"></i>Payment Volume Trend
+                    </h5>
+                    <small class="text-muted">Last 6 months amount trend</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container-line">
+                        <canvas id="paymentVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="clipboard-check" class="me-2 text-warning" style="width:20px;height:20px;"></i>Payment Status
+                    </h5>
+                    <small class="text-muted">Operational payment mix</small>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="chart-container-donut">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="table-properties" class="me-2 text-primary" style="width:20px;height:20px;"></i>Event Performance Table
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event Type</th>
+                                    <th class="text-end">Bookings</th>
+                                    <th class="text-end">Share</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $eventRows = collect($eventTypeCounts ?? [])->sortDesc();
+                                    $eventTotal = max(1, $eventRows->sum());
+                                @endphp
+                                @forelse($eventRows as $eventType => $count)
+                                    <tr>
+                                        <td>{{ $eventType }}</td>
+                                        <td class="text-end">{{ $count }}</td>
+                                        <td class="text-end">{{ number_format(($count / $eventTotal) * 100, 1) }}%</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">No event data available.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="radar" class="me-2 text-info" style="width:20px;height:20px;"></i>Executive Snapshot
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Bookings</div>
+                                <div class="h4 mb-0">{{ $stats['total_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Completed</div>
+                                <div class="h4 mb-0">{{ $stats['completed_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Pending</div>
+                                <div class="h4 mb-0">{{ $stats['pending_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Notifications</div>
+                                <div class="h4 mb-0">{{ $unreadNotifications ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Charts & Analytics --}}
     <div class="row g-3 mb-4">
         {{-- Booking Trends Chart --}}
@@ -238,6 +368,91 @@
             </div>
         </div>
     </div>
+
+    {{-- Role-Based Insights --}}
+    @if(!empty($insights['kpis'] ?? []))
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Completion Rate</p>
+                        <h3 class="mb-1">{{ number_format($insights['kpis']['completion_rate'] ?? 0, 1) }}%</h3>
+                        <small class="text-muted">Closed successfully</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Cancellation Rate</p>
+                        <h3 class="mb-1">{{ number_format($insights['kpis']['cancellation_rate'] ?? 0, 1) }}%</h3>
+                        <small class="text-muted">Cancelled bookings</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Upcoming Events</p>
+                        <h3 class="mb-1">{{ $insights['kpis']['upcoming_events'] ?? 0 }}</h3>
+                        <small class="text-muted">Scheduled ahead</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">
+                            {{ Auth::user()->role->role_key === 'master_admin' ? 'Revenue This Month' : 'Overdue Open' }}
+                        </p>
+                        <h3 class="mb-1">
+                            @if(Auth::user()->role->role_key === 'master_admin')
+                                ${{ number_format($insights['kpis']['revenue_this_month'] ?? 0, 0) }}
+                            @else
+                                {{ $insights['kpis']['overdue_open'] ?? 0 }}
+                            @endif
+                        </h3>
+                        <small class="text-muted">
+                            {{ Auth::user()->role->role_key === 'master_admin' ? 'Completed payments' : 'Past event date, still open' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i data-lucide="bar-chart-3" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Status Mix
+                        </h5>
+                        <small class="text-muted">Bookings by lifecycle status</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-line" style="height:280px;min-height:280px;">
+                            <canvas id="statusMixChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>6-Month Trend
+                        </h5>
+                        <small class="text-muted">Monthly booking volume</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-line" style="height:280px;min-height:280px;">
+                            <canvas id="monthlyInsightChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- Quick Actions & Recent Activity (Master Admin only) --}}
     @if(Auth::user()->role->role_key === 'master_admin')
@@ -285,7 +500,7 @@
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>Recent Activity
                         </h5>
-                        <small class="text-muted">Latest updates and actions</small>
+                        <small class="text-muted">Meaningful updates only (latest 10)</small>
                     </div>
                     <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-light">
                         <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> View All
@@ -670,6 +885,25 @@
         }
     </style>
 
+    @php
+        $fallbackEventTypes = ['Wedding' => 45, 'Corporate' => 30, 'Birthday' => 25];
+        $dashboardChartData = [
+            'bookingCounts' => $bookingStats['counts'] ?? [12, 19, 15, 25, 22, 30, 28],
+            'bookingDates' => $bookingStats['dates'] ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'eventTypeLabels' => array_keys($eventTypeCounts ?? $fallbackEventTypes),
+            'eventTypeValues' => array_values($eventTypeCounts ?? $fallbackEventTypes),
+            'statusLabels' => $insights['status_labels'] ?? [],
+            'statusValues' => $insights['status_values'] ?? [],
+            'monthlyLabels' => $insights['monthly_labels'] ?? [],
+            'monthlyValues' => $insights['monthly_values'] ?? [],
+            'paymentLabels' => $paymentInsights['labels'] ?? [],
+            'paymentValues' => $paymentInsights['values'] ?? [],
+            'paymentStatusLabels' => $paymentInsights['status_labels'] ?? [],
+            'paymentStatusValues' => $paymentInsights['status_values'] ?? [],
+        ];
+    @endphp
+    <script id="dashboard-chart-data" type="application/json">@json($dashboardChartData)</script>
+
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -682,8 +916,16 @@
                 }
             })();
 
+            var dashboardDataNode = document.getElementById('dashboard-chart-data');
+            var dashboardData = {};
+            try {
+                dashboardData = dashboardDataNode ? JSON.parse(dashboardDataNode.textContent || '{}') : {};
+            } catch (e) {
+                dashboardData = {};
+            }
+
             // Booking Trend Chart - no animation, fixed Y-axis so it never "grows"
-            var bookingCounts = {!! json_encode($bookingStats['counts'] ?? [12, 19, 15, 25, 22, 30, 28]) !!};
+            var bookingCounts = dashboardData.bookingCounts || [12, 19, 15, 25, 22, 30, 28];
             var maxCount = Math.max.apply(null, bookingCounts.length ? bookingCounts : [0]);
             var yMax = Math.max(10, Math.ceil((maxCount + 2) / 5) * 5);
 
@@ -692,7 +934,7 @@
                 new Chart(ctxTrend, {
                     type: 'line',
                     data: {
-                        labels: {!! json_encode($bookingStats['dates'] ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) !!},
+                        labels: dashboardData.bookingDates || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                         datasets: [{
                             label: 'Bookings',
                             data: bookingCounts,
@@ -756,9 +998,9 @@
                 new Chart(ctxEvent, {
                     type: 'doughnut',
                     data: {
-                        labels: {!! json_encode(array_keys($eventTypeCounts ?? ['Wedding' => 45, 'Corporate' => 30, 'Birthday' => 25])) !!},
+                        labels: dashboardData.eventTypeLabels || ['Wedding', 'Corporate', 'Birthday'],
                         datasets: [{
-                            data: {!! json_encode(array_values($eventTypeCounts ?? [45, 30, 25])) !!},
+                            data: dashboardData.eventTypeValues || [45, 30, 25],
                             backgroundColor: [
                                 '#667eea',
                                 '#f093fb',
@@ -796,6 +1038,116 @@
                                 callbacks: {
                                     label: (context) => context.label + ': ' + context.parsed
                                 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Role insight charts
+            const statusMixCtx = document.getElementById('statusMixChart');
+            if (statusMixCtx) {
+                new Chart(statusMixCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.statusLabels || [],
+                        datasets: [{
+                            label: 'Bookings',
+                            data: dashboardData.statusValues || [],
+                            backgroundColor: ['#f59f00', '#0dcaf0', '#6f42c1', '#198754', '#dc3545', '#6c757d'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const monthlyInsightCtx = document.getElementById('monthlyInsightChart');
+            if (monthlyInsightCtx) {
+                new Chart(monthlyInsightCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dashboardData.monthlyLabels || [],
+                        datasets: [{
+                            label: 'Bookings',
+                            data: dashboardData.monthlyValues || [],
+                            borderColor: '#20c997',
+                            backgroundColor: 'rgba(32, 201, 151, 0.12)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const paymentVolumeCtx = document.getElementById('paymentVolumeChart');
+            if (paymentVolumeCtx) {
+                new Chart(paymentVolumeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.paymentLabels || [],
+                        datasets: [{
+                            label: 'Amount',
+                            data: dashboardData.paymentValues || [],
+                            backgroundColor: 'rgba(13, 202, 240, 0.55)',
+                            borderColor: '#0dcaf0',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const paymentStatusCtx = document.getElementById('paymentStatusChart');
+            if (paymentStatusCtx) {
+                new Chart(paymentStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dashboardData.paymentStatusLabels || [],
+                        datasets: [{
+                            data: dashboardData.paymentStatusValues || [],
+                            backgroundColor: ['#f59f00', '#198754', '#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { usePointStyle: true, padding: 12 }
                             }
                         }
                     }

@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ArtistPortalController extends Controller
@@ -223,11 +225,11 @@ class ArtistPortalController extends Controller
 
                     // Email notification
                     try {
-                        \Mail::to($admin->email)->send(
+                        Mail::to($admin->email)->send(
                             new \App\Mail\BookingStatusChanged($booking->fresh(), 'confirmed', 'completed')
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send completion email to company admin: ' . $e->getMessage());
+                        Log::error('Failed to send completion email to company admin: ' . $e->getMessage());
                     }
                 }
             }
@@ -277,11 +279,11 @@ class ArtistPortalController extends Controller
             // Send role-specific booking accepted email to customer
             if ($booking->user && $booking->user->email) {
                 try {
-                    \Mail::to($booking->user->email)->send(
+                    Mail::to($booking->user->email)->send(
                         new \App\Mail\BookingAcceptedNotification($bookingForEmail, $booking->user, 'customer')
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send booking acceptance email to customer: ' . $e->getMessage());
+                    Log::error('Failed to send booking acceptance email to customer: ' . $e->getMessage());
                 }
             }
 
@@ -310,41 +312,12 @@ class ArtistPortalController extends Controller
 
                     // Send email notification
                     try {
-                        \Mail::to($admin->email)->send(
+                        Mail::to($admin->email)->send(
                             new \App\Mail\BookingAcceptedNotification($bookingForEmail, $admin, 'company_admin')
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send booking acceptance email to company admin: ' . $e->getMessage());
+                        Log::error('Failed to send booking acceptance email to company admin: ' . $e->getMessage());
                     }
-                }
-            }
-
-            // Notify and email master admins
-            $masterAdmins = \App\Models\User::whereHas('role', fn($q) => $q->where('role_key', 'master_admin'))->get();
-            foreach ($masterAdmins as $admin) {
-                // Create in-app notification
-                $this->notificationService->createForUser(
-                    $admin->id,
-                    'Booking Accepted',
-                    $artist->user->name . ' accepted booking #' . ($booking->tracking_code ?? $booking->id),
-                    'booking_accepted',
-                    'booking',
-                    route('bookings.show', $booking),
-                    3,
-                    $booking->company_id,
-                    [
-                        'booking_id' => $booking->id,
-                        'artist_id' => $artist->id,
-                    ]
-                );
-
-                // Send email notification
-                try {
-                    \Mail::to($admin->email)->send(
-                        new \App\Mail\BookingAcceptedNotification($bookingForEmail, $admin, 'master_admin')
-                    );
-                } catch (\Exception $e) {
-                    \Log::error('Failed to send booking acceptance email to master admin: ' . $e->getMessage());
                 }
             }
 
@@ -407,11 +380,11 @@ class ArtistPortalController extends Controller
             // Send email to customer about booking status change
             if ($booking->user && $booking->user->email) {
                 try {
-                    \Mail::to($booking->user->email)->send(
+                    Mail::to($booking->user->email)->send(
                         new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send rejection email to customer: ' . $e->getMessage());
+                    Log::error('Failed to send rejection email to customer: ' . $e->getMessage());
                 }
             }
 
@@ -420,11 +393,11 @@ class ArtistPortalController extends Controller
                 // Send status update directly to company email
                 if (!empty($booking->company->email)) {
                     try {
-                        \Mail::to($booking->company->email)->send(
+                        Mail::to($booking->company->email)->send(
                             new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send rejection email to company email: ' . $e->getMessage());
+                        Log::error('Failed to send rejection email to company email: ' . $e->getMessage());
                     }
                 }
 
@@ -452,11 +425,11 @@ class ArtistPortalController extends Controller
 
                     // Email notification
                     try {
-                        \Mail::to($admin->email)->send(
+                        Mail::to($admin->email)->send(
                             new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'pending')
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send rejection email to company admin: ' . $e->getMessage());
+                        Log::error('Failed to send rejection email to company admin: ' . $e->getMessage());
                     }
                 }
             }

@@ -19,7 +19,7 @@ class PaymentSubmittedNotification extends Mailable
 
     public function __construct(Payment $payment, User $submittedBy, User $recipient, string $recipientType)
     {
-        $this->payment = $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user.company']);
+        $this->payment = $payment->loadMissing(['bookingRequest.company', 'subscription.company', 'user.company', 'paymentMethod']);
         $this->submittedBy = $submittedBy;
         $this->recipient = $recipient;
         $this->recipientType = $recipientType;

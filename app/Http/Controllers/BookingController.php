@@ -11,6 +11,7 @@ use App\Events\BookingCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
 
@@ -294,13 +295,21 @@ class BookingController extends Controller
         ]);
 
         // Auto-assign company for company admins
-        if ($roleKey === 'company_admin' && empty($validated['company_id'])) {
+        if ($roleKey === 'company_admin') {
             $validated['company_id'] = $user->company_id;
         }
 
         // Auto-set user_id for customers
         if ($roleKey === 'customer') {
             $validated['user_id'] = $user->id;
+        }
+
+        // Company-scoped booking ownership checks
+        if ($roleKey === 'company_admin' && !empty($validated['user_id'])) {
+            $customer = User::find($validated['user_id']);
+            if ($customer && (int) $customer->company_id !== (int) $user->company_id) {
+                return back()->withInput()->with('error', 'Selected customer does not belong to your company.');
+            }
         }
 
         DB::beginTransaction();
@@ -361,6 +370,9 @@ class BookingController extends Controller
 
             // If artist is assigned immediately, update status
             if (!empty($validated['assigned_artist_id'])) {
+                if (!$this->canAssignArtistToBooking((int) $validated['assigned_artist_id'], (int) $validated['company_id'])) {
+                    return back()->withInput()->with('error', 'Selected artist is not available for this company booking.');
+                }
                 $validated['status'] = 'confirmed';
                 $validated['confirmed_at'] = now();
             }
@@ -400,11 +412,11 @@ class BookingController extends Controller
 
                     if ($companyAdmin && $companyAdmin->email) {
                         try {
-                            \Mail::to($companyAdmin->email)->send(
+                            Mail::to($companyAdmin->email)->send(
                                 new \App\Mail\NewBookingForCompany($booking, $companyAdmin)
                             );
                         } catch (\Exception $e) {
-                            \Log::error('Failed to send booking notification to company admin: ' . $e->getMessage());
+                            Log::error('Failed to send booking notification to company admin: ' . $e->getMessage());
                         }
                     }
                 }
@@ -473,7 +485,24 @@ class BookingController extends Controller
             && (string) $request->input('status') !== (string) $booking->status;
 
         if ($isStatusLocked && ($isArtistChangeRequested || $isStatusChangeRequested)) {
+            ActivityLog::log('updated', $booking, 'Booking update blocked for closed status', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
             return back()->withInput()->with('error', 'Artist and status updates are not allowed for completed or cancelled bookings.');
+        }
+
+        if ($isArtistChangeRequested) {
+            $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+            if ($eventDate->lt(today())) {
+                ActivityLog::log('updated', $booking, 'Artist assignment blocked after event date', [
+                    'booking_id' => $booking->id,
+                    'company_id' => $booking->company_id,
+                    'reason' => 'event_date_passed',
+                ]);
+                return back()->withInput()->with('error', 'Artist cannot be assigned or reassigned after the event date.');
+            }
         }
 
         $eventType = EventType::find($request->event_type_id);
@@ -506,6 +535,12 @@ class BookingController extends Controller
 
         if ($roleKey === 'company_admin') {
             $validated['company_id'] = $user->company_id;
+            if (!empty($validated['user_id'])) {
+                $customer = User::find($validated['user_id']);
+                if ($customer && (int) $customer->company_id !== (int) $user->company_id) {
+                    return back()->withInput()->with('error', 'Selected customer does not belong to your company.');
+                }
+            }
         }
 
         if ($roleKey === 'customer') {
@@ -529,6 +564,10 @@ class BookingController extends Controller
 
             $validated['completed_at'] = $validated['status'] === 'completed' ? now() : null;
             $validated['cancelled_at'] = $validated['status'] === 'cancelled' ? now() : null;
+        }
+
+        if (!empty($validated['assigned_artist_id']) && !$this->canAssignArtistToBooking((int) $validated['assigned_artist_id'], (int) $booking->company_id)) {
+            return back()->withInput()->with('error', 'Selected artist is not available for this booking company.');
         }
 
         DB::beginTransaction();
@@ -611,7 +650,22 @@ class BookingController extends Controller
         $this->authorize('assignArtist', $booking);
 
         if (in_array($booking->status, ['completed', 'cancelled'])) {
+            ActivityLog::log('updated', $booking, 'Artist assignment blocked for closed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
             return back()->with('error', 'Artist update is not allowed for completed or cancelled bookings.');
+        }
+
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+        if ($eventDate->lt(today())) {
+            ActivityLog::log('updated', $booking, 'Artist assignment blocked after event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'event_date_passed',
+            ]);
+            return back()->with('error', 'Artist cannot be assigned or reassigned after the event date.');
         }
 
         $user = Auth::user();
@@ -621,6 +675,10 @@ class BookingController extends Controller
             'artist_id' => 'required|exists:artists,id',
             'company_notes' => 'nullable|string'
         ]);
+
+        if (!$this->canAssignArtistToBooking((int) $request->artist_id, (int) $booking->company_id)) {
+            return back()->with('error', 'Selected artist is not available for this booking company.');
+        }
 
         DB::beginTransaction();
         try {
@@ -647,11 +705,11 @@ class BookingController extends Controller
             // Send email to artist about new booking assignment
             if ($artist->user && $artist->user->email) {
                 try {
-                    \Mail::to($artist->user->email)->send(
+                    Mail::to($artist->user->email)->send(
                         new \App\Mail\NewBookingForArtist($booking->fresh())
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
+                    Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
                 }
             }
 
@@ -664,11 +722,11 @@ class BookingController extends Controller
 
                 if ($companyAdmin && $companyAdmin->email) {
                     try {
-                        \Mail::to($companyAdmin->email)->send(
+                        Mail::to($companyAdmin->email)->send(
                             new \App\Mail\ArtistAssignedToCompany($booking->fresh(), $artist, $companyAdmin)
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send artist assignment notification to company admin: ' . $e->getMessage());
+                        Log::error('Failed to send artist assignment notification to company admin: ' . $e->getMessage());
                     }
                 }
             }
@@ -676,11 +734,11 @@ class BookingController extends Controller
             // Send email to customer about artist assignment
             if ($booking->user && $booking->user->email) {
                 try {
-                    \Mail::to($booking->user->email)->send(
+                    Mail::to($booking->user->email)->send(
                         new \App\Mail\ArtistAssigned($booking->fresh(), $isReassignment)
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send assignment email to customer: ' . $e->getMessage());
+                    Log::error('Failed to send assignment email to customer: ' . $e->getMessage());
                 }
             }
 
@@ -726,10 +784,20 @@ class BookingController extends Controller
         $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if ($booking->status !== 'confirmed') {
+            ActivityLog::log('updated', $booking, 'Mark completed blocked for non-confirmed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'invalid_status',
+            ]);
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
         }
 
         if ($eventDate->gt(today())) {
+            ActivityLog::log('updated', $booking, 'Mark completed blocked before event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'before_event_date',
+            ]);
             return back()->with('error', 'Booking cannot be marked as completed before the event date.');
         }
 
@@ -767,10 +835,20 @@ class BookingController extends Controller
         $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if (in_array($booking->status, ['completed', 'cancelled'])) {
+            ActivityLog::log('updated', $booking, 'Booking cancellation blocked for closed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
             return back()->with('error', 'Cannot cancel a booking that is already ' . $booking->status);
         }
 
         if ($eventDate->lt(today())) {
+            ActivityLog::log('updated', $booking, 'Booking cancellation blocked after event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'event_date_passed',
+            ]);
             return back()->with('error', 'Booking cannot be cancelled after the event date.');
         }
 
@@ -810,16 +888,12 @@ class BookingController extends Controller
 
     private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
     {
-        $recipients = User::whereHas('role', function ($q) {
-                $q->where('role_key', 'master_admin');
-            })
+        $recipients = User::query()
             ->when($booking->company_id, function ($q) use ($booking) {
-                $q->orWhere(function ($sub) use ($booking) {
-                    $sub->where('company_id', $booking->company_id)
-                        ->whereHas('role', function ($roleQ) {
-                            $roleQ->where('role_key', 'company_admin');
-                        });
-                });
+                $q->where('company_id', $booking->company_id)
+                    ->whereHas('role', function ($roleQ) {
+                        $roleQ->where('role_key', 'company_admin');
+                    });
             })
             ->whereNotNull('email')
             ->get()
@@ -831,9 +905,26 @@ class BookingController extends Controller
                     new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
                 );
             } catch (\Exception $e) {
-                \Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+                Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
             }
         }
     }
 
+    private function canAssignArtistToBooking(int $artistId, int $companyId): bool
+    {
+        return Artist::where('id', $artistId)
+            ->where(function ($query) use ($artistId, $companyId) {
+                $query->where('company_id', $companyId)
+                    ->orWhereExists(function ($sharedQuery) use ($artistId, $companyId) {
+                        $sharedQuery->select(DB::raw(1))
+                            ->from('shared_artists')
+                            ->whereColumn('shared_artists.artist_id', 'artists.id')
+                            ->where('shared_artists.artist_id', $artistId)
+                            ->where('shared_artists.shared_with_company_id', $companyId)
+                            ->where('shared_artists.status', 'accepted')
+                            ->whereNull('shared_artists.revoked_at');
+                    });
+            })
+            ->exists();
+    }
 }
