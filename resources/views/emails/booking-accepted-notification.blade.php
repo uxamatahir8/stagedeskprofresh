@@ -12,7 +12,15 @@
 
         <p>Hello {{ $recipient->name }},</p>
 
-        <p>An artist has accepted a booking request. Here are the details:</p>
+        @if($recipientRole === 'customer')
+            <p>Your booking request has been accepted by the artist. Here are the details:</p>
+        @elseif($recipientRole === 'company_admin')
+            <p>An artist has accepted a booking assigned under your company. Here are the details:</p>
+        @elseif($recipientRole === 'master_admin')
+            <p>An artist has accepted a booking on the platform. Here are the details:</p>
+        @else
+            <p>An artist has accepted a booking request. Here are the details:</p>
+        @endif
 
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr style="background-color: #f8f9fa;">

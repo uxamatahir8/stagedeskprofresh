@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LoginAttempt;
 use App\Models\SecurityLog;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,6 +34,22 @@ class AuthSecurityService
         if (!$successful && $userId) {
             $this->incrementFailedAttempts($userId);
         }
+
+        ActivityLogger::write(
+            $successful ? 'success' : 'warning',
+            $successful ? 'auth.login_attempt.success' : 'auth.login_attempt.failed',
+            $successful ? 'success' : 'failed',
+            $successful ? 'Login attempt succeeded' : 'Login attempt failed',
+            [
+                'category' => 'auth',
+                'action' => 'login_attempt',
+                'user_id' => $userId,
+                'metadata' => [
+                    'email' => $email,
+                    'failure_reason' => $failureReason,
+                ],
+            ]
+        );
     }
 
     /**
@@ -79,18 +96,30 @@ class AuthSecurityService
             );
 
             // Send security alert email
-            Mail::to($user->email)->send(
-                new \App\Mail\SecurityAlert(
-                    $user,
-                    'account_locked',
+            try {
+                Mail::to($user->email)->send(
+                    new \App\Mail\SecurityAlert(
+                        $user,
+                        'account_locked',
+                        [
+                            'failed_attempts' => $attempts,
+                            'lock_duration' => self::LOCKOUT_DURATION,
+                            'ip_address' => request()->ip(),
+                            'time' => now()->format('F d, Y h:i A')
+                        ]
+                    )
+                );
+            } catch (\Throwable $e) {
+                ActivityLogger::error(
+                    'security.account_locked_email.failed',
+                    'Failed to send account lock security email',
                     [
-                        'failed_attempts' => $attempts,
-                        'lock_duration' => self::LOCKOUT_DURATION,
-                        'ip_address' => request()->ip(),
-                        'time' => now()->format('F d, Y h:i A')
+                        'category' => 'security',
+                        'user_id' => $userId,
+                        'exception' => ['message' => $e->getMessage()],
                     ]
-                )
-            );
+                );  
+            }
         }
 
         $user->update($updates);
@@ -179,18 +208,30 @@ class AuthSecurityService
             );
 
             // Send security alert email
-            Mail::to($user->email)->send(
-                new \App\Mail\SecurityAlert(
-                    $user,
-                    'suspicious_activity',
+            try {
+                Mail::to($user->email)->send(
+                    new \App\Mail\SecurityAlert(
+                        $user,
+                        'suspicious_activity',
+                        [
+                            'activity_type' => 'Multiple IP addresses detected',
+                            'ip_address' => request()->ip(),
+                            'location' => 'Unknown', // Could integrate with IP geolocation service
+                            'time' => now()->format('F d, Y h:i A')
+                        ]
+                    )
+                );
+            } catch (\Throwable $e) {
+                ActivityLogger::error(
+                    'security.suspicious_activity_email.failed',
+                    'Failed to send suspicious activity email',
                     [
-                        'activity_type' => 'Multiple IP addresses detected',
-                        'ip_address' => request()->ip(),
-                        'location' => 'Unknown', // Could integrate with IP geolocation service
-                        'time' => now()->format('F d, Y h:i A')
+                        'category' => 'security',
+                        'user_id' => $user->id,
+                        'exception' => ['message' => $e->getMessage()],
                     ]
-                )
-            );
+                );
+            }
 
             return true;
         }
