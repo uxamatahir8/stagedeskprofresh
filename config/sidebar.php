@@ -84,6 +84,11 @@ return [
                 'route' => 'packages',
                 'roles' => ['master_admin'],
             ],
+            [
+                'title' => 'Artist Withdrawals',
+                'route' => 'artist-withdrawals.index',
+                'roles' => ['master_admin', 'company_admin'],
+            ],
         ],
     ],
     [

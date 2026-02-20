@@ -89,6 +89,94 @@ class Company extends Model
             ->latest();
     }
 
+    /**
+     * Whether the company has an active subscription with at least one verified (completed) payment.
+     * Used to allow company admin login and dashboard access.
+     */
+    public function hasVerifiedSubscription(): bool
+    {
+        $sub = $this->subscriptions()
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->latest()
+            ->first();
+
+        if (!$sub) {
+            return false;
+        }
+
+        return \App\Models\Payment::where('subscription_id', $sub->id)
+            ->where('type', 'subscription')
+            ->where('status', 'completed')
+            ->exists();
+    }
+
+    /**
+     * Get the current active subscription instance (for package limits).
+     */
+    public function getActiveSubscription(): ?CompanySubscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->with('package')
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * Get package limits for this company (from verified active subscription). Returns null if no limits apply.
+     *
+     * @return array{max_requests_allowed: ?int, max_responses_allowed: ?int}|null
+     */
+    public function getPackageLimits(): ?array
+    {
+        $sub = $this->getActiveSubscription();
+        if (!$sub || !$sub->package) {
+            return null;
+        }
+        $p = $sub->package;
+        if ($p->max_requests_allowed === null && $p->max_responses_allowed === null) {
+            return null;
+        }
+        return [
+            'max_requests_allowed' => $p->max_requests_allowed,
+            'max_responses_allowed' => $p->max_responses_allowed,
+        ];
+    }
+
+    /** Count booking requests for this company (for package limit). */
+    public function countBookingRequests(): int
+    {
+        return $this->bookingRequests()->count();
+    }
+
+    /** Count booking requests that have an artist assigned (responses) for this company. */
+    public function countAssignedResponses(): int
+    {
+        return $this->bookingRequests()->whereNotNull('assigned_artist_id')->count();
+    }
+
+    /** Whether the company can add another booking request (package limit). */
+    public function canAddBooking(): bool
+    {
+        $limits = $this->getPackageLimits();
+        if ($limits === null || $limits['max_requests_allowed'] === null) {
+            return true;
+        }
+        return $this->countBookingRequests() < (int) $limits['max_requests_allowed'];
+    }
+
+    /** Whether the company can add another artist assignment (package limit). */
+    public function canAddArtistResponse(): bool
+    {
+        $limits = $this->getPackageLimits();
+        if ($limits === null || $limits['max_responses_allowed'] === null) {
+            return true;
+        }
+        return $this->countAssignedResponses() < (int) $limits['max_responses_allowed'];
+    }
+
     public function getInitialsAttribute(): string
     {
         $name = trim((string) $this->name);

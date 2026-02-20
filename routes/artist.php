@@ -21,8 +21,9 @@ Route::middleware(['auth', 'role:artist'])->prefix('artist')->name('artist.')->g
     Route::post('/bookings/{booking}/reject', [ArtistPortalController::class, 'rejectBooking'])->name('bookings.reject');
     Route::post('/bookings/{booking}/complete', [ArtistPortalController::class, 'markBookingCompleted'])->name('bookings.complete');
 
-    // Earnings
+    // Earnings & Withdrawals
     Route::get('/earnings', [ArtistPortalController::class, 'earnings'])->name('earnings');
+    Route::post('/withdrawal', [ArtistPortalController::class, 'storeWithdrawal'])->name('withdrawal.store');
 
     // Reviews
     Route::get('/reviews', [ArtistPortalController::class, 'reviews'])->name('reviews');

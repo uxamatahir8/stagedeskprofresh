@@ -68,6 +68,14 @@
                         <h6 class="text-muted mb-1 fw-semibold">Last Updated</h6>
                         <p class="mb-0">{{ $booking->updated_at->diffForHumans() }}</p>
                     </div>
+                    <div class="col-6 col-md-3 mt-2 mt-md-0">
+                        <h6 class="text-muted mb-1 fw-semibold">Payment Status</h6>
+                        @php
+                            $ps = $booking->payment_status ?? 'unpaid';
+                            $psColor = $ps === 'paid' ? 'success' : ($ps === 'internal_paid' ? 'info' : 'warning');
+                        @endphp
+                        <span class="badge bg-{{ $psColor }}">{{ ucfirst(str_replace('_', ' ', $ps)) }}</span>
+                    </div>
                 </div>
             </div>
         </div>

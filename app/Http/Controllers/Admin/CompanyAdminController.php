@@ -202,6 +202,10 @@ class CompanyAdminController extends Controller
             abort(403, 'This booking does not belong to your company');
         }
 
+        if (!in_array($booking->payment_status ?? 'unpaid', ['paid', 'internal_paid'], true)) {
+            return back()->with('error', 'Artist cannot be assigned until the booking payment status is Paid or Internal Paid.');
+        }
+
         if (in_array($booking->status, ['completed', 'cancelled'])) {
             return back()->with('error', 'Artist update is not allowed for completed or cancelled bookings.');
         }
@@ -228,6 +232,12 @@ class CompanyAdminController extends Controller
             ->firstOrFail();
 
         $isReassignment = $booking->assigned_artist_id !== null;
+        if (!$isReassignment) {
+            $company = \App\Models\Company::find($companyId);
+            if ($company && !$company->canAddArtistResponse()) {
+                return back()->with('error', 'Your subscription package limit for artist assignments has been reached. Please upgrade your package to assign more artists.');
+            }
+        }
         $previousArtistId = $booking->assigned_artist_id;
 
         DB::beginTransaction();
