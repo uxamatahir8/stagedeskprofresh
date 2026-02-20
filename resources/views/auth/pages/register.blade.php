@@ -1,6 +1,10 @@
 @extends('auth.layouts.auth')
 
 @section('content')
+    <div class="mb-3">
+        <h5 class="mb-1">Create your account</h5>
+        <p class="text-muted mb-0">Set up your profile and start managing bookings.</p>
+    </div>
     <!-- Display Success Messages -->
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

@@ -24,7 +24,7 @@
         </tr>
         <tr>
             <th>Method</th>
-            <td>{{ ucfirst(str_replace('_', ' ', $payment->payment_method ?? 'N/A')) }}</td>
+            <td>{{ $payment->paymentMethod->display_name ?? ucfirst(str_replace('_', ' ', $payment->payment_method ?? 'N/A')) }}</td>
         </tr>
         <tr>
             <th>Transaction ID</th>
@@ -37,7 +37,7 @@
         @if($payment->type === 'booking' && $payment->bookingRequest)
             <tr>
                 <th>Booking</th>
-                <td>#{{ $payment->bookingRequest->id }}</td>
+                <td>#{{ $payment->bookingRequest->tracking_code ?? $payment->bookingRequest->id }}</td>
             </tr>
             <tr>
                 <th>Company</th>

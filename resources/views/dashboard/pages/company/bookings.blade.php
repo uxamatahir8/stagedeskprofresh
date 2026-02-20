@@ -79,8 +79,14 @@
                                 <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                 <td>
+                                    @php
+                                        $canAssignArtist = !in_array($booking->status, ['completed', 'cancelled'])
+                                            && \Carbon\Carbon::parse($booking->event_date)->startOfDay()->gte(today());
+                                    @endphp
                                     @if($booking->assignedArtist)
                                         <span class="badge bg-info">{{ $booking->assignedArtist->user->name }}</span>
+                                    @elseif(!$canAssignArtist)
+                                        <span class="badge bg-secondary">Assignment Locked</span>
                                     @else
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignArtistModal{{ $booking->tracking_code ?? $booking->id }}">
                                             Assign Artist
@@ -122,7 +128,10 @@
                                                         <option value="">Choose an artist...</option>
                                                         @foreach($availableArtists ?? [] as $artist)
                                                             <option value="{{ $artist->id }}">
-                                                                {{ $artist->user->name }} - {{ $artist->availability }}
+                                                                {{ $artist->user->name }} - {{ $artist->specialization ?? 'Artist' }}
+                                                                @if($artist->company_id !== auth()->user()->company_id)
+                                                                    (Shared)
+                                                                @endif
                                                             </option>
                                                         @endforeach
                                                     </select>

@@ -68,7 +68,7 @@
                             <label class="text-muted mb-1">Payment Method</label>
                             <p class="mb-0">
                                 <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i>
-                                {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                {{ $payment->paymentMethod->display_name ?? ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
                             </p>
                         </div>
                     </div>
@@ -94,11 +94,21 @@
                             <div class="col-md-12">
                                 <label class="text-muted mb-1">Related Booking</label>
                                 <p class="mb-0">
-                                    <a href="{{ route('bookings.show', $payment->bookingRequest->id) }}" class="text-primary">
-                                        Booking #{{ $payment->bookingRequest->id }} - {{ $payment->bookingRequest->name }}
+                                    <a href="{{ route('bookings.show', $payment->bookingRequest) }}" class="text-primary">
+                                        Booking #{{ $payment->bookingRequest->tracking_code ?? $payment->bookingRequest->id }} - {{ $payment->bookingRequest->name }}
                                         {{ $payment->bookingRequest->surname }}
                                     </a>
                                 </p>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($payment->paymentMethod)
+                        <hr>
+                        <div class="row mb-0">
+                            <div class="col-md-12">
+                                <label class="text-muted mb-1">Payment Instructions</label>
+                                <p class="mb-0 text-muted">{{ $payment->paymentMethod->instructions ?: 'No special instructions provided.' }}</p>
                             </div>
                         </div>
                     @endif

@@ -8,11 +8,13 @@ use App\Models\Company;
 use App\Models\BookingRequest;
 use App\Models\Payment;
 use App\Models\Artist;
+use App\Models\SharedArtist;
 use App\Models\ActivityLog;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class CompanyAdminController extends Controller
@@ -21,8 +23,6 @@ class CompanyAdminController extends Controller
 
     public function __construct(DashboardStatisticsService $dashboardService)
     {
-        $this->middleware('role:company_admin');
-        $this->middleware('company.scope');
         $this->dashboardService = $dashboardService;
     }
 
@@ -179,7 +179,15 @@ class CompanyAdminController extends Controller
             ->where('status', 'pending')
             ->count();
 
-        return view('dashboard.pages.company.bookings', compact('title', 'bookings', 'unassignedBookings'));
+        $ownArtists = Artist::where('company_id', $companyId)->with('user')->get();
+        $sharedArtistIds = SharedArtist::where('shared_with_company_id', $companyId)
+            ->where('status', 'accepted')
+            ->whereNull('revoked_at')
+            ->pluck('artist_id');
+        $sharedArtists = Artist::whereIn('id', $sharedArtistIds)->with('user')->get();
+        $availableArtists = $ownArtists->merge($sharedArtists)->unique('id')->values();
+
+        return view('dashboard.pages.company.bookings', compact('title', 'bookings', 'unassignedBookings', 'availableArtists'));
     }
 
     /**
@@ -194,6 +202,14 @@ class CompanyAdminController extends Controller
             abort(403, 'This booking does not belong to your company');
         }
 
+        if (in_array($booking->status, ['completed', 'cancelled'])) {
+            return back()->with('error', 'Artist update is not allowed for completed or cancelled bookings.');
+        }
+
+        if (\Carbon\Carbon::parse($booking->event_date)->startOfDay()->lt(today())) {
+            return back()->with('error', 'Artist cannot be assigned after the event date.');
+        }
+
         $request->validate([
             'artist_id' => 'required|exists:artists,id',
             'company_notes' => 'nullable|string|max:1000'
@@ -205,7 +221,8 @@ class CompanyAdminController extends Controller
                 $q->where('company_id', $companyId)
                   ->orWhereHas('sharedWithCompanies', function($sq) use ($companyId) {
                       $sq->where('shared_with_company_id', $companyId)
-                         ->where('status', 'accepted');
+                         ->where('status', 'accepted')
+                         ->whereNull('shared_artists.revoked_at');
                   });
             })
             ->firstOrFail();
@@ -231,6 +248,7 @@ class CompanyAdminController extends Controller
                 [
                     'artist_id' => $artist->id,
                     'booking_id' => $booking->id,
+                    'company_id' => $companyId,
                     'previous_artist_id' => $previousArtistId,
                     'is_reassignment' => $isReassignment
                 ]
@@ -238,14 +256,14 @@ class CompanyAdminController extends Controller
 
             // Send email to customer about artist assignment
             if ($booking->customer && $booking->customer->email) {
-                \Mail::to($booking->customer->email)->send(
+                Mail::to($booking->customer->email)->send(
                     new \App\Mail\ArtistAssigned($booking->fresh(), $isReassignment)
                 );
             }
 
             // Send email to artist about new booking
             if ($artist->user && $artist->user->email) {
-                \Mail::to($artist->user->email)->send(
+                Mail::to($artist->user->email)->send(
                     new \App\Mail\NewBookingForArtist($booking->fresh())
                 );
             }

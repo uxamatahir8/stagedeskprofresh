@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Mail\PaymentStatusUpdatedNotification;
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\BookingRequest;
@@ -15,12 +14,14 @@ use App\Services\ActivityLogger;
 use App\Services\DashboardStatisticsService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
-class MasterAdminController extends Controller
+class MasterAdminController extends BaseController
 {
     protected $dashboardService;
     protected $notificationService;
@@ -132,7 +133,7 @@ class MasterAdminController extends Controller
     public function verifyPayment(Request $request, Payment $payment)
     {
         $request->validate([
-            'status' => 'required|in:completed,rejected',
+            'status' => 'required|in:completed,failed',
             'notes' => 'nullable|string|max:500'
         ]);
 
@@ -140,7 +141,7 @@ class MasterAdminController extends Controller
         try {
             $payment->update([
                 'status' => $request->status,
-                'verified_by' => auth()->id(),
+                'verified_by' => Auth::id(),
                 'verified_at' => now(),
                 'admin_notes' => $request->notes
             ]);

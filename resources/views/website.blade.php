@@ -5,7 +5,7 @@
 
     <!--===== WELCOME STARTS =======-->
     <div class="welcome4-section-area"
-        style="background-image: url({{ asset('landing/images/background/header4-bg.png') }}); background-position: center; background-size: cover; width: 100%; height: 100%;">
+        style="background-image: url('/landing/images/background/header4-bg.png'); background-position: center; background-size: cover; width: 100%; height: 100%;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -748,7 +748,7 @@
     </div>
     <!--===== CTA AREA STARTS =======-->
     <div class="cta4-section-area sp3"
-        style="background-image: url({{ asset('landing/images/all-images/cta-btg2.png') }}); background-position: center; background-repeat: no-repeat;">
+        style="background-image: url('/landing/images/all-images/cta-btg2.png'); background-position: center; background-repeat: no-repeat;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">

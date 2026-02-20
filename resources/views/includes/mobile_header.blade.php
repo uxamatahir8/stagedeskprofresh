@@ -22,10 +22,9 @@
     <nav class="mobile-nav">
         <ul class="mobile-nav-list">
             <li><a href="{{ route('home') }}">Home</a></li>
-            <li><a href="{{ route('home') }}#works">Works</a></li>
+            <li><a href="{{ route('home') }}#works">Flow</a></li>
             <li><a href="{{ route('home') }}#features">Features</a></li>
             <li><a href="{{ route('home') }}#pricing">Pricing</a></li>
-            <li><a href="{{ route('home') }}#testimonials">Testimonials</a></li>
             <li><a href="{{ route('home') }}#blog">Blog</a></li>
             @guest
                 <li><a href="{{ route('login') }}">Login</a></li>

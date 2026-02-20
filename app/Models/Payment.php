@@ -14,9 +14,15 @@ class Payment extends Model
         'currency',
         'transaction_id',
         'payment_method',
+        'payment_method_id',
+        'submitted_to_company_id',
+        'submitted_to_scope',
         'attachment',
         'type',
         'status',
+        'verified_by',
+        'verified_at',
+        'admin_notes',
     ];
 
     public function bookingRequest()
@@ -32,5 +38,10 @@ class Payment extends Model
     public function subscription()
     {
         return $this->belongsTo(CompanySubscription::class, 'subscription_id');
+    }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
     }
 }

@@ -1,6 +1,10 @@
 @extends('auth.layouts.auth')
 
 @section('content')
+    <div class="mb-3">
+        <h5 class="mb-1">Sign in</h5>
+        <p class="text-muted mb-0">Use password login or one-time email code.</p>
+    </div>
 
     <!-- Login Method Tabs -->
     <ul class="nav nav-pills nav-justified mb-4" id="loginTabs" role="tablist">
@@ -164,6 +168,9 @@
 
     @push('scripts')
         <script>
+            const shouldForceCodeTab = "{{ (session('code_sent') || session('active_tab') === 'code-login') ? 'true' : 'false' }}" === "true";
+            const shouldRestoreSavedTab = "{{ (!session('code_sent') && !session('active_tab')) ? 'true' : 'false' }}" === "true";
+
             // Auto-focus code input and format
             document.addEventListener('DOMContentLoaded', function() {
                 const codeInput = document.getElementById('loginCode');
@@ -177,13 +184,13 @@
                 }
 
                 // Activate code tab if code was sent or active_tab is set
-                @if(session('code_sent') || session('active_tab') === 'code-login')
+                if (shouldForceCodeTab) {
                     const codeTab = document.getElementById('code-tab');
                     if (codeTab) {
                         const tab = new bootstrap.Tab(codeTab);
                         tab.show();
                     }
-                @endif
+                }
 
                 // Store active tab in session on tab change
                 const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
@@ -196,7 +203,7 @@
                 });
 
                 // Restore tab from sessionStorage on page load (if no server-side session)
-                @if(!session('code_sent') && !session('active_tab'))
+                if (shouldRestoreSavedTab) {
                     const savedTab = sessionStorage.getItem('activeLoginTab');
                     if (savedTab === '#code-login') {
                         const codeTab = document.getElementById('code-tab');
@@ -205,7 +212,7 @@
                             tab.show();
                         }
                     }
-                @endif
+                }
             });
         </script>
     @endpush
