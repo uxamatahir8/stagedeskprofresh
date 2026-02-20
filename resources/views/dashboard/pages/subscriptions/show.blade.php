@@ -33,14 +33,14 @@
                             <label class="text-muted mb-1">Company</label>
                             <p class="mb-0 fw-bold">
                                 <a href="{{ route('company.show', $subscription->company->id) }}">
-                                    {{ $subscription->company->company_name }}
+                                    {{ $subscription->company->name }}
                                 </a>
                             </p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted mb-1">Package</label>
                             <p class="mb-0 fw-bold">
-                                {{ $subscription->package->package_name }}
+                                {{ $subscription->package->name }}
                             </p>
                         </div>
                     </div>
