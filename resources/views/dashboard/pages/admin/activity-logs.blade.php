@@ -1,5 +1,20 @@
 @extends('dashboard.layouts.dashboard')
 
+@push('styles')
+    <style>
+        .activity-logs-pagination svg {
+            width: 14px !important;
+            height: 14px !important;
+            max-width: 14px !important;
+            vertical-align: middle;
+        }
+
+        .activity-logs-pagination .pagination {
+            margin-bottom: 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-title-head d-flex align-items-center mb-4">
         <div class="flex-grow-1">
@@ -127,7 +142,7 @@
             </div>
         </div>
         @if(isset($logs) && $logs->hasPages())
-        <div class="card-footer bg-transparent border-top">
+        <div class="card-footer bg-transparent border-top activity-logs-pagination">
             {{ $logs->links() }}
         </div>
         @endif

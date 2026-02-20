@@ -16,6 +16,7 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Observers\AuditObserver;
 use App\Services\ActivityLogger;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -38,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Use Bootstrap 5 pagination views globally for all paginator links().
+        Paginator::useBootstrapFive();
+
         // Explicitly register booking-created event listener
         Event::listen(BookingCreated::class, CreateBookingCreatedNotification::class);
         Event::listen(MessageSending::class, function (MessageSending $event): void {
