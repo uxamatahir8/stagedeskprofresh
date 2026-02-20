@@ -28,16 +28,12 @@ class BookingRequestPolicy
      */
     public function update(User $user, BookingRequest $booking): bool
     {
-        if (in_array($booking->status, ['completed', 'cancelled'])) {
-            return false;
-        }
-
         $roleKey = $user->role?->role_key;
 
         return match ($roleKey) {
             'master_admin' => true,
             'company_admin' => $booking->company_id === $user->company_id,
-            'customer' => $booking->user_id === $user->id && $booking->status === 'pending',
+            'customer' => $booking->user_id === $user->id,
             default => false,
         };
     }

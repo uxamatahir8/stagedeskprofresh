@@ -156,12 +156,6 @@ class BookingController extends Controller
             abort(403, 'Artists cannot edit bookings');
         }
 
-        // Customers should use their own portal (if they have one)
-        // Currently customers don't have edit functionality, so block them
-        if ($roleKey === 'customer') {
-            abort(403, 'Customers cannot edit bookings directly. Please contact support.');
-        }
-
         $this->authorize('update', $booking);
 
         $title = 'Edit Booking Request';
@@ -465,7 +459,7 @@ class BookingController extends Controller
 
         $validated = $request->validate([
             'event_date'          => 'required|date|after:today',
-            'user_id'             => 'required|exists:users,id',
+            'user_id'             => in_array($roleKey, ['master_admin', 'company_admin']) ? 'nullable|exists:users,id' : 'required|exists:users,id',
             'event_type_id'       => 'required|exists:event_types,id',
             'company_id'          => 'nullable|exists:companies,id',
             'assigned_artist_id'  => 'nullable|exists:artists,id',
@@ -486,6 +480,17 @@ class BookingController extends Controller
         ], [
             'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
+
+        if ($roleKey === 'company_admin') {
+            $validated['company_id'] = $user->company_id;
+        }
+
+        if ($roleKey === 'customer') {
+            $validated['user_id'] = $user->id;
+            $validated['company_id'] = $booking->company_id;
+            $validated['assigned_artist_id'] = $booking->assigned_artist_id;
+            $validated['company_notes'] = $booking->company_notes;
+        }
 
         DB::beginTransaction();
         try {
