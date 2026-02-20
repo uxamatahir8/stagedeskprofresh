@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\SecurityLog;
+use App\Services\ActivityLogger;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,19 @@ class SuspiciousActivityDetector
                 ]
             );
 
+            ActivityLogger::warning(
+                'security.suspicious_request.detected',
+                'Suspicious input pattern detected by middleware',
+                [
+                    'category' => 'security',
+                    'action' => 'inspect',
+                    'metadata' => [
+                        'url' => $request->fullUrl(),
+                        'method' => $request->method(),
+                    ],
+                ]
+            );
+
             // Optionally block the request
             // return response()->json(['error' => 'Suspicious activity detected'], 403);
         }
@@ -50,6 +64,16 @@ class SuspiciousActivityDetector
                 'warning',
                 auth()->id(),
                 ['user_agent' => $request->userAgent()]
+            );
+
+            ActivityLogger::info(
+                'security.suspicious_user_agent.detected',
+                'Suspicious user-agent detected by middleware',
+                [
+                    'category' => 'security',
+                    'action' => 'inspect',
+                    'metadata' => ['user_agent' => $request->userAgent()],
+                ]
             );
         }
 

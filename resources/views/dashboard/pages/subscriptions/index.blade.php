@@ -51,7 +51,7 @@
                         @foreach ($companySubscription as $subscription)
                             <tr>
                                 <td>#{{ $subscription->id }}</td>
-                                <td>{{ $subscription->company->company_name }}</td>
+                                <td>{{ $subscription->company->name }}</td>
                                 <td>{{ $subscription->package->package_name }}</td>
                                 <td>{{ $subscription->start_date->format('D, d M Y') }}</td>
                                 <td>{{ $subscription->end_date->format('D, d M Y') }}</td>

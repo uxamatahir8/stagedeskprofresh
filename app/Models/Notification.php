@@ -8,9 +8,12 @@ class Notification extends Model
     //
     protected $fillable = [
         'user_id',
+        'company_id',
         'title',
         'message',
         'type',
+        'category',
+        'priority',
         'link',
         'is_read',
         'data',
@@ -18,6 +21,8 @@ class Notification extends Model
 
     protected $casts = [
         'is_read' => 'boolean',
+        'priority' => 'integer',
+        'data' => 'array',
     ];
 
 

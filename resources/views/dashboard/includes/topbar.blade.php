@@ -54,14 +54,25 @@
 
                     <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg">
                         <div class="px-3 py-2 border-bottom">
-                            <div class="row align-items-center">
-                                <div class="col">
+                            <div class="row align-items-center g-2">
+                                <div class="col-7">
                                     <h6 class="m-0 fs-md fw-semibold">Notifications</h6>
                                 </div>
-                                <div class="col text-end">
-                                    <a href="javascript:void(0);" class="badge badge-soft-success badge-label py-1">01
-                                        Notifications</a>
+                                <div class="col-5 text-end">
+                                    <span class="badge badge-soft-danger badge-label py-1">
+                                        {{ $unreadNotificationCount }} unread
+                                    </span>
                                 </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">Priority notifications first</small>
+                                @if($unreadNotificationCount > 0)
+                                    <form action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none">Mark all read</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
 
@@ -71,8 +82,21 @@
                                 <div class="dropdown-item notification-item py-2 text-wrap {{ !$notification->is_read ? 'bg-light' : '' }}" id="notification-{{ $notification->id }}">
                                     <span class="d-flex align-items-center gap-2">
                                         <span class="flex-shrink-0 position-relative">
+                                            @php
+                                                $iconMap = [
+                                                    'booking' => 'calendar-check',
+                                                    'payment' => 'wallet',
+                                                    'review' => 'star',
+                                                    'security' => 'shield-alert',
+                                                    'auth' => 'user-check',
+                                                    'email' => 'mail',
+                                                    'profile' => 'user-circle',
+                                                    'system' => 'cpu',
+                                                ];
+                                                $icon = $iconMap[$notification->category ?? 'general'] ?? 'bell';
+                                            @endphp
                                             <div class="avatar-sm rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center">
-                                                <i data-lucide="bell" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                                <i data-lucide="{{ $icon }}" class="text-primary" style="width: 18px; height: 18px;"></i>
                                             </div>
                                             @if(!$notification->is_read)
                                                 <span class="position-absolute rounded-pill bg-danger notification-badge" style="width: 8px; height: 8px; bottom: 0; right: 0;"></span>
@@ -82,10 +106,15 @@
                                             <span class="fw-medium text-body d-block">{{ $notification->title }}</span>
                                             <span class="text-muted small">{{ Str::limit($notification->message, 40) }}</span><br>
                                             <span class="fs-xs text-muted"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> {{ $notification->created_at->diffForHumans() }}</span>
+                                            <span class="badge badge-soft-secondary ms-1 text-uppercase">{{ $notification->category ?? 'general' }}</span>
+                                            @if(($notification->priority ?? 2) >= 4)
+                                                <span class="badge badge-soft-danger ms-1">High</span>
+                                            @endif
                                         </span>
                                         @if(!$notification->is_read)
                                             <form action="{{ route('notifications.read', $notification) }}" method="POST" class="d-inline">
                                                 @csrf
+                                                @method('PATCH')
                                                 <button type="submit" class="flex-shrink-0 text-muted btn btn-link p-0" title="Mark as read">
                                                     <i data-lucide="check" class="fs-md" style="width: 16px; height: 16px;"></i>
                                                 </button>

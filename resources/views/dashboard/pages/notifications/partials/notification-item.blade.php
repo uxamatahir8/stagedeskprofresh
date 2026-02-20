@@ -4,13 +4,20 @@
         @php
             $iconColor = 'text-primary';
             $iconName = 'bell';
+            $category = strtolower($notification->category ?? 'general');
 
-            if (str_contains(strtolower($notification->title ?? ''), 'booking')) {
+            if ($category === 'booking' || str_contains(strtolower($notification->title ?? ''), 'booking')) {
                 $iconName = 'calendar';
                 $iconColor = 'text-success';
-            } elseif (str_contains(strtolower($notification->title ?? ''), 'payment')) {
+            } elseif ($category === 'payment' || str_contains(strtolower($notification->title ?? ''), 'payment')) {
                 $iconName = 'dollar-sign';
                 $iconColor = 'text-warning';
+            } elseif ($category === 'security') {
+                $iconName = 'shield-alert';
+                $iconColor = 'text-danger';
+            } elseif ($category === 'auth') {
+                $iconName = 'user-check';
+                $iconColor = 'text-info';
             } elseif (str_contains(strtolower($notification->title ?? ''), 'message')) {
                 $iconName = 'message-circle';
                 $iconColor = 'text-info';
@@ -30,6 +37,10 @@
             <h6 class="mb-0 fw-semibold">{{ $notification->title }}</h6>
             @if(!$notification->is_read)
                 <span class="badge bg-primary ms-2" style="font-size: 10px;">NEW</span>
+            @endif
+            <span class="badge bg-light text-muted ms-2 text-uppercase">{{ $notification->category ?? 'general' }}</span>
+            @if(($notification->priority ?? 2) >= 4)
+                <span class="badge bg-danger ms-1" style="font-size: 10px;">HIGH</span>
             @endif
         </div>
         <p class="mb-2 text-muted small">{{ $notification->message }}</p>

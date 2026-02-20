@@ -4,11 +4,15 @@ namespace App\Listeners;
 
 use App\Constants\NotificationType;
 use App\Events\BookingCreated;
-use App\Models\Notification;
+use App\Services\NotificationService;
 use App\Models\User;
 
 class CreateBookingCreatedNotification
 {
+    public function __construct(private NotificationService $notificationService)
+    {
+    }
+
     /**
      * Handle the event: notify company admins (and master admins) about the new booking.
      */
@@ -25,10 +29,6 @@ class CreateBookingCreatedNotification
             $company->name
         );
         $link = route('bookings.show', $booking);
-        $data = serialize([
-            'booking_id' => $booking->id,
-            'company_id' => $company->id,
-        ]);
 
         // Notify company admins for this company
         $companyAdminIds = User::query()
@@ -37,14 +37,20 @@ class CreateBookingCreatedNotification
             ->pluck('id');
 
         foreach ($companyAdminIds as $userId) {
-            Notification::create([
-                'user_id' => $userId,
-                'title'   => 'New Booking Created',
-                'message' => $message,
-                'type'    => NotificationType::BOOKING_CREATED,
-                'link'    => $link,
-                'data'    => $data,
-            ]);
+            $this->notificationService->createForUser(
+                (int) $userId,
+                'New Booking Created',
+                $message,
+                NotificationType::BOOKING_CREATED,
+                'booking',
+                $link,
+                3,
+                $company->id,
+                [
+                    'booking_id' => $booking->id,
+                    'company_id' => $company->id,
+                ]
+            );
         }
 
         // If no company admins, notify first master admin so the booking is not missed
@@ -53,14 +59,20 @@ class CreateBookingCreatedNotification
                 ->whereHas('role', fn ($q) => $q->where('role_key', 'master_admin'))
                 ->first();
             if ($masterAdmin) {
-                Notification::create([
-                    'user_id' => $masterAdmin->id,
-                    'title'   => 'New Booking Created',
-                    'message' => $message,
-                    'type'    => NotificationType::BOOKING_CREATED,
-                    'link'    => $link,
-                    'data'    => $data,
-                ]);
+                $this->notificationService->createForUser(
+                    $masterAdmin->id,
+                    'New Booking Created',
+                    $message,
+                    NotificationType::BOOKING_CREATED,
+                    'booking',
+                    $link,
+                    3,
+                    $company->id,
+                    [
+                        'booking_id' => $booking->id,
+                        'company_id' => $company->id,
+                    ]
+                );
             }
         }
     }

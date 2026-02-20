@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\LoginCode;
+use App\Services\ActivityLogger;
 use App\Services\AuthSecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +59,16 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'exists:users,email'],
         ]);
 
+        ActivityLogger::info(
+            'auth.forgot_password.requested',
+            'Forgot password requested',
+            [
+                'category' => 'auth',
+                'action' => 'forgot_password',
+                'metadata' => ['email' => $request->email],
+            ]
+        );
+
         // ✅ Get user
         $user = User::where('email', $request->email)->first();
 
@@ -75,10 +86,35 @@ class AuthController extends Controller
 
         $resetLink = URL::to('/reset-password?token=' . $token . '&email=' . $user->email);
 
-        Mail::send('emails.user-forgot-password', ['user' => $user, 'resetLink' => $resetLink], function ($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Reset Your Password');
-        });
+        try {
+            Mail::send('emails.user-forgot-password', ['user' => $user, 'resetLink' => $resetLink], function ($message) use ($user) {
+                $message->to($user->email);
+                $message->subject('Reset Your Password');
+            });
+
+            ActivityLogger::success(
+                'auth.forgot_password.email_sent',
+                'Forgot password email sent successfully',
+                [
+                    'category' => 'auth',
+                    'action' => 'forgot_password',
+                    'metadata' => ['email' => $user->email],
+                ]
+            );
+        } catch (\Throwable $e) {
+            ActivityLogger::error(
+                'auth.forgot_password.email_failed',
+                'Forgot password email failed to send',
+                [
+                    'category' => 'auth',
+                    'action' => 'forgot_password',
+                    'exception' => ['message' => $e->getMessage()],
+                    'metadata' => ['email' => $user->email],
+                ]
+            );
+
+            return back()->withErrors(['email' => 'Unable to send reset email right now. Please try again shortly.']);
+        }
 
         return redirect()->route('user_login')->with('success', 'Password reset link sent to your email.');
     }
@@ -121,11 +157,29 @@ class AuthController extends Controller
             ->first();
 
         if (! $tokenData) {
+            ActivityLogger::warning(
+                'auth.reset_password.invalid_token',
+                'Password reset failed due to invalid token',
+                [
+                    'category' => 'auth',
+                    'action' => 'reset_password',
+                    'metadata' => ['email' => $request->email],
+                ]
+            );
             return redirect()->back()->with('error', 'Invalid or expired reset token.');
         }
 
         // ✅ Token expiration check (optional: 1 hour)
         if (now()->diffInMinutes($tokenData->created_at) > 60) {
+            ActivityLogger::warning(
+                'auth.reset_password.token_expired',
+                'Password reset failed because token expired',
+                [
+                    'category' => 'auth',
+                    'action' => 'reset_password',
+                    'metadata' => ['email' => $request->email],
+                ]
+            );
             return redirect()->back()->with('error', 'This reset link has expired. Please request a new one.');
         }
 
@@ -134,6 +188,15 @@ class AuthController extends Controller
 
         // Check if password was recently used
         if ($this->authSecurity->isPasswordReused($user, $request->password)) {
+            ActivityLogger::warning(
+                'auth.reset_password.reused_password',
+                'Password reset rejected because password was reused',
+                [
+                    'category' => 'security',
+                    'action' => 'reset_password',
+                    'user_id' => $user->id,
+                ]
+            );
             return redirect()->back()->with('error', 'Please choose a password you have not used recently.');
         }
 
@@ -150,10 +213,33 @@ class AuthController extends Controller
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         // ✅ Send confirmation email
-        Mail::send('emails.password-reset-success', ['user' => $user], function ($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Your Password Has Been Reset');
-        });
+        try {
+            Mail::send('emails.password-reset-success', ['user' => $user], function ($message) use ($user) {
+                $message->to($user->email);
+                $message->subject('Your Password Has Been Reset');
+            });
+        } catch (\Throwable $e) {
+            ActivityLogger::error(
+                'auth.reset_password.confirmation_email_failed',
+                'Password reset confirmation email failed',
+                [
+                    'category' => 'email',
+                    'action' => 'send',
+                    'user_id' => $user->id,
+                    'exception' => ['message' => $e->getMessage()],
+                ]
+            );
+        }
+
+        ActivityLogger::success(
+            'auth.reset_password.success',
+            'Password reset completed successfully',
+            [
+                'category' => 'auth',
+                'action' => 'reset_password',
+                'user_id' => $user->id,
+            ]
+        );
 
         // ✅ Redirect with success
         return redirect()->route('login')->with('success', 'Your password has been successfully reset. You can now log in.');
@@ -171,6 +257,15 @@ class AuthController extends Controller
         $rateLimit = $this->authSecurity->checkRateLimit($rateLimitKey, 5, 1);
 
         if ($rateLimit['limited']) {
+            ActivityLogger::warning(
+                'auth.login.rate_limited',
+                'Login blocked by rate limit',
+                [
+                    'category' => 'security',
+                    'action' => 'login',
+                    'metadata' => ['email' => $credentials['email'], 'ip' => $request->ip()],
+                ]
+            );
             return back()->withErrors([
                 'email' => 'Too many login attempts. Please try again in ' . $rateLimit['retry_after'] . ' seconds.',
             ])->onlyInput('email');
@@ -183,6 +278,16 @@ class AuthController extends Controller
         if ($user && $this->authSecurity->isAccountLocked($user)) {
             $minutes = $user->locked_until->diffInMinutes(now());
             $this->authSecurity->recordLoginAttempt($credentials['email'], false, $user->id, 'Account locked');
+            ActivityLogger::warning(
+                'auth.login.blocked_locked',
+                'Login attempt rejected because account is locked',
+                [
+                    'category' => 'security',
+                    'action' => 'login',
+                    'user_id' => $user->id,
+                    'metadata' => ['email' => $credentials['email']],
+                ]
+            );
 
             return back()->withErrors([
                 'email' => "Your account is locked due to multiple failed login attempts. Please try again in {$minutes} minutes.",
@@ -201,7 +306,39 @@ class AuthController extends Controller
 
             // Send new verification email
             $verificationUrl = url('/verify-email/' . $user->verification_token);
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user, $verificationUrl));
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user, $verificationUrl));
+                ActivityLogger::info(
+                    'auth.login.verification_resent',
+                    'Verification email re-sent during login',
+                    [
+                        'category' => 'auth',
+                        'action' => 'login',
+                        'user_id' => $user->id,
+                    ]
+                );
+            } catch (\Throwable $e) {
+                ActivityLogger::error(
+                    'auth.login.verification_send_failed',
+                    'Verification email failed during login',
+                    [
+                        'category' => 'email',
+                        'action' => 'send',
+                        'user_id' => $user->id,
+                        'exception' => ['message' => $e->getMessage()],
+                    ]
+                );
+            }
+
+            ActivityLogger::warning(
+                'auth.login.email_not_verified',
+                'Login blocked because email is not verified',
+                [
+                    'category' => 'auth',
+                    'action' => 'login',
+                    'user_id' => $user->id,
+                ]
+            );
 
             return back()->withErrors([
                 'email' => 'Your email is not verified. A new verification link has been sent to your email address.',
@@ -227,6 +364,15 @@ class AuthController extends Controller
             }
 
             $previous = url()->previous();
+            ActivityLogger::success(
+                'auth.login.success',
+                'User login successful',
+                [
+                    'category' => 'auth',
+                    'action' => 'login',
+                    'user_id' => $user->id,
+                ]
+            );
 
             // Check if user came from a blog page
             if (str_contains($previous, '/blogs')) {
@@ -240,6 +386,16 @@ class AuthController extends Controller
         // Record failed attempt
         $userId = $user ? $user->id : null;
         $this->authSecurity->recordLoginAttempt($credentials['email'], false, $userId, 'Invalid credentials');
+        ActivityLogger::warning(
+            'auth.login.invalid_credentials',
+            'Login failed due to invalid credentials',
+            [
+                'category' => 'auth',
+                'action' => 'login',
+                'user_id' => $userId,
+                'metadata' => ['email' => $credentials['email']],
+            ]
+        );
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
@@ -256,6 +412,15 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
+        ActivityLogger::info(
+            'auth.login_code.requested',
+            'Login code requested',
+            [
+                'category' => 'auth',
+                'action' => 'login_code',
+                'metadata' => ['email' => $request->email],
+            ]
+        );
 
         // Check if email is verified
         if (!$user->email_verified_at) {
@@ -266,7 +431,20 @@ class AuthController extends Controller
             }
 
             $verificationUrl = route('verify-email', ['token' => $user->verification_token]);
-            Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            try {
+                Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            } catch (\Throwable $e) {
+                ActivityLogger::error(
+                    'auth.login_code.verification_email_failed',
+                    'Failed to send verification email for code login',
+                    [
+                        'category' => 'email',
+                        'action' => 'send',
+                        'user_id' => $user->id,
+                        'exception' => ['message' => $e->getMessage()],
+                    ]
+                );
+            }
 
             return back()
                 ->withErrors(['email' => 'Your email is not verified. We\'ve sent a new verification link to your email.'])
@@ -307,7 +485,34 @@ class AuthController extends Controller
         ]);
 
         // Send email
-        Mail::to($user->email)->send(new LoginCodeMail($code, $user->email, 10));
+        try {
+            Mail::to($user->email)->send(new LoginCodeMail($code, $user->email, 10));
+            ActivityLogger::success(
+                'auth.login_code.sent',
+                'Login code sent successfully',
+                [
+                    'category' => 'auth',
+                    'action' => 'login_code',
+                    'user_id' => $user->id,
+                ]
+            );
+        } catch (\Throwable $e) {
+            ActivityLogger::error(
+                'auth.login_code.send_failed',
+                'Failed to send login code',
+                [
+                    'category' => 'email',
+                    'action' => 'send',
+                    'user_id' => $user->id,
+                    'exception' => ['message' => $e->getMessage()],
+                ]
+            );
+
+            return back()
+                ->withErrors(['email' => 'Unable to send login code right now. Please try again shortly.'])
+                ->with('active_tab', 'code-login')
+                ->onlyInput('email');
+        }
 
         return back()
             ->with('code_sent', true)
@@ -330,6 +535,15 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
+            ActivityLogger::warning(
+                'auth.login_code.invalid_email',
+                'Code login failed: email not found',
+                [
+                    'category' => 'auth',
+                    'action' => 'login_code',
+                    'metadata' => ['email' => $request->email],
+                ]
+            );
             return back()
                 ->withErrors(['code' => 'Invalid email or code.'])
                 ->with('active_tab', 'code-login')
@@ -357,6 +571,15 @@ class AuthController extends Controller
             // Increment failed attempts
             $this->authSecurity->incrementFailedAttempts($user);
             $this->authSecurity->recordLoginAttempt($request->email, false, $user->id, 'Invalid login code');
+            ActivityLogger::warning(
+                'auth.login_code.invalid',
+                'Code login failed: invalid or expired code',
+                [
+                    'category' => 'auth',
+                    'action' => 'login_code',
+                    'user_id' => $user->id,
+                ]
+            );
 
             return back()
                 ->withErrors(['code' => 'Invalid or expired code.'])
@@ -379,6 +602,15 @@ class AuthController extends Controller
 
         // Record successful login
         $this->authSecurity->recordLoginAttempt($request->email, true, $user->id);
+        ActivityLogger::success(
+            'auth.login_code.success',
+            'User logged in successfully via code',
+            [
+                'category' => 'auth',
+                'action' => 'login',
+                'user_id' => $user->id,
+            ]
+        );
 
         $request->session()->regenerate();
 
@@ -387,6 +619,16 @@ class AuthController extends Controller
 
     public function userRegister(Request $request)
     {
+        ActivityLogger::info(
+            'auth.register.requested',
+            'User registration requested',
+            [
+                'category' => 'auth',
+                'action' => 'register',
+                'metadata' => ['email' => $request->email],
+            ]
+        );
+
         // Base validation rules
         $rules = [
             'register_as' => 'required',
@@ -474,19 +716,60 @@ class AuthController extends Controller
 
             // Send verification email
             $verificationUrl = url('/verify-email/' . $verificationToken);
-            Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            try {
+                Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            } catch (\Throwable $e) {
+                ActivityLogger::error(
+                    'auth.register.verification_email_failed',
+                    'Registration verification email failed to send',
+                    [
+                        'category' => 'email',
+                        'action' => 'send',
+                        'user_id' => $user->id,
+                        'exception' => ['message' => $e->getMessage()],
+                    ]
+                );
+            }
 
             event(new UserRegistered($user));
             DB::commit();
+            ActivityLogger::success(
+                'auth.register.success',
+                'User registered successfully',
+                [
+                    'category' => 'auth',
+                    'action' => 'register',
+                    'user_id' => $user->id,
+                ]
+            );
             return redirect()->route('login')->with('success', 'Registration successful! Please check your email to verify your account before logging in.');
         } catch (\Exception $e) {
             DB::rollBack();
+            ActivityLogger::error(
+                'auth.register.failed',
+                'User registration failed',
+                [
+                    'category' => 'auth',
+                    'action' => 'register',
+                    'exception' => ['message' => $e->getMessage()],
+                    'metadata' => ['email' => $request->email],
+                ]
+            );
             return back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
     public function logout()
     {
+        ActivityLogger::info(
+            'auth.logout.success',
+            'User logged out successfully',
+            [
+                'category' => 'auth',
+                'action' => 'logout',
+                'user_id' => Auth::id(),
+            ]
+        );
         Auth::logout();
         return redirect()->route('home');
     }
@@ -539,11 +822,29 @@ class AuthController extends Controller
 
         // Verify current password
         if (!Hash::check($validated['current_password'], $user->password)) {
+            ActivityLogger::warning(
+                'auth.password_change.invalid_current_password',
+                'Password change failed due to invalid current password',
+                [
+                    'category' => 'security',
+                    'action' => 'password_change',
+                    'user_id' => $user->id,
+                ]
+            );
             return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
 
         // Check if new password is different from current
         if (Hash::check($validated['new_password'], $user->password)) {
+            ActivityLogger::warning(
+                'auth.password_change.reused_password',
+                'Password change blocked because new password matches current password',
+                [
+                    'category' => 'security',
+                    'action' => 'password_change',
+                    'user_id' => $user->id,
+                ]
+            );
             return back()->withErrors(['new_password' => 'New password must be different from your temporary password.']);
         }
 
@@ -555,6 +856,15 @@ class AuthController extends Controller
 
         // Log the password change
         $this->authSecurity->recordLoginAttempt($user->email, true, $user->id, 'Password changed successfully');
+        ActivityLogger::success(
+            'auth.password_change.success',
+            'User changed password successfully',
+            [
+                'category' => 'security',
+                'action' => 'password_change',
+                'user_id' => $user->id,
+            ]
+        );
 
         return redirect()->route('dashboard')->with('success', 'Password changed successfully! You can now access all features.');
     }

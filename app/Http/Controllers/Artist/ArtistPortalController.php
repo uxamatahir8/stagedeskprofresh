@@ -9,6 +9,7 @@ use App\Models\ArtistRequest;
 use App\Models\Payment;
 use App\Models\Review;
 use App\Models\ActivityLog;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ArtistPortalController extends Controller
 {
+    public function __construct(private NotificationService $notificationService)
+    {
+    }
+
     /**
      * Artist Dashboard
      */
@@ -195,13 +200,20 @@ class ArtistPortalController extends Controller
 
                 foreach ($companyAdmins as $admin) {
                     // In-app notification
-                    \App\Models\Notification::create([
-                        'user_id' => $admin->id,
-                        'title' => 'Booking Completed',
-                        'message' => $artist->user->name . ' marked booking #' . $booking->id . ' as completed',
-                        'type' => 'booking_completed',
-                        'link' => route('bookings.show', $booking->id),
-                    ]);
+                    $this->notificationService->createForUser(
+                        $admin->id,
+                        'Booking Completed',
+                        $artist->user->name . ' marked booking #' . $booking->id . ' as completed',
+                        'booking_completed',
+                        'booking',
+                        route('bookings.show', $booking->id),
+                        3,
+                        $booking->company_id,
+                        [
+                            'booking_id' => $booking->id,
+                            'artist_id' => $artist->id,
+                        ]
+                    );
 
                     // Email notification
                     try {
@@ -241,7 +253,6 @@ class ArtistPortalController extends Controller
 
         DB::beginTransaction();
         try {
-            $oldStatus = $booking->status;
             $booking->update([
                 'status' => 'confirmed',
                 'confirmed_at' => now(),
@@ -255,11 +266,13 @@ class ArtistPortalController extends Controller
                 ['booking_id' => $booking->id, 'artist_id' => $artist->id, 'confirmed_at' => now()]
             );
 
-            // Send email to customer about booking confirmation
+            $bookingForEmail = $booking->fresh();
+
+            // Send role-specific booking accepted email to customer
             if ($booking->user && $booking->user->email) {
                 try {
                     \Mail::to($booking->user->email)->send(
-                        new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
+                        new \App\Mail\BookingAcceptedNotification($bookingForEmail, $booking->user, 'customer')
                     );
                 } catch (\Exception $e) {
                     \Log::error('Failed to send booking acceptance email to customer: ' . $e->getMessage());
@@ -268,35 +281,31 @@ class ArtistPortalController extends Controller
 
             // Notify and email company admins
             if ($booking->company) {
-                // Send status update directly to company email
-                if (!empty($booking->company->email)) {
-                    try {
-                        \Mail::to($booking->company->email)->send(
-                            new \App\Mail\BookingStatusChanged($booking->fresh(), $oldStatus, 'confirmed')
-                        );
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send booking acceptance email to company email: ' . $e->getMessage());
-                    }
-                }
-
                 $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
                     ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
                     ->get();
 
                 foreach ($companyAdmins as $admin) {
                     // Create in-app notification
-                    \App\Models\Notification::create([
-                        'user_id' => $admin->id,
-                        'title' => 'Booking Accepted',
-                        'message' => $artist->user->name . ' accepted booking #' . $booking->id,
-                        'type' => 'booking_accepted',
-                        'link' => route('bookings.show', $booking->id),
-                    ]);
+                    $this->notificationService->createForUser(
+                        $admin->id,
+                        'Booking Accepted',
+                        $artist->user->name . ' accepted booking #' . $booking->id,
+                        'booking_accepted',
+                        'booking',
+                        route('bookings.show', $booking->id),
+                        3,
+                        $booking->company_id,
+                        [
+                            'booking_id' => $booking->id,
+                            'artist_id' => $artist->id,
+                        ]
+                    );
 
                     // Send email notification
                     try {
                         \Mail::to($admin->email)->send(
-                            new \App\Mail\BookingAcceptedNotification($booking->fresh(), $admin)
+                            new \App\Mail\BookingAcceptedNotification($bookingForEmail, $admin, 'company_admin')
                         );
                     } catch (\Exception $e) {
                         \Log::error('Failed to send booking acceptance email to company admin: ' . $e->getMessage());
@@ -308,18 +317,25 @@ class ArtistPortalController extends Controller
             $masterAdmins = \App\Models\User::whereHas('role', fn($q) => $q->where('role_key', 'master_admin'))->get();
             foreach ($masterAdmins as $admin) {
                 // Create in-app notification
-                \App\Models\Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'Booking Accepted',
-                    'message' => $artist->user->name . ' accepted booking #' . $booking->id,
-                    'type' => 'booking_accepted',
-                    'link' => route('bookings.show', $booking->id),
-                ]);
+                $this->notificationService->createForUser(
+                    $admin->id,
+                    'Booking Accepted',
+                    $artist->user->name . ' accepted booking #' . $booking->id,
+                    'booking_accepted',
+                    'booking',
+                    route('bookings.show', $booking->id),
+                    3,
+                    $booking->company_id,
+                    [
+                        'booking_id' => $booking->id,
+                        'artist_id' => $artist->id,
+                    ]
+                );
 
                 // Send email notification
                 try {
                     \Mail::to($admin->email)->send(
-                        new \App\Mail\BookingAcceptedNotification($booking->fresh(), $admin)
+                        new \App\Mail\BookingAcceptedNotification($bookingForEmail, $admin, 'master_admin')
                     );
                 } catch (\Exception $e) {
                     \Log::error('Failed to send booking acceptance email to master admin: ' . $e->getMessage());
@@ -412,13 +428,21 @@ class ArtistPortalController extends Controller
 
                 foreach ($companyAdmins as $admin) {
                     // In-app notification
-                    \App\Models\Notification::create([
-                        'user_id' => $admin->id,
-                        'title' => 'Booking Rejected by Artist',
-                        'message' => $artistName . ' rejected booking #' . $booking->id . ' for ' . $booking->name . ' ' . $booking->surname . '. Reason: ' . $request->reason,
-                        'type' => 'booking_rejected',
-                        'link' => route('bookings.show', $booking->id),
-                    ]);
+                    $this->notificationService->createForUser(
+                        $admin->id,
+                        'Booking Rejected by Artist',
+                        $artistName . ' rejected booking #' . $booking->id . ' for ' . $booking->name . ' ' . $booking->surname . '. Reason: ' . $request->reason,
+                        'booking_rejected',
+                        'booking',
+                        route('bookings.show', $booking->id),
+                        3,
+                        $booking->company_id,
+                        [
+                            'booking_id' => $booking->id,
+                            'artist_id' => $artist->id,
+                            'reason' => $request->reason,
+                        ]
+                    );
 
                     // Email notification
                     try {

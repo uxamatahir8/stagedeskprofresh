@@ -194,11 +194,13 @@
                 <i data-lucide="message-circle" class="me-1"></i>Reviews ({{ $stats['reviews_count'] ?? 0 }})
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
-                <i data-lucide="activity" class="me-1"></i>Activity
-            </button>
-        </li>
+        @if(Auth::user()->role->role_key === 'master_admin')
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
+                    <i data-lucide="activity" class="me-1"></i>Activity
+                </button>
+            </li>
+        @endif
     </ul>
 
     <div class="tab-content" id="artistTabsContent">
@@ -303,49 +305,51 @@
             </div>
         </div>
 
-        {{-- Activity Tab --}}
-        <div class="tab-pane fade" id="activity" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="card-title mb-0">Recent Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="avatar avatar-sm bg-success-subtle rounded-circle">
-                                        <i data-lucide="user-check" class="text-success"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Artist Profile Created</h6>
-                                    <p class="text-muted mb-1">Artist account was created and activated</p>
-                                    <small class="text-muted">{{ $artist->created_at->diffForHumans() }}</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        @foreach($recentBookings->take(3) ?? [] as $booking)
+        @if(Auth::user()->role->role_key === 'master_admin')
+            {{-- Activity Tab --}}
+            <div class="tab-pane fade" id="activity" role="tabpanel">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
                             <div class="timeline-item mb-3">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
-                                        <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
-                                            <i data-lucide="calendar-check" class="text-primary"></i>
+                                        <div class="avatar avatar-sm bg-success-subtle rounded-circle">
+                                            <i data-lucide="user-check" class="text-success"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1">Booking #{{ $booking->id }}</h6>
-                                        <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
-                                        <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
+                                        <h6 class="mb-1">Artist Profile Created</h6>
+                                        <p class="text-muted mb-1">Artist account was created and activated</p>
+                                        <small class="text-muted">{{ $artist->created_at->diffForHumans() }}</small>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+
+                            @foreach($recentBookings->take(3) ?? [] as $booking)
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
+                                                <i data-lucide="calendar-check" class="text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Booking #{{ $booking->id }}</h6>
+                                            <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
+                                            <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
     @push('scripts')
