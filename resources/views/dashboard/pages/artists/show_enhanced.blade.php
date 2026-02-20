@@ -1,5 +1,68 @@
 @extends('dashboard.layouts.dashboard')
 
+@push('styles')
+    <style>
+        .artist-profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+        }
+
+        .artist-avatar-fallback {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+        }
+
+        .artist-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.65rem;
+        }
+
+        .artist-info-icon {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: #f1f5f9;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .artist-stat-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.25;
+        }
+
+        .artist-stat-badge {
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-title-head d-flex align-items-center mb-4">
         <div class="flex-grow-1">
@@ -26,10 +89,10 @@
                 <div class="card-body">
                     <div class="text-center mb-3">
                         @if($artist->image)
-                            <img src="{{ asset('storage/' . $artist->image) }}" alt="{{ $artist->stage_name }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            <img src="{{ asset('storage/' . $artist->image) }}" alt="{{ $artist->stage_name }}" class="artist-profile-avatar mb-3">
                         @else
-                            <div class="avatar avatar-xl mb-3 mx-auto">
-                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ $artist->initials }}</span>
+                            <div class="artist-avatar-fallback mb-3 mx-auto">
+                                <span>{{ $artist->initials }}</span>
                             </div>
                         @endif
                         <h5 class="mb-1">{{ $artist->stage_name }}</h5>
@@ -49,28 +112,28 @@
                     </div>
 
                     <div class="border-top pt-3">
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="building-2" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="building-2"></i></span>
                             <small class="text-muted">{{ $artist->company->name ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="user" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="user"></i></span>
                             <small class="text-muted">{{ $artist->user->name ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="mail" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="mail"></i></span>
                             <small class="text-muted">{{ $artist->user->email ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="award" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="award"></i></span>
                             <small class="text-muted">{{ $artist->experience_years }} years experience</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="music" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="music"></i></span>
                             <small class="text-muted">{{ $artist->genres }}</small>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <i data-lucide="calendar" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item mb-0">
+                            <span class="artist-info-icon"><i data-lucide="calendar"></i></span>
                             <small class="text-muted">Joined {{ $artist->created_at->format('M d, Y') }}</small>
                         </div>
                     </div>
@@ -92,8 +155,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-primary-subtle rounded me-3">
-                                    <i data-lucide="calendar-check" class="text-primary"></i>
+                                <div class="artist-stat-badge bg-primary-subtle me-3">
+                                    <i data-lucide="calendar-check" class="text-primary artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['total_bookings'] ?? 0 }}</h3>
@@ -108,8 +171,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-success-subtle rounded me-3">
-                                    <i data-lucide="check-circle" class="text-success"></i>
+                                <div class="artist-stat-badge bg-success-subtle me-3">
+                                    <i data-lucide="check-circle" class="text-success artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['completed_bookings'] ?? 0 }}</h3>
@@ -124,8 +187,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-warning-subtle rounded me-3">
-                                    <i data-lucide="message-circle" class="text-warning"></i>
+                                <div class="artist-stat-badge bg-warning-subtle me-3">
+                                    <i data-lucide="message-circle" class="text-warning artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['reviews_count'] ?? 0 }}</h3>
@@ -140,8 +203,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-info-subtle rounded me-3">
-                                    <i data-lucide="dollar-sign" class="text-info"></i>
+                                <div class="artist-stat-badge bg-info-subtle me-3">
+                                    <i data-lucide="dollar-sign" class="text-info artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">${{ number_format($stats['total_earnings'] ?? 0, 0) }}</h3>

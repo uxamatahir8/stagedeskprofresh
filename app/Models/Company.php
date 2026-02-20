@@ -75,7 +75,7 @@ class Company extends Model
 
     public function activityLogs()
     {
-        return $this->morphMany(ActivityLog::class, 'subject');
+        return $this->morphMany(ActivityLog::class, 'target');
     }
 
     /**

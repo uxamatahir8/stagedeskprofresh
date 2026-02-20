@@ -141,7 +141,7 @@ class User extends Authenticatable
 
     public function activityLogs()
     {
-        return $this->morphMany(ActivityLog::class, 'subject');
+        return $this->morphMany(ActivityLog::class, 'target');
     }
 
     public function getInitialsAttribute(): string

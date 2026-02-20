@@ -1,5 +1,25 @@
 @extends('dashboard.layouts.dashboard')
 
+@push('styles')
+    <style>
+        .user-stat-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.25;
+        }
+
+        .user-stat-badge {
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-title-head d-flex align-items-center mb-4">
         <div class="flex-grow-1">
@@ -108,8 +128,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-primary-subtle rounded me-3">
-                                        <i data-lucide="calendar" class="text-primary"></i>
+                                    <div class="user-stat-badge bg-primary-subtle me-3">
+                                        <i data-lucide="calendar" class="text-primary user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ $stats['total_bookings'] ?? 0 }}</h3>
@@ -124,8 +144,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-success-subtle rounded me-3">
-                                        <i data-lucide="check-circle" class="text-success"></i>
+                                    <div class="user-stat-badge bg-success-subtle me-3">
+                                        <i data-lucide="check-circle" class="text-success user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ $stats['completed_bookings'] ?? 0 }}</h3>
@@ -140,8 +160,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-warning-subtle rounded me-3">
-                                        <i data-lucide="clock" class="text-warning"></i>
+                                    <div class="user-stat-badge bg-warning-subtle me-3">
+                                        <i data-lucide="clock" class="text-warning user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ $stats['pending_bookings'] ?? 0 }}</h3>
@@ -156,8 +176,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-info-subtle rounded me-3">
-                                        <i data-lucide="dollar-sign" class="text-info"></i>
+                                    <div class="user-stat-badge bg-info-subtle me-3">
+                                        <i data-lucide="dollar-sign" class="text-info user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">${{ number_format($stats['total_spent'] ?? 0, 0) }}</h3>
@@ -175,8 +195,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-primary-subtle rounded me-3">
-                                        <i data-lucide="calendar-check" class="text-primary"></i>
+                                    <div class="user-stat-badge bg-primary-subtle me-3">
+                                        <i data-lucide="calendar-check" class="text-primary user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ $stats['total_bookings'] ?? 0 }}</h3>
@@ -191,8 +211,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-success-subtle rounded me-3">
-                                        <i data-lucide="check-circle" class="text-success"></i>
+                                    <div class="user-stat-badge bg-success-subtle me-3">
+                                        <i data-lucide="check-circle" class="text-success user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ $stats['completed_bookings'] ?? 0 }}</h3>
@@ -207,8 +227,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-warning-subtle rounded me-3">
-                                        <i data-lucide="star" class="text-warning"></i>
+                                    <div class="user-stat-badge bg-warning-subtle me-3">
+                                        <i data-lucide="star" class="text-warning user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">{{ number_format($stats['avg_rating'] ?? 0, 1) }}</h3>
@@ -223,8 +243,8 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-info-subtle rounded me-3">
-                                        <i data-lucide="dollar-sign" class="text-info"></i>
+                                    <div class="user-stat-badge bg-info-subtle me-3">
+                                        <i data-lucide="dollar-sign" class="text-info user-stat-icon"></i>
                                     </div>
                                     <div>
                                         <h3 class="mb-0">${{ number_format($stats['total_earnings'] ?? 0, 0) }}</h3>
@@ -335,8 +355,8 @@
                 <div class="timeline-item mb-3">
                     <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
-                            <div class="avatar avatar-sm bg-success-subtle rounded-circle">
-                                <i data-lucide="user-check" class="text-success"></i>
+                            <div class="user-stat-badge bg-success-subtle">
+                                <i data-lucide="user-check" class="text-success user-stat-icon"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1">
@@ -351,8 +371,8 @@
                     <div class="timeline-item mb-3">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
-                                <div class="avatar avatar-sm bg-info-subtle rounded-circle">
-                                    <i data-lucide="mail-check" class="text-info"></i>
+                                <div class="user-stat-badge bg-info-subtle">
+                                    <i data-lucide="mail-check" class="text-info user-stat-icon"></i>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
@@ -368,8 +388,8 @@
                     <div class="timeline-item mb-3">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
-                                <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
-                                    <i data-lucide="activity" class="text-primary"></i>
+                                <div class="user-stat-badge bg-primary-subtle">
+                                    <i data-lucide="activity" class="text-primary user-stat-icon"></i>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
