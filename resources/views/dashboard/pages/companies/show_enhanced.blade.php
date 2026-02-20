@@ -241,11 +241,11 @@
                         </div>
 
                         {{-- Package Features --}}
-                        @if(isset($subscription->package->packageFeatures) && $subscription->package->packageFeatures->count() > 0)
+                        @if(isset($subscription->package->features) && $subscription->package->features->count() > 0)
                             <div class="border-top mt-3 pt-3">
                                 <h6 class="mb-3 fw-semibold">Package Features</h6>
                                 <div class="row g-2">
-                                    @foreach($subscription->package->packageFeatures as $feature)
+                                    @foreach($subscription->package->features as $feature)
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center">
                                                 <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>

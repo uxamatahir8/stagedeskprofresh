@@ -187,7 +187,7 @@ class CompanyController extends Controller
         // Fetch active subscription
         $subscription = \App\Models\CompanySubscription::where('company_id', $company->id)
             ->where('status', 'active')
-            ->with('package.packageFeatures')
+            ->with('package.features')
             ->orderBy('end_date', 'desc')
             ->first();
 
