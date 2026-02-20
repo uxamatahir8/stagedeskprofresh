@@ -14,17 +14,20 @@ class BookingAcceptedNotification extends Mailable
 
     public $booking;
     public $recipient;
+    public $recipientRole;
 
     /**
      * Create a new message instance.
      *
      * @param BookingRequest $booking
      * @param User $recipient
+     * @param string|null $recipientRole
      */
-    public function __construct(BookingRequest $booking, User $recipient)
+    public function __construct(BookingRequest $booking, User $recipient, ?string $recipientRole = null)
     {
         $this->booking = $booking;
         $this->recipient = $recipient;
+        $this->recipientRole = $recipientRole ?? optional($recipient->role)->role_key ?? 'customer';
     }
 
     /**
@@ -34,7 +37,7 @@ class BookingAcceptedNotification extends Mailable
      */
     public function build()
     {
-        return $this->subject('Booking Accepted by Artist - #' . $this->booking->id . ' - StageDesk Pro')
+        return $this->subject('Booking Accepted by Artist - #' . ($this->booking->tracking_code ?? $this->booking->id) . ' - StageDesk Pro')
             ->view('emails.booking-accepted-notification');
     }
 }

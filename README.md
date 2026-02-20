@@ -404,10 +404,17 @@ Comprehensive documentation is available in the repository:
 
 ## 🧪 Testing
 
+Tests use **MySQL** (see `phpunit.xml`). Create a dedicated test database first so `RefreshDatabase` does not affect your dev data:
+
+```bash
+# In MySQL: CREATE DATABASE stagedeskpro_test;
+# Or: mysql -u your_user -p -e "CREATE DATABASE stagedeskpro_test;"
+```
+
 ### Run Tests
 
 ```bash
-# Run all tests
+# Run all tests (uses stagedeskpro_test by default; override with .env.testing if needed)
 php artisan test
 
 # Run specific test suite

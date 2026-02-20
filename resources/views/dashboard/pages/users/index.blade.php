@@ -61,6 +61,9 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
+                                        <a href="{{ route('user.show', $user) }}" class="btn btn-sm btn-primary" title="View">
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                        </a>
                                         <a href="{{ route('user.edit', $user) }}" class="btn btn-sm btn-info" title="Edit">
                                             <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                         </a>
@@ -84,4 +87,8 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+    @endpush
 @endsection

@@ -75,7 +75,7 @@ class Company extends Model
 
     public function activityLogs()
     {
-        return $this->morphMany(ActivityLog::class, 'subject');
+        return $this->morphMany(ActivityLog::class, 'target');
     }
 
     /**
@@ -87,5 +87,19 @@ class Company extends Model
             ->where('status', 'active')
             ->where('end_date', '>', now())
             ->latest();
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        $name = trim((string) $this->name);
+        if ($name === '') {
+            return 'C';
+        }
+
+        $parts = preg_split('/\s+/', $name) ?: [];
+        $first = strtoupper(substr($parts[0] ?? '', 0, 1));
+        $last = count($parts) > 1 ? strtoupper(substr($parts[count($parts) - 1], 0, 1)) : '';
+
+        return $first . $last;
     }
 }

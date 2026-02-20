@@ -154,9 +154,9 @@
 
                     {{-- Right Side --}}
                     <div class="col-lg-6">
-                        {{-- Company - Only for Master Admin creating Company Admin --}}
+                        {{-- Company - Only for Master Admin when creating Company Admin or Artist --}}
                         @if (Auth::user()->role->role_key === 'master_admin')
-                            <div id="company_admin" class="row g-lg-4 g-2 d-none">
+                            <div id="company_select_block" class="row g-lg-4 g-2 d-none">
                                 <div class="col-lg-4">
                                     <label class="col-form-label">Select Company: <span class="text-danger">*</span></label>
                                 </div>
@@ -185,35 +185,34 @@
                             <div class="col-lg-8">
                                 <input type="email" name="email" class="form-control required unique_email"
                                     value="{{ old('email', $user->email ?? '') }}" placeholder="Email">
+                                @if ($mode == 'create')
+                                    <small class="text-muted d-block mt-1">A temporary password will be generated and sent to this email.</small>
+                                @endif
                             </div>
                         </div>
 
-                        {{-- Password --}}
+                        @if ($mode == 'edit')
+                        {{-- Password (edit only - optional) --}}
                         <div class="row g-lg-4 g-2 mt-2">
                             <div class="col-lg-4">
                                 <label class="col-form-label">Password:</label>
                             </div>
                             <div class="col-lg-8">
-                                <input type="password" name="password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }}" id="password"
-                                    placeholder="Enter Password">
-                                @if ($mode == 'edit')
-                                    <small class="text-info ms-2">Leave blank if unchanged</small>
-                                @endif
+                                <input type="password" name="password" class="form-control" id="password"
+                                    placeholder="Enter new password to change">
+                                <small class="text-info ms-2">Leave blank if unchanged</small>
                             </div>
                         </div>
-
-                        {{-- Confirm Password --}}
                         <div class="row g-lg-4 g-2 mt-2">
                             <div class="col-lg-4">
                                 <label class="col-form-label">Confirm Password:</label>
                             </div>
                             <div class="col-lg-8">
                                 <input type="password" name="confirm_password" id="confirm_password"
-                                    class="form-control {{ $mode == 'create' ? 'required' : '' }} match"
-                                    data-match="password" placeholder="Confirm Password">
+                                    class="form-control match" data-match="password" placeholder="Confirm Password">
                             </div>
                         </div>
+                        @endif
 
                         {{-- Zip Code --}}
                         <div class="row g-lg-4 g-2 mt-2">
@@ -277,19 +276,18 @@
         // Handle role change to show/hide company dropdown
         document.addEventListener('DOMContentLoaded', function() {
             const roleSelect = document.querySelector('select[name="role_id"]');
-            const companyDiv = document.querySelector('#company_admin');
+            const companyDiv = document.querySelector('#company_select_block');
             const companySelect = document.querySelector('#company_id');
             const emailDiv = document.querySelector('#email-div');
             const isMasterAdmin = {{ Auth::user()->role->role_key === 'master_admin' ? 'true' : 'false' }};
 
             if (roleSelect && companyDiv && isMasterAdmin) {
-                // Function to check and update company dropdown visibility
                 function updateCompanyDropdown() {
                     const selectedOption = roleSelect.options[roleSelect.selectedIndex];
                     const roleText = selectedOption.text;
 
-                    // Show company dropdown only for Company Admin role
-                    if (roleText === 'Company Admin') {
+                    // Show company dropdown for Company Admin and Artist (master admin must assign company)
+                    if (roleText === 'Company Admin' || roleText === 'Artist') {
                         companyDiv.classList.remove('d-none');
                         companySelect.classList.add('required');
                         emailDiv.classList.add('mt-2');
@@ -301,10 +299,7 @@
                     }
                 }
 
-                // Check on page load (for edit mode)
                 updateCompanyDropdown();
-
-                // Listen for role changes
                 roleSelect.addEventListener('change', updateCompanyDropdown);
             }
         });

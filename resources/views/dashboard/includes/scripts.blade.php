@@ -30,43 +30,29 @@
 <!-- Page js -->
 <script src="{{ asset('js/pages/datatables-export-data.js') }}"></script>
 
-<!-- Fix dropdown/sidebar z-index conflict -->
+<!-- Lucide: replace all [data-lucide] with SVG icons (run when DOM ready and retry for late-load) -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Close topbar dropdowns when clicking on sidebar (not sidebar menus)
-        const sidebar = document.querySelector('.sidenav-menu');
-        const sidebarToggle = document.querySelector('.sidenav-toggle-button');
-
-        // Function to close only topbar dropdowns (notifications, user menu)
-        function closeTopbarDropdowns() {
-            // Only target dropdowns in the topbar, not in the sidebar
-            const topbarDropdowns = document.querySelectorAll('.app-topbar .dropdown-menu');
-
-            topbarDropdowns.forEach(dropdown => {
-                const dropdownButton = dropdown.previousElementSibling;
-                if (dropdownButton) {
-                    const bsDropdown = bootstrap.Dropdown.getInstance(dropdownButton);
-                    if (bsDropdown) {
-                        bsDropdown.hide();
-                    }
-                }
+(function() {
+    function initLucideIcons() {
+        var lib = window.lucide || window.Lucide;
+        if (lib && typeof lib.createIcons === 'function') {
+            lib.createIcons({
+                attrs: { 'stroke-width': 2, width: 24, height: 24 }
             });
         }
-
-        // Close topbar dropdowns when clicking sidebar navigation
-        if (sidebar) {
-            sidebar.addEventListener('click', function(event) {
-                // Only close topbar dropdowns if clicking on an actual menu link, not the menu toggle
-                const isMenuLink = event.target.closest('.side-nav-link');
-                if (isMenuLink && !event.target.closest('[data-bs-toggle="collapse"]')) {
-                    closeTopbarDropdowns();
-                }
-            });
-        }
-
-        // Close topbar dropdowns when toggling sidebar
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', closeTopbarDropdowns);
-        }
-    });
+    }
+    function runWhenReady() {
+        initLucideIcons();
+        setTimeout(initLucideIcons, 50);
+        setTimeout(initLucideIcons, 200);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runWhenReady);
+    } else {
+        runWhenReady();
+    }
+    window.addEventListener('load', runWhenReady);
+})();
 </script>
+
+@stack('scripts')

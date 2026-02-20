@@ -8,9 +8,13 @@ use App\Models\Payment;
 use App\Models\Review;
 use App\Models\EventType;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerPortalController extends Controller
 {
@@ -144,6 +148,7 @@ class CustomerPortalController extends Controller
     public function cancelBooking(Request $request, BookingRequest $booking)
     {
         $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         // Safety check
         if ($booking->user_id !== $user->id) {
@@ -154,17 +159,25 @@ class CustomerPortalController extends Controller
             return back()->with('error', 'Only pending or confirmed bookings can be cancelled');
         }
 
+        if ($eventDate->lt(today())) {
+            return back()->with('error', 'Booking cannot be cancelled after the event date.');
+        }
+
         $request->validate([
             'reason' => 'required|string|max:500'
         ]);
 
         DB::beginTransaction();
         try {
+            $reason = $request->reason;
+
             $booking->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
-                'company_notes' => "Customer cancellation: " . $request->reason
+                'company_notes' => "Customer cancellation: " . $reason
             ]);
+
+            $this->notifyAdminsOfCustomerCancellation($booking->fresh(['company', 'eventType', 'user']), $user, $reason);
 
             DB::commit();
 
@@ -172,6 +185,58 @@ class CustomerPortalController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to cancel booking: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mark Booking as Completed (Customer confirmation)
+     */
+    public function markBookingCompleted(BookingRequest $booking)
+    {
+        $user = Auth::user();
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+
+        if ($booking->user_id !== $user->id) {
+            abort(403, 'You can only complete your own bookings');
+        }
+
+        if ($booking->status !== 'confirmed') {
+            return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        if ($eventDate->gt(today())) {
+            return back()->with('error', 'Booking cannot be marked as completed before the event date.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $booking->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'company_notes' => trim(($booking->company_notes ?? '') . "\n\n[" . now()->format('Y-m-d H:i:s') . "] Marked completed by customer " . $user->name),
+            ]);
+
+            // Notify owning company admins by email
+            $companyAdmins = \App\Models\User::where('company_id', $booking->company_id)
+                ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                ->get();
+            foreach ($companyAdmins as $admin) {
+                if (!empty($admin->email)) {
+                    try {
+                        Mail::to($admin->email)->send(
+                            new \App\Mail\BookingCompletedByCustomerNotification($booking->fresh(), $admin)
+                        );
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send customer-completed booking email to company admin: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            DB::commit();
+            return back()->with('success', 'Booking marked as completed successfully. You can now post a review.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to mark booking as completed: ' . $e->getMessage());
         }
     }
 
@@ -208,9 +273,13 @@ class CustomerPortalController extends Controller
     /**
      * Submit Review
      */
-    public function submitReview(Request $request, BookingRequest $booking)
+    public function submitReview(Request $request)
     {
         $user = Auth::user();
+
+        $booking = BookingRequest::with(['company', 'assignedArtist.user'])
+            ->where('id', $request->booking_id)
+            ->firstOrFail();
 
         // Safety checks
         if ($booking->user_id !== $user->id) {
@@ -229,15 +298,22 @@ class CustomerPortalController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|max:1000',
+            'comment' => 'nullable|string|max:1000',
             'artist_id' => 'nullable|exists:artists,id',
             'company_id' => 'nullable|exists:companies,id'
         ]);
+
+        if (empty($validated['review']) && !empty($validated['comment'])) {
+            $validated['review'] = $validated['comment'];
+        }
 
         DB::beginTransaction();
         try {
             $validated['user_id'] = $user->id;
             $validated['booking_id'] = $booking->id;
-            $validated['status'] = 'pending'; // Requires admin approval
+            $validated['artist_id'] = $validated['artist_id'] ?? $booking->assigned_artist_id;
+            $validated['company_id'] = $validated['company_id'] ?? $booking->company_id;
+            $validated['status'] = 'pending';
 
             Review::create($validated);
 
@@ -246,9 +322,20 @@ class CustomerPortalController extends Controller
                 $this->updateArtistRating($validated['artist_id']);
             }
 
+            // Notify company by email that customer posted a review
+            if ($booking->company && !empty($booking->company->email)) {
+                try {
+                    Mail::to($booking->company->email)->send(
+                        new \App\Mail\ReviewPostedNotification($booking->fresh(), $user, $validated['rating'], $validated['review'] ?? null)
+                    );
+                } catch (\Exception $e) {
+                    Log::error('Failed to send review notification email to company: ' . $e->getMessage());
+                }
+            }
+
             DB::commit();
 
-            return back()->with('success', 'Review submitted successfully! It will appear after admin approval.');
+            return back()->with('success', 'Review submitted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to submit review: ' . $e->getMessage());
@@ -316,12 +403,34 @@ class CustomerPortalController extends Controller
     private function updateArtistRating($artistId)
     {
         $avgRating = Review::where('artist_id', $artistId)
-            ->where('status', 'approved')
+            ->whereIn('status', ['pending', 'approved'])
             ->avg('rating');
 
-        if ($avgRating) {
-            \App\Models\Artist::where('id', $artistId)
-                ->update(['rating' => round($avgRating, 2)]);
+        \App\Models\Artist::where('id', $artistId)
+            ->update(['rating' => round($avgRating ?? 0, 2)]);
+    }
+
+    private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
+    {
+        $recipients = User::query()
+            ->when($booking->company_id, function ($q) use ($booking) {
+                $q->where('company_id', $booking->company_id)
+                    ->whereHas('role', function ($roleQ) {
+                        $roleQ->where('role_key', 'company_admin');
+                    });
+            })
+            ->whereNotNull('email')
+            ->get()
+            ->unique('email');
+
+        foreach ($recipients as $recipient) {
+            try {
+                Mail::to($recipient->email)->send(
+                    new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+            }
         }
     }
 }

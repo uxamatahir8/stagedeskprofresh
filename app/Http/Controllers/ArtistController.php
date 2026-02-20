@@ -46,13 +46,13 @@ class ArtistController extends Controller
         if ($roleKey === 'company_admin') {
             $users = User::where('company_id', Auth::user()->company_id)
                 ->whereHas('role', function ($q) {
-                    $q->whereIn('role_key', ['artist', 'dj']);
+                    $q->where('role_key', 'artist');
                 })
                 ->whereDoesntHave('artist') // Only show users without artist profile
                 ->get();
         } else {
             $users = User::whereHas('role', function ($q) {
-                $q->whereIn('role_key', ['artist', 'dj']);
+                $q->where('role_key', 'artist');
             })
             ->whereDoesntHave('artist') // Only show users without artist profile
             ->get();
@@ -84,12 +84,15 @@ class ArtistController extends Controller
 
         // Company admin can only create artists for their company
         if ($roleKey === 'company_admin') {
-            if ($validated['company_id'] !== Auth::user()->company_id) {
+            $selectedCompanyId = (int) $validated['company_id'];
+            $currentCompanyId = (int) Auth::user()->company_id;
+
+            if ($selectedCompanyId !== $currentCompanyId) {
                 abort(403, 'You can only create artists for your company');
             }
             // Double check the user belongs to their company
             $user = User::find($validated['user_id']);
-            if ($user->company_id !== Auth::user()->company_id) {
+            if ((int) $user->company_id !== $currentCompanyId) {
                 return back()->withInput()->with('error', 'Selected user must belong to your company');
             }
         }
@@ -195,7 +198,7 @@ class ArtistController extends Controller
         ]);
 
         // Company admin can only update to their own company
-        if ($roleKey === 'company_admin' && $validated['company_id'] !== Auth::user()->company_id) {
+        if ($roleKey === 'company_admin' && (int) $validated['company_id'] !== (int) Auth::user()->company_id) {
             return abort(403, 'You can only assign artists to your company');
         }
 

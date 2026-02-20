@@ -95,7 +95,7 @@
                                                 </div>
 
                                                 <div class="space8"></div>
-                                                <a href="{{ route('blog.show', $blog->slug) }}">{{ $blog->title }}</a>
+                                                <a href="{{ route('blog-front.details', $blog->slug) }}">{{ $blog->title }}</a>
 
                                                 @if($blog->excerpt)
                                                     <div class="space16"></div>
@@ -128,7 +128,7 @@
                                                 @endif
 
                                                 <div class="space24"></div>
-                                                <a href="{{ route('blog.show', $blog->slug) }}" class="readmore">Learn
+                                                <a href="{{ route('blog-front.details', $blog->slug) }}" class="readmore">Learn
                                                     More <i class="fa-solid fa-arrow-right"></i></a>
                                             </div>
                                         </div>

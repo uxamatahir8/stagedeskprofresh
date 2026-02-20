@@ -33,14 +33,14 @@
                             <label class="text-muted mb-1">Company</label>
                             <p class="mb-0 fw-bold">
                                 <a href="{{ route('company.show', $subscription->company->id) }}">
-                                    {{ $subscription->company->company_name }}
+                                    {{ $subscription->company->name }}
                                 </a>
                             </p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted mb-1">Package</label>
                             <p class="mb-0 fw-bold">
-                                {{ $subscription->package->package_name }}
+                                {{ $subscription->package->name }}
                             </p>
                         </div>
                     </div>
@@ -112,11 +112,11 @@
                     <div class="alert alert-{{ $daysRemaining < 7 ? 'warning' : 'info' }}" role="alert">
                         <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                         @if($daysRemaining > 0)
-                            <strong>{{ $daysRemaining }} days remaining</strong> on this subscription.
+                            <strong>{{ number_format($daysRemaining, 2) }} days remaining</strong> on this subscription.
                         @elseif($daysRemaining === 0)
                             <strong>Expires today!</strong> Please renew to maintain service.
                         @else
-                            <strong>Expired</strong> - {{ abs($daysRemaining) }} days ago.
+                            <strong>Expired</strong> - {{ number_format(abs($daysRemaining), 2) }} days ago.
                         @endif
                     </div>
                 </div>

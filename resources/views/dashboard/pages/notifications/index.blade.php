@@ -63,6 +63,39 @@
 
         {{-- Filter Tabs --}}
         <div class="card-header border-bottom-0 bg-light">
+            <form method="GET" action="{{ route('notifications.index') }}" class="row g-2 mb-3">
+                <div class="col-md-3">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option value="unread" {{ request('status') === 'unread' ? 'selected' : '' }}>Unread</option>
+                        <option value="read" {{ request('status') === 'read' ? 'selected' : '' }}>Read</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select form-select-sm">
+                        <option value="">All Categories</option>
+                        @foreach(($categoryCounts ?? collect())->keys() as $category)
+                            <option value="{{ $category }}" {{ request('category') === $category ? 'selected' : '' }}>
+                                {{ ucfirst($category) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="priority" class="form-select form-select-sm">
+                        <option value="">All Priorities</option>
+                        <option value="4" {{ request('priority') === '4' ? 'selected' : '' }}>High (4)</option>
+                        <option value="3" {{ request('priority') === '3' ? 'selected' : '' }}>Medium (3)</option>
+                        <option value="2" {{ request('priority') === '2' ? 'selected' : '' }}>Normal (2)</option>
+                        <option value="1" {{ request('priority') === '1' ? 'selected' : '' }}>Low (1)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Apply</button>
+                    <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-light w-100">Reset</a>
+                </div>
+            </form>
+
             <ul class="nav nav-pills mb-0" id="notificationTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
@@ -100,7 +133,7 @@
                 {{-- Unread Notifications --}}
                 <div class="tab-pane fade" id="unread" role="tabpanel">
                     @php
-                        $unreadNotifications = $notifications->where('is_read', false);
+                        $unreadNotifications = $notifications->getCollection()->where('is_read', false);
                     @endphp
                     @if ($unreadNotifications->count() > 0)
                         <div class="notification-list">
@@ -116,7 +149,7 @@
                 {{-- Read Notifications --}}
                 <div class="tab-pane fade" id="read" role="tabpanel">
                     @php
-                        $readNotifications = $notifications->where('is_read', true);
+                        $readNotifications = $notifications->getCollection()->where('is_read', true);
                     @endphp
                     @if ($readNotifications->count() > 0)
                         <div class="notification-list">

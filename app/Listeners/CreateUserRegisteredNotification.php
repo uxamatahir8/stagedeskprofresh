@@ -3,16 +3,12 @@ namespace App\Listeners;
 
 use App\Constants\NotificationType;
 use App\Events\UserRegistered;
-use App\Models\Notification;
+use App\Services\NotificationService;
 
 class CreateUserRegisteredNotification
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
+    public function __construct(private NotificationService $notificationService)
     {
-        //
     }
 
     /**
@@ -20,21 +16,23 @@ class CreateUserRegisteredNotification
      */
     public function handle(UserRegistered $event): void
     {
-        //
-        Notification::create([
-            'user_id' => $event->user->id,
-            'title'   => 'New User Registered',
-            'message' => sprintf(
-                '%s (%s) registered on %s',
+        $this->notificationService->createForUser(
+            $event->user->id,
+            'New User Registered',
+            sprintf(
+                '%s registered on %s',
                 $event->user->name,
-                $event->user->role,
                 now()->format('d M Y H:i')
             ),
-            'type'    => NotificationType::USER_REGISTERED,
-            'data'    => serialize([
+            NotificationType::USER_REGISTERED,
+            'auth',
+            null,
+            2,
+            $event->user->company_id,
+            [
                 'user_id' => $event->user->id,
-                'role'    => $event->user->role,
-            ]),
-        ]);
+                'role_id' => $event->user->role_id,
+            ]
+        );
     }
 }

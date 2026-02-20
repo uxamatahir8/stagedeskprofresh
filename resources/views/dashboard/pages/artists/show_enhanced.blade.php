@@ -1,5 +1,68 @@
 @extends('dashboard.layouts.dashboard')
 
+@push('styles')
+    <style>
+        .artist-profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+        }
+
+        .artist-avatar-fallback {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+        }
+
+        .artist-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.65rem;
+        }
+
+        .artist-info-icon {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: #f1f5f9;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .artist-stat-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.25;
+        }
+
+        .artist-stat-badge {
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-title-head d-flex align-items-center mb-4">
         <div class="flex-grow-1">
@@ -26,10 +89,10 @@
                 <div class="card-body">
                     <div class="text-center mb-3">
                         @if($artist->image)
-                            <img src="{{ asset('storage/' . $artist->image) }}" alt="{{ $artist->stage_name }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            <img src="{{ asset('storage/' . $artist->image) }}" alt="{{ $artist->stage_name }}" class="artist-profile-avatar mb-3">
                         @else
-                            <div class="avatar avatar-xl mb-3 mx-auto">
-                                <span class="avatar-title rounded-circle bg-primary fs-1">{{ substr($artist->stage_name, 0, 1) }}</span>
+                            <div class="artist-avatar-fallback mb-3 mx-auto">
+                                <span>{{ $artist->initials }}</span>
                             </div>
                         @endif
                         <h5 class="mb-1">{{ $artist->stage_name }}</h5>
@@ -49,28 +112,28 @@
                     </div>
 
                     <div class="border-top pt-3">
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="building-2" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="building-2"></i></span>
                             <small class="text-muted">{{ $artist->company->name ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="user" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="user"></i></span>
                             <small class="text-muted">{{ $artist->user->name ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="mail" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="mail"></i></span>
                             <small class="text-muted">{{ $artist->user->email ?? 'N/A' }}</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="award" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="award"></i></span>
                             <small class="text-muted">{{ $artist->experience_years }} years experience</small>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i data-lucide="music" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item">
+                            <span class="artist-info-icon"><i data-lucide="music"></i></span>
                             <small class="text-muted">{{ $artist->genres }}</small>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <i data-lucide="calendar" class="text-muted me-2" style="width: 16px;"></i>
+                        <div class="artist-info-item mb-0">
+                            <span class="artist-info-icon"><i data-lucide="calendar"></i></span>
                             <small class="text-muted">Joined {{ $artist->created_at->format('M d, Y') }}</small>
                         </div>
                     </div>
@@ -92,8 +155,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-primary-subtle rounded me-3">
-                                    <i data-lucide="calendar-check" class="text-primary"></i>
+                                <div class="artist-stat-badge bg-primary-subtle me-3">
+                                    <i data-lucide="calendar-check" class="text-primary artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['total_bookings'] ?? 0 }}</h3>
@@ -108,8 +171,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-success-subtle rounded me-3">
-                                    <i data-lucide="check-circle" class="text-success"></i>
+                                <div class="artist-stat-badge bg-success-subtle me-3">
+                                    <i data-lucide="check-circle" class="text-success artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['completed_bookings'] ?? 0 }}</h3>
@@ -124,8 +187,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-warning-subtle rounded me-3">
-                                    <i data-lucide="message-circle" class="text-warning"></i>
+                                <div class="artist-stat-badge bg-warning-subtle me-3">
+                                    <i data-lucide="message-circle" class="text-warning artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">{{ $stats['reviews_count'] ?? 0 }}</h3>
@@ -140,8 +203,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar avatar-sm bg-info-subtle rounded me-3">
-                                    <i data-lucide="dollar-sign" class="text-info"></i>
+                                <div class="artist-stat-badge bg-info-subtle me-3">
+                                    <i data-lucide="dollar-sign" class="text-info artist-stat-icon"></i>
                                 </div>
                                 <div>
                                     <h3 class="mb-0">${{ number_format($stats['total_earnings'] ?? 0, 0) }}</h3>
@@ -194,11 +257,13 @@
                 <i data-lucide="message-circle" class="me-1"></i>Reviews ({{ $stats['reviews_count'] ?? 0 }})
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
-                <i data-lucide="activity" class="me-1"></i>Activity
-            </button>
-        </li>
+        @if(Auth::user()->role->role_key === 'master_admin')
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
+                    <i data-lucide="activity" class="me-1"></i>Activity
+                </button>
+            </li>
+        @endif
     </ul>
 
     <div class="tab-content" id="artistTabsContent">
@@ -225,7 +290,7 @@
                             <tbody>
                                 @forelse($recentBookings ?? [] as $booking)
                                     <tr>
-                                        <td><strong>#{{ $booking->id }}</strong></td>
+                                        <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
                                         <td>{{ $booking->eventType->event_type ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }}</td>
                                         <td>{{ $booking->company->name ?? 'N/A' }}</td>
@@ -240,7 +305,7 @@
                                         </td>
                                         <td>${{ number_format($booking->total_amount ?? 0, 2) }}</td>
                                         <td>
-                                            <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-light">
+                                            <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-light">
                                                 <i data-lucide="eye"></i>
                                             </a>
                                         </td>
@@ -271,7 +336,7 @@
                         <div class="d-flex mb-3 pb-3 border-bottom">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
-                                    <span class="avatar-title">{{ substr($review->user->name ?? 'U', 0, 1) }}</span>
+                                    <span class="avatar-title">{{ $review->user->initials ?? 'U' }}</span>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
@@ -303,49 +368,51 @@
             </div>
         </div>
 
-        {{-- Activity Tab --}}
-        <div class="tab-pane fade" id="activity" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="card-title mb-0">Recent Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="avatar avatar-sm bg-success-subtle rounded-circle">
-                                        <i data-lucide="user-check" class="text-success"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Artist Profile Created</h6>
-                                    <p class="text-muted mb-1">Artist account was created and activated</p>
-                                    <small class="text-muted">{{ $artist->created_at->diffForHumans() }}</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        @foreach($recentBookings->take(3) ?? [] as $booking)
+        @if(Auth::user()->role->role_key === 'master_admin')
+            {{-- Activity Tab --}}
+            <div class="tab-pane fade" id="activity" role="tabpanel">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
                             <div class="timeline-item mb-3">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
-                                        <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
-                                            <i data-lucide="calendar-check" class="text-primary"></i>
+                                        <div class="avatar avatar-sm bg-success-subtle rounded-circle">
+                                            <i data-lucide="user-check" class="text-success"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1">Booking #{{ $booking->id }}</h6>
-                                        <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
-                                        <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
+                                        <h6 class="mb-1">Artist Profile Created</h6>
+                                        <p class="text-muted mb-1">Artist account was created and activated</p>
+                                        <small class="text-muted">{{ $artist->created_at->diffForHumans() }}</small>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+
+                            @foreach($recentBookings->take(3) ?? [] as $booking)
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="avatar avatar-sm bg-primary-subtle rounded-circle">
+                                                <i data-lucide="calendar-check" class="text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Booking #{{ $booking->tracking_code ?? $booking->id }}</h6>
+                                            <p class="text-muted mb-1">{{ $booking->eventType->event_type ?? 'Event' }} - {{ ucfirst($booking->status) }}</p>
+                                            <small class="text-muted">{{ $booking->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
     @push('scripts')

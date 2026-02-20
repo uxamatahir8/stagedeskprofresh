@@ -9,7 +9,7 @@
             <p class="text-muted mb-0 mt-1">Manage all companies and subscriptions</p>
         </div>
 
-        <div class="text-end">
+        <div class="d-flex flex-wrap justify-content-end gap-2">
             <a href="{{ route('subscriptions.index') }}" class="btn btn-warning btn-sm me-2">
                 <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i> Manage Subscriptions
             </a>
@@ -127,7 +127,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <div class="btn-group w-100" role="group">
+                    <div class="btn-group w-100 flex-wrap" role="group">
                             <button type="submit" class="btn btn-primary">
                                 <i data-lucide="filter" style="width: 16px;"></i> Filter
                             </button>
@@ -159,7 +159,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;">#</th>
+                            <th>#</th>
                             <th>Company</th>
                             <th>KVK Number</th>
                             <th>Contact</th>
@@ -167,7 +167,7 @@
                             <th>Bookings</th>
                             <th>Status</th>
                             <th>Subscription</th>
-                            <th style="width: 200px;">Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -180,7 +180,7 @@
                                             <img src="{{ asset('storage/' . $company->logo) }}" class="rounded me-2" width="32" height="32" style="object-fit: cover;">
                                         @else
                                             <div class="avatar avatar-sm me-2">
-                                                <span class="avatar-title rounded bg-primary">{{ substr($company->name, 0, 1) }}</span>
+                                                <span class="avatar-title rounded bg-primary">{{ $company->initials }}</span>
                                             </div>
                                         @endif
                                         <div>
@@ -267,7 +267,7 @@
             </div>
         </div>
         @if($companies->hasPages())
-            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center">
+            <div class="card-footer bg-white border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div class="text-muted">
                     Showing {{ $companies->firstItem() }} to {{ $companies->lastItem() }} of {{ $companies->total() }} companies
                 </div>

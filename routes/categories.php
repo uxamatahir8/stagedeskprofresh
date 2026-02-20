@@ -8,7 +8,7 @@ Route::middleware('auth')->group(function () {
     //edit route
     Route::get('/category/edit/{id}', [CategoryController::class, 'edit'])->name('category.edit');
 
-    Route::post('/catgory/store', [CategoryController::class, 'store'])->name('category.store');
+    Route::post('/category/store', [CategoryController::class, 'store'])->name('category.store');
 
     Route::delete('/category/delete/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
 

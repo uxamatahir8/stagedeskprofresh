@@ -6,7 +6,7 @@
             <h4 class="fs-xl fw-bold m-0">
                 <i data-lucide="file-text" class="me-2"></i>Booking Details
             </h4>
-            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->id }}</p>
+            <p class="text-muted mb-0 mt-1">Booking #{{ $booking->tracking_code ?? $booking->id }}</p>
         </div>
         <div class="text-end">
             <a href="{{ route('customer.bookings') }}" class="btn btn-light btn-sm">
@@ -85,7 +85,7 @@
                                 <img src="{{ Storage::url($booking->assignedArtist->profile_image) }}" alt="{{ $booking->assignedArtist->user->name }}" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
                             @else
                                 <span class="avatar-title rounded-circle bg-primary fs-3">
-                                    {{ substr($booking->assignedArtist->user->name ?? 'A', 0, 1) }}
+                                    {{ $booking->assignedArtist->user->initials ?? 'A' }}
                                 </span>
                             @endif
                         </div>
@@ -113,6 +113,7 @@
                         @csrf
                         <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                         <input type="hidden" name="artist_id" value="{{ $booking->assigned_artist_id }}">
+                        <input type="hidden" name="company_id" value="{{ $booking->company_id }}">
 
                         <div class="mb-3">
                             <label class="form-label">Rating <span class="text-danger">*</span></label>
@@ -128,7 +129,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Your Review <span class="text-danger">*</span></label>
-                            <textarea name="comment" class="form-control" rows="4" required></textarea>
+                            <textarea name="review" class="form-control" rows="4" required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -175,6 +176,15 @@
                     <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelBookingModal">
                         <i data-lucide="x-circle"></i> Cancel Booking
                     </button>
+                    @if($booking->status === 'confirmed')
+                        <form action="{{ route('customer.bookings.complete', $booking) }}" method="POST" class="mt-2">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100"
+                                onclick="return confirm('Mark this booking as completed? After this, you can post your review.')">
+                                <i data-lucide="check-circle"></i> Mark as Completed
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
             @endif
@@ -185,7 +195,7 @@
     <div class="modal fade" id="cancelBookingModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('customer.bookings.cancel', $booking->id) }}" method="POST">
+                <form action="{{ route('customer.bookings.cancel', $booking) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Cancel Booking</h5>

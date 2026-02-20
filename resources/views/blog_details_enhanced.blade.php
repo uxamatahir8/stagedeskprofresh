@@ -235,7 +235,7 @@
                                         style="width: 60px; height: 60px; object-fit: cover;">
                                 @endif
                                 <div>
-                                    <a href="{{ route('blog.show', $recent->slug) }}"
+                                    <a href="{{ route('blog-front.details', $recent->slug) }}"
                                         class="text-dark small fw-bold text-decoration-none">
                                         {{ Str::limit($recent->title, 50) }}
                                     </a>
@@ -263,7 +263,7 @@
                                         style="width: 60px; height: 60px; object-fit: cover;">
                                 @endif
                                 <div>
-                                    <a href="{{ route('blog.show', $related->slug) }}"
+                                    <a href="{{ route('blog-front.details', $related->slug) }}"
                                         class="text-dark small fw-bold text-decoration-none">
                                         {{ Str::limit($related->title, 50) }}
                                     </a>

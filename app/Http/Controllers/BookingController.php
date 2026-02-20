@@ -11,7 +11,9 @@ use App\Events\BookingCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
 
 class BookingController extends Controller
 {
@@ -30,10 +32,7 @@ class BookingController extends Controller
             return redirect()->route('customer.bookings.details', $booking);
         }
 
-        // Safety check: Verify access permission (for admins)
-        if (!$this->canAccessBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to view this booking');
-        }
+        $this->authorize('view', $booking);
 
         $title = 'Booking Details';
 
@@ -47,7 +46,19 @@ class BookingController extends Controller
             default         => collect([]),
         };
 
-        return view('dashboard.pages.bookings.show', compact('title', 'booking', 'artists'));
+        $bookingActivityLogs = ActivityLog::query()
+            ->where(function ($query) use ($booking) {
+                $query->where(function ($q) use ($booking) {
+                    $q->where('model_type', BookingRequest::class)
+                        ->where('model_id', $booking->id);
+                })->orWhere('properties->booking_id', $booking->id);
+            })
+            ->with('user')
+            ->latest()
+            ->take(25)
+            ->get();
+
+        return view('dashboard.pages.bookings.show', compact('title', 'booking', 'artists', 'bookingActivityLogs'));
     }
 
     //
@@ -159,16 +170,7 @@ class BookingController extends Controller
             abort(403, 'Artists cannot edit bookings');
         }
 
-        // Customers should use their own portal (if they have one)
-        // Currently customers don't have edit functionality, so block them
-        if ($roleKey === 'customer') {
-            abort(403, 'Customers cannot edit bookings directly. Please contact support.');
-        }
-
-        // Safety check: Verify edit permission (for admins)
-        if (!$this->canEditBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to edit this booking');
-        }
+        $this->authorize('update', $booking);
 
         $title = 'Edit Booking Request';
         $mode  = 'edit';
@@ -220,8 +222,51 @@ class BookingController extends Controller
         $user = Auth::user();
         $roleKey = $user->role->role_key;
 
+        // Compatibility mapping for customer portal form fields
+        if ($roleKey === 'customer') {
+            $fullName = trim((string) $request->input('contact_name', ''));
+            $name = $request->input('name');
+            $surname = $request->input('surname');
+
+            if (empty($name) && !empty($fullName)) {
+                $parts = preg_split('/\s+/', $fullName, 2);
+                $name = $parts[0] ?? '';
+                $surname = $surname ?: ($parts[1] ?? 'Customer');
+            }
+
+            $request->merge([
+                'user_id' => $user->id,
+                'name' => $name ?: ($user->name ? explode(' ', $user->name, 2)[0] : 'Customer'),
+                'surname' => $surname ?: (preg_split('/\s+/', (string) ($user->name ?? ''), 2)[1] ?? 'User'),
+                'phone' => $request->input('phone', $request->input('contact_phone', optional($user->profile)->phone ?? '')),
+                'email' => $request->input('email', $request->input('contact_email', $user->email)),
+                'address' => $request->input('address', $request->input('venue_address', optional($user->profile)->address ?? '')),
+            ]);
+
+            // If customer DOB is not provided in form, use profile/user DOB if available
+            if (!$request->filled('date_of_birth')) {
+                $request->merge([
+                    'date_of_birth' => optional($user->profile)->date_of_birth ?? ($user->date_of_birth ?? null),
+                ]);
+            }
+        }
+
         $eventType = EventType::find($request->event_type_id);
         $isWedding = $eventType && str_contains(strtolower($eventType->event_type), 'wedding');
+
+        if ($roleKey === 'customer') {
+            $request->merge([
+                'additional_notes' => $request->input('additional_notes', $request->input('special_requests')),
+            ]);
+
+            if ($isWedding) {
+                $request->merge([
+                    'partner_name' => $request->input('partner_name', 'N/A'),
+                    'wedding_date' => $request->input('wedding_date', $request->input('event_date')),
+                    'wedding_time' => $request->input('wedding_time', $request->input('event_time')),
+                ]);
+            }
+        }
 
         // Modified validation - user_id is optional for admins creating bookings
         $validated = $request->validate([
@@ -232,7 +277,7 @@ class BookingController extends Controller
             'assigned_artist_id'  => 'nullable|exists:artists,id',
             'name'                => 'required|string|max:255',
             'surname'             => 'required|string|max:255',
-            'date_of_birth'       => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'       => 'required|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'phone'               => 'required|string|max:20',
             'email'               => 'required|email|max:255',
             'address'             => 'required|string|max:255',
@@ -245,16 +290,26 @@ class BookingController extends Controller
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
             'create_customer_account' => 'nullable|boolean', // New field for creating customer account
+        ], [
+            'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
 
         // Auto-assign company for company admins
-        if ($roleKey === 'company_admin' && empty($validated['company_id'])) {
+        if ($roleKey === 'company_admin') {
             $validated['company_id'] = $user->company_id;
         }
 
         // Auto-set user_id for customers
         if ($roleKey === 'customer') {
             $validated['user_id'] = $user->id;
+        }
+
+        // Company-scoped booking ownership checks
+        if ($roleKey === 'company_admin' && !empty($validated['user_id'])) {
+            $customer = User::find($validated['user_id']);
+            if ($customer && (int) $customer->company_id !== (int) $user->company_id) {
+                return back()->withInput()->with('error', 'Selected customer does not belong to your company.');
+            }
         }
 
         DB::beginTransaction();
@@ -315,6 +370,9 @@ class BookingController extends Controller
 
             // If artist is assigned immediately, update status
             if (!empty($validated['assigned_artist_id'])) {
+                if (!$this->canAssignArtistToBooking((int) $validated['assigned_artist_id'], (int) $validated['company_id'])) {
+                    return back()->withInput()->with('error', 'Selected artist is not available for this company booking.');
+                }
                 $validated['status'] = 'confirmed';
                 $validated['confirmed_at'] = now();
             }
@@ -338,7 +396,7 @@ class BookingController extends Controller
                 Mail::to($customerUser->email)->send(new \App\Mail\CustomerAccountCreated($customerUser, $generatedPassword, $booking));
             } elseif ($booking->user && $booking->user->email) {
                 // Send standard booking confirmation to existing customer
-                Mail::to($booking->user->email)->send(new \App\Mail\BookingCreated($booking));
+                Mail::to($booking->user->email)->send(new \App\Mail\BookingConfirmationMail($booking));
             }
 
             // Fire booking created event if company is assigned
@@ -354,11 +412,11 @@ class BookingController extends Controller
 
                     if ($companyAdmin && $companyAdmin->email) {
                         try {
-                            \Mail::to($companyAdmin->email)->send(
+                            Mail::to($companyAdmin->email)->send(
                                 new \App\Mail\NewBookingForCompany($booking, $companyAdmin)
                             );
                         } catch (\Exception $e) {
-                            \Log::error('Failed to send booking notification to company admin: ' . $e->getMessage());
+                            Log::error('Failed to send booking notification to company admin: ' . $e->getMessage());
                         }
                     }
                 }
@@ -416,12 +474,35 @@ class BookingController extends Controller
 
     public function update(Request $request, BookingRequest $booking)
     {
+        $this->authorize('update', $booking);
+
         $user = Auth::user();
         $roleKey = $user->role->role_key;
+        $isStatusLocked = in_array($booking->status, ['completed', 'cancelled']);
+        $isArtistChangeRequested = $request->has('assigned_artist_id')
+            && (string) $request->input('assigned_artist_id', '') !== (string) ($booking->assigned_artist_id ?? '');
+        $isStatusChangeRequested = $request->filled('status')
+            && (string) $request->input('status') !== (string) $booking->status;
 
-        // Safety check: Verify edit permission
-        if (!$this->canEditBooking($booking, $user, $roleKey)) {
-            abort(403, 'You do not have permission to update this booking');
+        if ($isStatusLocked && ($isArtistChangeRequested || $isStatusChangeRequested)) {
+            ActivityLog::log('updated', $booking, 'Booking update blocked for closed status', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
+            return back()->withInput()->with('error', 'Artist and status updates are not allowed for completed or cancelled bookings.');
+        }
+
+        if ($isArtistChangeRequested) {
+            $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+            if ($eventDate->lt(today())) {
+                ActivityLog::log('updated', $booking, 'Artist assignment blocked after event date', [
+                    'booking_id' => $booking->id,
+                    'company_id' => $booking->company_id,
+                    'reason' => 'event_date_passed',
+                ]);
+                return back()->withInput()->with('error', 'Artist cannot be assigned or reassigned after the event date.');
+            }
         }
 
         $eventType = EventType::find($request->event_type_id);
@@ -429,13 +510,13 @@ class BookingController extends Controller
 
         $validated = $request->validate([
             'event_date'          => 'required|date|after:today',
-            'user_id'             => 'required|exists:users,id',
+            'user_id'             => in_array($roleKey, ['master_admin', 'company_admin']) ? 'nullable|exists:users,id' : 'required|exists:users,id',
             'event_type_id'       => 'required|exists:event_types,id',
             'company_id'          => 'nullable|exists:companies,id',
             'assigned_artist_id'  => 'nullable|exists:artists,id',
             'name'                => 'required|string|max:255',
             'surname'             => 'required|string|max:255',
-            'date_of_birth'       => 'required|date|before:' . now()->subDays(5)->format('Y-m-d'),
+            'date_of_birth'       => 'required|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'phone'               => 'required|string|max:20',
             'email'               => 'required|email|max:255',
             'address'             => 'required|string|max:255',
@@ -447,7 +528,47 @@ class BookingController extends Controller
             'playlist_spotify'    => 'nullable|string',
             'additional_notes'    => 'nullable|string',
             'company_notes'       => 'nullable|string',
+            'status'              => 'nullable|in:pending,confirmed,in_progress,completed,cancelled,rejected',
+        ], [
+            'date_of_birth.before_or_equal' => 'Customer must be at least 18 years old.',
         ]);
+
+        if ($roleKey === 'company_admin') {
+            $validated['company_id'] = $user->company_id;
+            if (!empty($validated['user_id'])) {
+                $customer = User::find($validated['user_id']);
+                if ($customer && (int) $customer->company_id !== (int) $user->company_id) {
+                    return back()->withInput()->with('error', 'Selected customer does not belong to your company.');
+                }
+            }
+        }
+
+        if ($roleKey === 'customer') {
+            $validated['user_id'] = $user->id;
+            $validated['company_id'] = $booking->company_id;
+            $validated['assigned_artist_id'] = $booking->assigned_artist_id;
+            $validated['company_notes'] = $booking->company_notes;
+            $validated['status'] = $booking->status;
+        }
+
+        if (array_key_exists('status', $validated) && $validated['status'] !== null && $validated['status'] !== $booking->status) {
+            $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+
+            if ($validated['status'] === 'completed' && $eventDate->gt(today())) {
+                return back()->withInput()->with('error', 'Booking cannot be marked as completed before the event date.');
+            }
+
+            if ($validated['status'] === 'cancelled' && $eventDate->lt(today())) {
+                return back()->withInput()->with('error', 'Booking cannot be cancelled after the event date.');
+            }
+
+            $validated['completed_at'] = $validated['status'] === 'completed' ? now() : null;
+            $validated['cancelled_at'] = $validated['status'] === 'cancelled' ? now() : null;
+        }
+
+        if (!empty($validated['assigned_artist_id']) && !$this->canAssignArtistToBooking((int) $validated['assigned_artist_id'], (int) $booking->company_id)) {
+            return back()->withInput()->with('error', 'Selected artist is not available for this booking company.');
+        }
 
         DB::beginTransaction();
         try {
@@ -497,18 +618,9 @@ class BookingController extends Controller
 
     public function destroy(BookingRequest $booking)
     {
+        $this->authorize('delete', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins can delete bookings
-        if (!in_array($roleKey, ['master_admin', 'company_admin'])) {
-            abort(403, 'You do not have permission to delete bookings');
-        }
-
-        // Safety check: Company admin can only delete bookings from their company
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only delete bookings from your company');
-        }
 
         DB::beginTransaction();
         try {
@@ -535,23 +647,38 @@ class BookingController extends Controller
      */
     public function assignArtist(Request $request, BookingRequest $booking)
     {
+        $this->authorize('assignArtist', $booking);
+
+        if (in_array($booking->status, ['completed', 'cancelled'])) {
+            ActivityLog::log('updated', $booking, 'Artist assignment blocked for closed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
+            return back()->with('error', 'Artist update is not allowed for completed or cancelled bookings.');
+        }
+
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
+        if ($eventDate->lt(today())) {
+            ActivityLog::log('updated', $booking, 'Artist assignment blocked after event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'event_date_passed',
+            ]);
+            return back()->with('error', 'Artist cannot be assigned or reassigned after the event date.');
+        }
+
         $user = Auth::user();
         $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins can assign artists
-        if (!in_array($roleKey, ['master_admin', 'company_admin'])) {
-            abort(403, 'You do not have permission to assign artists');
-        }
-
-        // Safety check: Verify company scope
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only assign artists to bookings from your company');
-        }
 
         $request->validate([
             'artist_id' => 'required|exists:artists,id',
             'company_notes' => 'nullable|string'
         ]);
+
+        if (!$this->canAssignArtistToBooking((int) $request->artist_id, (int) $booking->company_id)) {
+            return back()->with('error', 'Selected artist is not available for this booking company.');
+        }
 
         DB::beginTransaction();
         try {
@@ -578,11 +705,11 @@ class BookingController extends Controller
             // Send email to artist about new booking assignment
             if ($artist->user && $artist->user->email) {
                 try {
-                    \Mail::to($artist->user->email)->send(
+                    Mail::to($artist->user->email)->send(
                         new \App\Mail\NewBookingForArtist($booking->fresh())
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
+                    Log::error('Failed to send assignment email to artist: ' . $e->getMessage());
                 }
             }
 
@@ -595,11 +722,11 @@ class BookingController extends Controller
 
                 if ($companyAdmin && $companyAdmin->email) {
                     try {
-                        \Mail::to($companyAdmin->email)->send(
+                        Mail::to($companyAdmin->email)->send(
                             new \App\Mail\ArtistAssignedToCompany($booking->fresh(), $artist, $companyAdmin)
                         );
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send artist assignment notification to company admin: ' . $e->getMessage());
+                        Log::error('Failed to send artist assignment notification to company admin: ' . $e->getMessage());
                     }
                 }
             }
@@ -607,11 +734,11 @@ class BookingController extends Controller
             // Send email to customer about artist assignment
             if ($booking->user && $booking->user->email) {
                 try {
-                    \Mail::to($booking->user->email)->send(
+                    Mail::to($booking->user->email)->send(
                         new \App\Mail\ArtistAssigned($booking->fresh(), $isReassignment)
                     );
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send assignment email to customer: ' . $e->getMessage());
+                    Log::error('Failed to send assignment email to customer: ' . $e->getMessage());
                 }
             }
 
@@ -651,19 +778,27 @@ class BookingController extends Controller
      */
     public function markCompleted(BookingRequest $booking)
     {
+        $this->authorize('markCompleted', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Only admins and assigned artist can mark as completed
-        $canComplete = in_array($roleKey, ['master_admin', 'company_admin']) ||
-                      ($roleKey === 'artist' && $booking->assigned_artist_id == optional($user->artist)->id);
-
-        if (!$canComplete) {
-            abort(403, 'You do not have permission to mark this booking as completed');
-        }
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if ($booking->status !== 'confirmed') {
+            ActivityLog::log('updated', $booking, 'Mark completed blocked for non-confirmed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'invalid_status',
+            ]);
             return back()->with('error', 'Only confirmed bookings can be marked as completed');
+        }
+
+        if ($eventDate->gt(today())) {
+            ActivityLog::log('updated', $booking, 'Mark completed blocked before event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'before_event_date',
+            ]);
+            return back()->with('error', 'Booking cannot be marked as completed before the event date.');
         }
 
         DB::beginTransaction();
@@ -694,28 +829,27 @@ class BookingController extends Controller
      */
     public function cancel(Request $request, BookingRequest $booking)
     {
+        $this->authorize('cancel', $booking);
+
         $user = Auth::user();
-        $roleKey = $user->role->role_key;
-
-        // Safety check: Admins and customers can cancel
-        $canCancel = in_array($roleKey, ['master_admin', 'company_admin', 'customer']);
-
-        if (!$canCancel) {
-            abort(403, 'You do not have permission to cancel this booking');
-        }
-
-        // Customer can only cancel their own bookings
-        if ($roleKey === 'customer' && $booking->user_id !== $user->id) {
-            abort(403, 'You can only cancel your own bookings');
-        }
-
-        // Company admin can only cancel bookings from their company
-        if ($roleKey === 'company_admin' && $booking->company_id !== $user->company_id) {
-            abort(403, 'You can only cancel bookings from your company');
-        }
+        $eventDate = Carbon::parse($booking->event_date)->startOfDay();
 
         if (in_array($booking->status, ['completed', 'cancelled'])) {
+            ActivityLog::log('updated', $booking, 'Booking cancellation blocked for closed booking', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'closed_status',
+            ]);
             return back()->with('error', 'Cannot cancel a booking that is already ' . $booking->status);
+        }
+
+        if ($eventDate->lt(today())) {
+            ActivityLog::log('updated', $booking, 'Booking cancellation blocked after event date', [
+                'booking_id' => $booking->id,
+                'company_id' => $booking->company_id,
+                'reason' => 'event_date_passed',
+            ]);
+            return back()->with('error', 'Booking cannot be cancelled after the event date.');
         }
 
         $request->validate([
@@ -724,18 +858,24 @@ class BookingController extends Controller
 
         DB::beginTransaction();
         try {
+            $cancellationReason = $request->cancellation_reason ?? 'No reason provided';
+
             $booking->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
-                'company_notes' => ($booking->company_notes ?? '') . "\n\nCancellation reason: " . ($request->cancellation_reason ?? 'No reason provided')
+                'company_notes' => ($booking->company_notes ?? '') . "\n\nCancellation reason: " . $cancellationReason
             ]);
 
             ActivityLog::log(
                 'updated',
                 $booking,
                 'Booking cancelled by ' . $user->name,
-                ['booking_id' => $booking->id, 'reason' => $request->cancellation_reason]
+                ['booking_id' => $booking->id, 'reason' => $cancellationReason]
             );
+
+            if ($user->role?->role_key === 'customer') {
+                $this->notifyAdminsOfCustomerCancellation($booking->fresh(['company', 'eventType', 'user']), $user, $cancellationReason);
+            }
 
             DB::commit();
 
@@ -746,36 +886,45 @@ class BookingController extends Controller
         }
     }
 
-    /**
-     * Helper method to check if user can access a booking
-     */
-    private function canAccessBooking(BookingRequest $booking, $user, string $roleKey): bool
+    private function notifyAdminsOfCustomerCancellation(BookingRequest $booking, User $cancelledBy, string $reason): void
     {
-        return match ($roleKey) {
-            'master_admin' => true,
-            'company_admin' => $booking->company_id === $user->company_id,
-            'customer' => $booking->user_id === $user->id,
-            'artist' => $booking->assigned_artist_id == optional($user->artist)->id,
-            default => false
-        };
-    }
+        $recipients = User::query()
+            ->when($booking->company_id, function ($q) use ($booking) {
+                $q->where('company_id', $booking->company_id)
+                    ->whereHas('role', function ($roleQ) {
+                        $roleQ->where('role_key', 'company_admin');
+                    });
+            })
+            ->whereNotNull('email')
+            ->get()
+            ->unique('email');
 
-    /**
-     * Helper method to check if user can edit a booking
-     */
-    private function canEditBooking(BookingRequest $booking, $user, string $roleKey): bool
-    {
-        // Completed or cancelled bookings cannot be edited
-        if (in_array($booking->status, ['completed', 'cancelled'])) {
-            return false;
+        foreach ($recipients as $recipient) {
+            try {
+                Mail::to($recipient->email)->send(
+                    new \App\Mail\CustomerBookingCancelledNotification($booking, $cancelledBy, $reason, $recipient)
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to send customer cancellation email: ' . $e->getMessage());
+            }
         }
-
-        return match ($roleKey) {
-            'master_admin' => true,
-            'company_admin' => $booking->company_id === $user->company_id,
-            'customer' => $booking->user_id === $user->id && $booking->status === 'pending',
-            default => false
-        };
     }
 
+    private function canAssignArtistToBooking(int $artistId, int $companyId): bool
+    {
+        return Artist::where('id', $artistId)
+            ->where(function ($query) use ($artistId, $companyId) {
+                $query->where('company_id', $companyId)
+                    ->orWhereExists(function ($sharedQuery) use ($artistId, $companyId) {
+                        $sharedQuery->select(DB::raw(1))
+                            ->from('shared_artists')
+                            ->whereColumn('shared_artists.artist_id', 'artists.id')
+                            ->where('shared_artists.artist_id', $artistId)
+                            ->where('shared_artists.shared_with_company_id', $companyId)
+                            ->where('shared_artists.status', 'accepted')
+                            ->whereNull('shared_artists.revoked_at');
+                    });
+            })
+            ->exists();
+    }
 }

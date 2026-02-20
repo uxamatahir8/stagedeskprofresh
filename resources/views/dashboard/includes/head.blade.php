@@ -11,6 +11,9 @@
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}">
 
+    <!-- Lucide Icons - load first so createIcons() can run when DOM is ready -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" crossorigin="anonymous" id="lucide-script"></script>
+
     {{-- Datatables css --}}
     <link href="{{ asset('plugins/datatables/responsive.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('plugins/datatables/buttons.bootstrap5.min.css') }}" rel="stylesheet" type="text/css">
@@ -48,5 +51,93 @@
             max-width: 100%;
             overflow: hidden;
         }
+
+        /* Shared responsive baseline for dashboard pages */
+        .content-page img,
+        .content-page svg,
+        .content-page video {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 991.98px) {
+            .content-page .container-fluid {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .page-title-head,
+            .card-header,
+            .d-flex.justify-content-between {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .page-title-head .text-end {
+                width: 100%;
+                text-align: left !important;
+            }
+
+            .btn-group {
+                flex-wrap: wrap;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table-responsive th[style*="width"],
+            .table-responsive td[style*="width"] {
+                width: auto !important;
+            }
+        }
+
+        .avatar-title {
+            color: #fff !important;
+        }
+
+        @media (max-width: 575.98px) {
+            .app-topbar .topbar-menu {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .topbar-item .dropdown-menu {
+                min-width: 16rem;
+                max-width: calc(100vw - 1rem);
+            }
+        }
+
+        @media (max-width: 399.98px) {
+            .content-page .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .app-topbar .topbar-menu {
+                gap: 0.25rem;
+            }
+
+            .app-topbar .topbar-link {
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+
+            .topbar-item.nav-user .dropdown-toggle {
+                padding-left: 0.35rem !important;
+                padding-right: 0.35rem !important;
+            }
+
+            .topbar-item .dropdown-menu {
+                min-width: unset;
+                width: calc(100vw - 0.75rem);
+            }
+
+            .page-title-head h4 {
+                font-size: 1.05rem;
+            }
+        }
     </style>
+    @stack('styles')
 </head>

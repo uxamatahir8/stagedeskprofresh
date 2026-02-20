@@ -24,6 +24,11 @@
                 <h4 class="card-title mb-0">{{ $title }}</h4>
             </div>
             <div class="action-btns">
+                @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+                    <a href="{{ route('payment-methods.index') }}" class="btn btn-info me-2">
+                        <i data-lucide="wallet" style="width: 16px; height: 16px;"></i> Payment Methods
+                    </a>
+                @endif
                 <a href="{{ route('payments.create') }}" class="btn btn-primary">
                     <i data-lucide="plus" style="width: 16px; height: 16px;"></i> New Payment
                 </a>
@@ -61,7 +66,7 @@
                                         <h6 class="mb-0">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</h6>
                                     </td>
                                     <td>
-                                        {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                        {{ $payment->paymentMethod->display_name ?? ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
                                     </td>
                                     <td>
                                         @if($payment->status === 'completed')

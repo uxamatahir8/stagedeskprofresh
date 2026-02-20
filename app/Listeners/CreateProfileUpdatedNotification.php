@@ -3,16 +3,12 @@ namespace App\Listeners;
 
 use App\Constants\NotificationType;
 use App\Events\ProfileUpdated;
-use App\Models\Notification;
+use App\Services\NotificationService;
 
 class CreateProfileUpdatedNotification
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
+    public function __construct(private NotificationService $notificationService)
     {
-        //
     }
 
     /**
@@ -20,14 +16,16 @@ class CreateProfileUpdatedNotification
      */
     public function handle(ProfileUpdated $event): void
     {
-        Notification::create([
-            'user_id' => $event->user->id,
-            'title'   => 'Profile Updated',
-            'message' => $event->user->name . ' updated their profile.',
-            'type'    => NotificationType::PROFILE_UPDATED,
-            'data'    => serialize([
-                'user_id' => $event->user->id,
-            ]),
-        ]);
+        $this->notificationService->createForUser(
+            $event->user->id,
+            'Profile Updated',
+            $event->user->name . ' updated their profile.',
+            NotificationType::PROFILE_UPDATED,
+            'profile',
+            null,
+            1,
+            $event->user->company_id,
+            ['user_id' => $event->user->id]
+        );
     }
 }

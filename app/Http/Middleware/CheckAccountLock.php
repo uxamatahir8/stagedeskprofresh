@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\AuthSecurityService;
+use App\Services\ActivityLogger;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,16 @@ class CheckAccountLock
 
         if ($user && $this->authSecurity->isAccountLocked($user)) {
             $minutes = $user->locked_until->diffInMinutes(now());
+            ActivityLogger::warning(
+                'security.account_lock.enforced',
+                'Locked account access blocked by middleware',
+                [
+                    'category' => 'security',
+                    'action' => 'access_blocked',
+                    'user_id' => $user->id,
+                    'metadata' => ['minutes_remaining' => $minutes],
+                ]
+            );
 
             Auth::logout();
 

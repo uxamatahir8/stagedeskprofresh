@@ -9,7 +9,7 @@
             </h4>
             <p class="text-muted mb-0 mt-1">Complete company profile and analytics</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('companies') }}" class="btn btn-light btn-sm">
                 <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back
             </a>
@@ -209,22 +209,22 @@
                 <div class="card-body">
                     @if(isset($subscription) && $subscription)
                         <div class="row g-3 align-items-center">
-                            <div class="col-md-3 text-center">
+                            <div class="col-12 col-md-3 text-center">
                                 <div class="subscription-badge mb-2">
                                     <i data-lucide="crown" class="text-warning" style="width: 48px; height: 48px;"></i>
                                 </div>
                                 <h5 class="mb-0 fw-bold text-primary">{{ $subscription->package->name ?? 'N/A' }}</h5>
                                 <small class="text-muted">Current Plan</small>
                             </div>
-                            <div class="col-md-2 text-center border-start">
+                            <div class="col-6 col-md-2 text-center border-start">
                                 <h4 class="mb-0 fw-bold">${{ $subscription->package->price ?? 0 }}</h4>
                                 <small class="text-muted">{{ ucfirst($subscription->package->duration_type ?? 'N/A') }}</small>
                             </div>
-                            <div class="col-md-3 text-center border-start">
+                            <div class="col-6 col-md-3 text-center border-start">
                                 <p class="mb-1 text-muted">Start Date</p>
                                 <h6 class="mb-0 fw-semibold">{{ $subscription->start_date ? $subscription->start_date->format('M d, Y') : 'N/A' }}</h6>
                             </div>
-                            <div class="col-md-2 text-center border-start">
+                            <div class="col-6 col-md-2 text-center border-start">
                                 <p class="mb-1 text-muted">Expires</p>
                                 <h6 class="mb-0 fw-semibold">{{ $subscription->end_date ? $subscription->end_date->format('M d, Y') : 'N/A' }}</h6>
                                 @if($subscription->end_date)
@@ -233,7 +233,7 @@
                                     </small>
                                 @endif
                             </div>
-                            <div class="col-md-2 text-center border-start">
+                            <div class="col-6 col-md-2 text-center border-start">
                                 <span class="badge bg-{{ $subscription->status === 'active' ? 'success' : ($subscription->status === 'expired' ? 'danger' : 'warning') }} px-3 py-2">
                                     <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> {{ ucfirst($subscription->status) }}
                                 </span>
@@ -241,11 +241,11 @@
                         </div>
 
                         {{-- Package Features --}}
-                        @if(isset($subscription->package->packageFeatures) && $subscription->package->packageFeatures->count() > 0)
+                        @if(isset($subscription->package->features) && $subscription->package->features->count() > 0)
                             <div class="border-top mt-3 pt-3">
                                 <h6 class="mb-3 fw-semibold">Package Features</h6>
                                 <div class="row g-2">
-                                    @foreach($subscription->package->packageFeatures as $feature)
+                                    @foreach($subscription->package->features as $feature)
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center">
                                                 <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
@@ -331,7 +331,7 @@
                                                     @else
                                                         <div class="avatar avatar-sm me-2">
                                                             <span class="avatar-title rounded-circle bg-primary fw-bold">
-                                                                {{ substr($artist->stage_name ?? 'A', 0, 1) }}
+                                                                {{ $artist->initials }}
                                                             </span>
                                                         </div>
                                                     @endif
@@ -428,7 +428,7 @@
                                 <tbody>
                                     @foreach($bookings as $booking)
                                         <tr>
-                                            <td class="px-3"><strong class="text-primary">#{{ $booking->id }}</strong></td>
+                                            <td class="px-3"><strong class="text-primary">#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
                                             <td>
                                                 <div>
                                                     <p class="mb-0 fw-semibold">{{ $booking->name }} {{ $booking->surname }}</p>
@@ -569,28 +569,38 @@
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline">
-                        @php
-                            $activities = [
-                                ['icon' => 'ti-user-plus', 'color' => 'primary', 'title' => 'New artist added', 'desc' => 'John Smith joined as DJ', 'time' => '2 hours ago'],
-                                ['icon' => 'ti-calendar-check', 'color' => 'success', 'title' => 'Booking confirmed', 'desc' => 'Wedding event for Sarah & Tom', 'time' => '5 hours ago'],
-                                ['icon' => 'ti-edit', 'color' => 'warning', 'title' => 'Profile updated', 'desc' => 'Company information modified', 'time' => '1 day ago'],
-                                ['icon' => 'ti-star', 'color' => 'info', 'title' => 'New review received', 'desc' => '5-star rating from customer', 'time' => '2 days ago'],
-                                ['icon' => 'ti-credit-card', 'color' => 'purple', 'title' => 'Subscription renewed', 'desc' => 'Premium plan extended', 'time' => '3 days ago'],
-                            ];
-                        @endphp
-
-                        @foreach($activities as $activity)
+                        @forelse($activityLogs ?? [] as $log)
+                            @php
+                                $actionColor = match($log->action) {
+                                    'created' => 'success',
+                                    'updated' => 'warning',
+                                    'deleted' => 'danger',
+                                    default => 'primary',
+                                };
+                            @endphp
                             <div class="timeline-item">
-                                <div class="timeline-icon bg-{{ $activity['color'] }}-subtle text-{{ $activity['color'] }}">
-                                    <i class="{{ $activity['icon'] }}"></i>
+                                <div class="timeline-icon bg-{{ $actionColor }}-subtle text-{{ $actionColor }}">
+                                    <i data-lucide="activity" style="width: 18px; height: 18px;"></i>
                                 </div>
                                 <div class="timeline-content">
-                                    <h6 class="mb-1 fw-semibold">{{ $activity['title'] }}</h6>
-                                    <p class="text-muted mb-1">{{ $activity['desc'] }}</p>
-                                    <small class="text-muted"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $activity['time'] }}</small>
+                                    <h6 class="mb-1 fw-semibold">{{ ucfirst($log->action ?? 'activity') }}</h6>
+                                    <p class="text-muted mb-1">{{ $log->description ?? 'No description available' }}</p>
+                                    <small class="text-muted d-block">
+                                        <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+                                        {{ $log->user->name ?? 'System' }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                        {{ $log->created_at?->diffForHumans() }}
+                                    </small>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="text-center py-4">
+                                <i data-lucide="inbox" class="text-muted mb-2" style="width: 32px; height: 32px;"></i>
+                                <p class="text-muted mb-0">No activity logs found for this company.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -704,6 +714,18 @@
 
         .text-purple {
             color: #764ba2;
+        }
+
+        @media (max-width: 767.98px) {
+            #companyTabs {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+
+            #companyTabs .nav-item {
+                min-width: 160px;
+            }
         }
     </style>
 

@@ -5,7 +5,7 @@
     <div class="page-title-head d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fs-xl fw-bold m-0">
-                <i data-lucide="calendar-check" class="me-2"></i>Booking Details #{{ $booking->id }}
+                <i data-lucide="calendar-check" class="me-2"></i>Booking Details #{{ $booking->tracking_code ?? $booking->id }}
             </h4>
             <p class="text-muted mb-0 mt-1">Complete booking information and management</p>
         </div>
@@ -58,7 +58,7 @@
                         </div>
                         <div class="col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Booking ID</h6>
-                            <p class="mb-0 fw-bold">#{{ str_pad($booking->id, 6, '0', STR_PAD_LEFT) }}</p>
+                            <p class="mb-0 fw-bold">#{{ $booking->tracking_code ?? $booking->id }}</p>
                         </div>
                         <div class="col-md-3">
                             <h6 class="text-muted mb-1 fw-semibold">Created On</h6>

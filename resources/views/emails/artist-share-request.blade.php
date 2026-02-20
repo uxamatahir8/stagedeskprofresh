@@ -9,9 +9,9 @@
         $artist = $sharedArtist->artist;
     @endphp
 
-    <p>Hello {{ $sharedCompany->user->name }},</p>
+    <p>Hello {{ $sharedCompany->user->name ?? 'Company Admin' }},</p>
 
-    <p><strong>{{ $ownerCompany->company_name }}</strong> would like to share one of their artists with your company.</p>
+    <p><strong>{{ $ownerCompany->name ?? $ownerCompany->company_name ?? 'Partner Company' }}</strong> would like to share one of their artists with your company.</p>
 
     <div class="info-box">
         <strong>🎭 Artist Share Request</strong><br>
@@ -48,7 +48,7 @@
     <table class="details-table">
         <tr>
             <th>Company Name</th>
-            <td><strong>{{ $ownerCompany->company_name }}</strong></td>
+            <td><strong>{{ $ownerCompany->name ?? $ownerCompany->company_name ?? 'N/A' }}</strong></td>
         </tr>
         <tr>
             <th>Contact Person</th>

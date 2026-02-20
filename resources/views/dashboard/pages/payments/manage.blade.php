@@ -23,7 +23,12 @@
     <div class="card">
         <div class="card-header justify-content-between">
             <h4 class="card-title">{{ $title }}</h4>
-            <a href="{{ route('payments.index') }}" class="btn btn-primary">Payments List</a>
+            <div>
+                @if(in_array(auth()->user()->role->role_key, ['master_admin', 'company_admin']))
+                    <a href="{{ route('payment-methods.index') }}" class="btn btn-info me-2">Payment Methods</a>
+                @endif
+                <a href="{{ route('payments.index') }}" class="btn btn-primary">Payments List</a>
+            </div>
         </div>
 
         <div class="card-body">
@@ -39,38 +44,47 @@
                 <div class="row">
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Payment Type <span class="text-danger">*</span></label>
+                        @php
+                            $roleKey = auth()->user()->role->role_key;
+                            $selectedType = old('type', $payment->type ?? ($roleKey === 'company_admin' ? 'subscription' : 'booking'));
+                        @endphp
                         <select name="type" class="form-control form-select required">
                             <option value="">Select Type</option>
-                            <option value="booking" {{ old('type', $payment->type ?? '') == 'booking' ? 'selected' : '' }}>
+                            <option value="booking" {{ $selectedType == 'booking' ? 'selected' : '' }} {{ $roleKey === 'company_admin' ? 'disabled' : '' }}>
                                 Booking Payment
                             </option>
-                            <option value="subscription" {{ old('type', $payment->type ?? '') == 'subscription' ? 'selected' : '' }}>
+                            <option value="subscription" {{ $selectedType == 'subscription' ? 'selected' : '' }} {{ $roleKey === 'customer' ? 'disabled' : '' }}>
                                 Subscription Payment
                             </option>
                         </select>
+                        @if($roleKey === 'customer')
+                            <small class="text-muted">Customers can submit booking payments only.</small>
+                        @elseif($roleKey === 'company_admin')
+                            <small class="text-muted">Company admins can submit subscription payments to master admin.</small>
+                        @endif
                     </div>
 
-                    <div class="col-lg-6 mb-3">
+                    <div class="col-lg-6 mb-3 payment-booking-wrap">
                         <label class="col-form-label">Booking Request</label>
                         <select name="booking_requests_id" class="form-control form-select">
                             <option value="">Select Booking (Optional)</option>
                             @foreach ($bookingRequests as $booking)
                                 <option value="{{ $booking->id }}"
                                     {{ old('booking_requests_id', $payment->booking_requests_id ?? '') == $booking->id ? 'selected' : '' }}>
-                                    #{{ $booking->id }} - {{ $booking->name }} {{ $booking->surname }}
+                                    #{{ $booking->tracking_code ?? $booking->id }} - {{ $booking->name }} {{ $booking->surname }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <div class="col-lg-6 mb-3">
+                    <div class="col-lg-6 mb-3 payment-subscription-wrap">
                         <label class="col-form-label">Subscription</label>
-                        <select name="company_subscription_id" class="form-control form-select">
+                        <select name="subscription_id" class="form-control form-select">
                             <option value="">Select Subscription (Optional)</option>
                             @if(isset($subscriptions))
                                 @foreach ($subscriptions as $subscription)
                                     <option value="{{ $subscription->id }}"
-                                        {{ old('company_subscription_id', $payment->company_subscription_id ?? '') == $subscription->id ? 'selected' : '' }}>
+                                        {{ old('subscription_id', $payment->subscription_id ?? '') == $subscription->id ? 'selected' : '' }}>
                                         {{ $subscription->plan }} ({{ $subscription->package_name }})
                                     </option>
                                 @endforeach
@@ -96,15 +110,25 @@
                     </div>
 
                     <div class="col-lg-6 mb-3">
-                        <label class="col-form-label">Payment Method <span class="text-danger">*</span></label>
-                        <select name="payment_method" class="form-control form-select required">
+                        <label class="col-form-label">Receive-To Payment Method <span class="text-danger">*</span></label>
+                        <select name="payment_method_id" class="form-control form-select required">
                             <option value="">Select Method</option>
-                            <option value="credit_card" {{ old('payment_method', $payment->payment_method ?? '') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                            <option value="debit_card" {{ old('payment_method', $payment->payment_method ?? '') == 'debit_card' ? 'selected' : '' }}>Debit Card</option>
-                            <option value="bank_transfer" {{ old('payment_method', $payment->payment_method ?? '') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                            <option value="paypal" {{ old('payment_method', $payment->payment_method ?? '') == 'paypal' ? 'selected' : '' }}>PayPal</option>
-                            <option value="stripe" {{ old('payment_method', $payment->payment_method ?? '') == 'stripe' ? 'selected' : '' }}>Stripe</option>
+                            @foreach(($paymentMethods ?? collect()) as $method)
+                                <option value="{{ $method->id }}" {{ (string) old('payment_method_id', $payment->payment_method_id ?? '') === (string) $method->id ? 'selected' : '' }}>
+                                    {{ $method->display_name }} ({{ ucfirst(str_replace('_', ' ', $method->method_type)) }})
+                                </option>
+                            @endforeach
                         </select>
+                        @if(($paymentMethods ?? collect())->isEmpty())
+                            <small class="text-danger">No active receiving payment methods are currently available.</small>
+                        @endif
+                        <small class="text-muted">
+                            @if(auth()->user()->role->role_key === 'customer')
+                                Select a company payment method to submit your booking payment manually.
+                            @elseif(auth()->user()->role->role_key === 'company_admin')
+                                Select a master admin payment method to pay subscriptions manually.
+                            @endif
+                        </small>
                     </div>
 
                     <div class="col-lg-6 mb-3">
@@ -138,4 +162,29 @@
             </form>
         </div>
     </div>
+    @push('scripts')
+        <script>
+            (function () {
+                var typeSelect = document.querySelector('select[name="type"]');
+                var bookingWrap = document.querySelector('.payment-booking-wrap');
+                var subscriptionWrap = document.querySelector('.payment-subscription-wrap');
+                var bookingSelect = document.querySelector('select[name="booking_requests_id"]');
+                var subscriptionSelect = document.querySelector('select[name="subscription_id"]');
+
+                function updateTypeVisibility() {
+                    if (!typeSelect) return;
+                    var isBooking = typeSelect.value === 'booking';
+                    if (bookingWrap) bookingWrap.style.display = isBooking ? '' : 'none';
+                    if (subscriptionWrap) subscriptionWrap.style.display = isBooking ? 'none' : '';
+                    if (!isBooking && bookingSelect) bookingSelect.value = '';
+                    if (isBooking && subscriptionSelect) subscriptionSelect.value = '';
+                }
+
+                if (typeSelect) {
+                    typeSelect.addEventListener('change', updateTypeVisibility);
+                    updateTypeVisibility();
+                }
+            })();
+        </script>
+    @endpush
 @endsection

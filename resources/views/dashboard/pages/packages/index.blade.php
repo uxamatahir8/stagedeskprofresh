@@ -31,6 +31,7 @@
         </div>
 
         <div class="card-body">
+            <div class="table-responsive">
             <table data-tables="export-data-dropdown" class="table table-striped align-middle mb-0">
                 <thead class="thead-sm text-uppercase fs-xxs">
                     <tr>
@@ -83,6 +84,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div> <!-- end card-body -->
     </div> <!-- end card -->
 @endsection

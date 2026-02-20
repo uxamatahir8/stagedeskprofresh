@@ -55,6 +55,26 @@
                         </div>
 
                         <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Category:</div>
+                            <div class="col-8"><span class="badge badge-soft-secondary text-uppercase">{{ $activityLog->category ?? 'general' }}</span></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Severity:</div>
+                            <div class="col-8"><span class="badge badge-soft-info text-uppercase">{{ $activityLog->severity ?? 'info' }}</span></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Status:</div>
+                            <div class="col-8">{{ ucfirst($activityLog->status ?? 'N/A') }}</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Event Key:</div>
+                            <div class="col-8"><code>{{ $activityLog->event_key ?? 'N/A' }}</code></div>
+                        </div>
+
+                        <div class="row mb-3">
                             <div class="col-4 fw-semibold">Description:</div>
                             <div class="col-8">{{ $activityLog->description }}</div>
                         </div>
@@ -82,11 +102,21 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Request ID:</div>
+                            <div class="col-8"><small>{{ $activityLog->request_id ?? 'N/A' }}</small></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-4 fw-semibold">Flow Key:</div>
+                            <div class="col-8"><small>{{ $activityLog->correlation_key ?? 'N/A' }}</small></div>
+                        </div>
+
                         @if($activityLog->properties)
                         <div class="row mb-3">
                             <div class="col-4 fw-semibold">Properties:</div>
                             <div class="col-8">
-                                <pre class="bg-light p-3 rounded"><code>{{ json_encode(json_decode($activityLog->properties), JSON_PRETTY_PRINT) }}</code></pre>
+                                <pre class="bg-light p-3 rounded"><code>{{ json_encode($activityLog->properties, JSON_PRETTY_PRINT) }}</code></pre>
                             </div>
                         </div>
                         @endif

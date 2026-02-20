@@ -180,7 +180,7 @@
                     <div class="col-lg-6 mb-3">
                         <label class="col-form-label">Date of Birth <span class="text-danger">*</span></label>
                         <input type="text" name="date_of_birth" class="form-control required @error('date_of_birth') is-invalid @enderror" data-provider="flatpickr"
-                            data-date-format="Y-m-d" data-maxDate="{{ now()->subDays(5)->format('Y-m-d') }}"
+                            data-date-format="Y-m-d" data-maxDate="{{ now()->subYears(18)->format('Y-m-d') }}"
                             placeholder="Select date of birth"
                             value="{{ old('date_of_birth', $booking->date_of_birth ?? '') }}">
                         @error('date_of_birth')
@@ -287,6 +287,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const bookingForm = document.querySelector('form.validate_form');
             const eventTypeSelect = document.querySelector('select[name="event_type_id"]');
             const weddingFields = document.getElementById('wedding_fields');
             const weddingInputs = weddingFields.querySelectorAll('.wedding-field');
@@ -418,6 +419,24 @@
             setTimeout(() => {
                 initializeFlatpickr();
             }, 100);
+
+            // Client-side 18+ validation for DOB (matches backend validation)
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', function(e) {
+                    const dobInput = bookingForm.querySelector('input[name="date_of_birth"]');
+                    if (!dobInput || !dobInput.value) return;
+
+                    const now = new Date();
+                    const minDob = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
+                    const selectedDob = new Date(dobInput.value + 'T00:00:00');
+
+                    if (selectedDob > minDob) {
+                        e.preventDefault();
+                        alert('Customer must be at least 18 years old.');
+                        dobInput.focus();
+                    }
+                });
+            }
 
             // Run on page load
             toggleWeddingFields();

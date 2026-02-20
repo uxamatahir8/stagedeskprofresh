@@ -13,7 +13,7 @@
                 @endif
             </p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <button class="btn btn-light btn-sm" onclick="location.reload()">
                 <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh
             </button>
@@ -54,6 +54,23 @@
         </div>
     </div>
 
+    {{-- Important Alerts --}}
+    @if(!empty($dashboardAlerts ?? []))
+        <div class="row g-3 mb-4">
+            @foreach($dashboardAlerts as $alert)
+                <div class="col-lg-4">
+                    <div class="alert alert-{{ $alert['type'] }} border-0 shadow-sm mb-0 d-flex align-items-start">
+                        <i data-lucide="{{ $alert['icon'] }}" class="me-2 mt-1" style="width:18px;height:18px;"></i>
+                        <div>
+                            <h6 class="mb-1">{{ $alert['title'] }}</h6>
+                            <p class="mb-0 small">{{ $alert['message'] }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     {{-- Main Stats Cards --}}
     <div class="row g-3 mb-4">
         @php
@@ -61,45 +78,45 @@
 
             if(Auth::user()->role->role_key === 'master_admin') {
                 $mainStats = [
-                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'from last month'],
-                    ['title' => 'Pending Requests', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
-                    ['title' => 'Revenue', 'value' => '$' . number_format($stats['total_revenue'] ?? 0), 'icon' => 'ti-currency-dollar', 'color' => 'success', 'change' => '+23.1%', 'changeType' => 'up', 'subtitle' => 'total earnings'],
-                    ['title' => 'Active Companies', 'value' => $stats['active_companies'] ?? 0, 'icon' => 'ti-building', 'color' => 'info', 'change' => '+5.2%', 'changeType' => 'up', 'subtitle' => 'registered companies'],
+                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'from last month'],
+                    ['title' => 'Pending Requests', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
+                    ['title' => 'Revenue', 'value' => '$' . number_format($stats['total_revenue'] ?? 0), 'icon' => 'dollar-sign', 'color' => 'success', 'change' => '+23.1%', 'changeType' => 'up', 'subtitle' => 'total earnings'],
+                    ['title' => 'Active Companies', 'value' => $stats['active_companies'] ?? 0, 'icon' => 'building-2', 'color' => 'info', 'change' => '+5.2%', 'changeType' => 'up', 'subtitle' => 'registered companies'],
                 ];
             } elseif(Auth::user()->role->role_key === 'company_admin') {
                 $mainStats = [
-                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'this month'],
-                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting response'],
-                    ['title' => 'Active Artists', 'value' => $stats['active_artists'] ?? 0, 'icon' => 'ti-microphone-2', 'color' => 'info', 'change' => '+3.5%', 'changeType' => 'up', 'subtitle' => 'available now'],
-                    ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
+                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'this month'],
+                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting response'],
+                    ['title' => 'Active Artists', 'value' => $stats['active_artists'] ?? 0, 'icon' => 'mic', 'color' => 'info', 'change' => '+3.5%', 'changeType' => 'up', 'subtitle' => 'available now'],
+                    ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
                 ];
-            } elseif(in_array(Auth::user()->role->role_key, ['artist', 'dj'])) {
+            } elseif(Auth::user()->role->role_key === 'artist') {
                 $mainStats = [
-                    ['title' => 'Assigned Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
-                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
-                    ['title' => 'Rating', 'value' => number_format($stats['average_rating'] ?? 0, 1), 'icon' => 'ti-star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
-                    ['title' => 'Confirmed', 'value' => $stats['confirmed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'confirmed events'],
+                    ['title' => 'Assigned Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'clock', 'color' => 'warning', 'change' => '+8.3%', 'changeType' => 'up', 'subtitle' => 'awaiting action'],
+                    ['title' => 'Rating', 'value' => number_format($stats['average_rating'] ?? 0, 1), 'icon' => 'star', 'color' => 'success', 'change' => '+0.3', 'changeType' => 'up', 'subtitle' => 'average rating'],
+                    ['title' => 'Confirmed', 'value' => $stats['confirmed_bookings'] ?? 0, 'icon' => 'check', 'color' => 'info', 'change' => 'Active', 'changeType' => 'neutral', 'subtitle' => 'confirmed events'],
                 ];
             } elseif(Auth::user()->role->role_key === 'affiliate') {
                 $mainStats = [
-                    ['title' => 'Total Referrals', 'value' => $stats['total_referrals'] ?? 0, 'icon' => 'ti-users', 'color' => 'primary', 'change' => '+5%', 'changeType' => 'up', 'subtitle' => 'all time'],
-                    ['title' => 'Active Referrals', 'value' => $stats['active_referrals'] ?? 0, 'icon' => 'ti-user-check', 'color' => 'success', 'change' => 'Verified', 'changeType' => 'neutral', 'subtitle' => 'active users'],
-                    ['title' => 'Total Commission', 'value' => '$' . number_format($stats['total_commissions'] ?? 0, 2), 'icon' => 'ti-currency-dollar', 'color' => 'info', 'change' => '+12%', 'changeType' => 'up', 'subtitle' => 'total earned'],
-                    ['title' => 'Pending Payout', 'value' => '$' . number_format($stats['pending_commissions'] ?? 0, 2), 'icon' => 'ti-wallet', 'color' => 'warning', 'change' => 'Pending', 'changeType' => 'neutral', 'subtitle' => 'awaiting payout'],
+                    ['title' => 'Total Referrals', 'value' => $stats['total_referrals'] ?? 0, 'icon' => 'users', 'color' => 'primary', 'change' => '+5%', 'changeType' => 'up', 'subtitle' => 'all time'],
+                    ['title' => 'Active Referrals', 'value' => $stats['active_referrals'] ?? 0, 'icon' => 'user-check', 'color' => 'success', 'change' => 'Verified', 'changeType' => 'neutral', 'subtitle' => 'active users'],
+                    ['title' => 'Total Commission', 'value' => '$' . number_format($stats['total_commissions'] ?? 0, 2), 'icon' => 'dollar-sign', 'color' => 'info', 'change' => '+12%', 'changeType' => 'up', 'subtitle' => 'total earned'],
+                    ['title' => 'Pending Payout', 'value' => '$' . number_format($stats['pending_commissions'] ?? 0, 2), 'icon' => 'wallet', 'color' => 'warning', 'change' => 'Pending', 'changeType' => 'neutral', 'subtitle' => 'awaiting payout'],
                 ];
             } else {
                 $mainStats = [
-                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'ti-calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all bookings'],
-                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'ti-clock', 'color' => 'warning', 'change' => 'New', 'changeType' => 'neutral', 'subtitle' => 'awaiting confirmation'],
-                    ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'ti-check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
-                    ['title' => 'Cancelled', 'value' => $stats['cancelled_bookings'] ?? 0, 'icon' => 'ti-x', 'color' => 'danger', 'change' => '-2.1%', 'changeType' => 'down', 'subtitle' => 'cancelled bookings'],
+                    ['title' => 'Total Bookings', 'value' => $stats['total_bookings'] ?? 0, 'icon' => 'calendar-check', 'color' => 'primary', 'change' => '+12.5%', 'changeType' => 'up', 'subtitle' => 'all bookings'],
+                    ['title' => 'Pending', 'value' => $stats['pending_bookings'] ?? 0, 'icon' => 'clock', 'color' => 'warning', 'change' => 'New', 'changeType' => 'neutral', 'subtitle' => 'awaiting confirmation'],
+                    ['title' => 'Completed', 'value' => $stats['completed_bookings'] ?? 0, 'icon' => 'check', 'color' => 'success', 'change' => '+15.7%', 'changeType' => 'up', 'subtitle' => 'successful events'],
+                    ['title' => 'Cancelled', 'value' => $stats['cancelled_bookings'] ?? 0, 'icon' => 'x', 'color' => 'danger', 'change' => '-2.1%', 'changeType' => 'down', 'subtitle' => 'cancelled bookings'],
                 ];
             }
         @endphp
 
         @foreach($mainStats as $index => $stat)
             <div class="col-md-6 col-xl-3">
-                <div class="card stats-card border-0 shadow-sm h-100" style="animation-delay: {{ $index * 0.1 }}s;">
+                <div class="card stats-card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div class="flex-grow-1">
@@ -107,18 +124,24 @@
                                 <h2 class="mb-0 fw-bold">{{ $stat['value'] }}</h2>
                             </div>
                             <div class="stats-icon bg-{{ $stat['color'] }}-subtle text-{{ $stat['color'] }}">
-                                <i class="{{ $stat['icon'] }}"></i>
+                                <i data-lucide="{{ $stat['icon'] }}" style="width: 24px; height: 24px;"></i>
                             </div>
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
                             <small class="text-muted">{{ $stat['subtitle'] }}</small>
                             <span class="badge bg-{{ $stat['changeType'] === 'up' ? 'success' : ($stat['changeType'] === 'down' ? 'danger' : 'secondary') }}-subtle text-{{ $stat['changeType'] === 'up' ? 'success' : ($stat['changeType'] === 'down' ? 'danger' : 'secondary') }}">
-                                <i data-lucide="trending-{{ $stat['changeType'] === 'up' ? 'up' : ($stat['changeType'] === 'down' ? 'down' : 'up') }}" style="width: 14px; height: 14px;"></i>
+                                @if($stat['changeType'] === 'up')
+                                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                                @elseif($stat['changeType'] === 'down')
+                                    <i data-lucide="trending-down" style="width: 14px; height: 14px;"></i>
+                                @else
+                                    <i data-lucide="minus" style="width: 14px; height: 14px;"></i>
+                                @endif
                                 {{ $stat['change'] }}
                             </span>
                         </div>
                         <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-{{ $stat['color'] }}" role="progressbar" style="width: {{ rand(60, 95) }}%" aria-valuenow="{{ rand(60, 95) }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-{{ $stat['color'] }}" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
@@ -191,12 +214,125 @@
         </div>
     @endif
 
+    {{-- Infographics + Ops Tables --}}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="wallet-cards" class="me-2 text-success" style="width:20px;height:20px;"></i>Payment Volume Trend
+                    </h5>
+                    <small class="text-muted">Last 6 months amount trend</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container-line">
+                        <canvas id="paymentVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="clipboard-check" class="me-2 text-warning" style="width:20px;height:20px;"></i>Payment Status
+                    </h5>
+                    <small class="text-muted">Operational payment mix</small>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="chart-container-donut">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="table-properties" class="me-2 text-primary" style="width:20px;height:20px;"></i>Event Performance Table
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event Type</th>
+                                    <th class="text-end">Bookings</th>
+                                    <th class="text-end">Share</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $eventRows = collect($eventTypeCounts ?? [])->sortDesc();
+                                    $eventTotal = max(1, $eventRows->sum());
+                                @endphp
+                                @forelse($eventRows as $eventType => $count)
+                                    <tr>
+                                        <td>{{ $eventType }}</td>
+                                        <td class="text-end">{{ $count }}</td>
+                                        <td class="text-end">{{ number_format(($count / $eventTotal) * 100, 1) }}%</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">No event data available.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="radar" class="me-2 text-info" style="width:20px;height:20px;"></i>Executive Snapshot
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Bookings</div>
+                                <div class="h4 mb-0">{{ $stats['total_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Completed</div>
+                                <div class="h4 mb-0">{{ $stats['completed_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Pending</div>
+                                <div class="h4 mb-0">{{ $stats['pending_bookings'] ?? 0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="small text-muted">Notifications</div>
+                                <div class="h4 mb-0">{{ $unreadNotifications ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Charts & Analytics --}}
     <div class="row g-3 mb-4">
         {{-- Booking Trends Chart --}}
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="line-chart" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Booking Trends
@@ -208,7 +344,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <canvas id="bookingTrendChart" height="100"></canvas>
+                    <div class="chart-container-line">
+                        <canvas id="bookingTrendChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -223,13 +361,101 @@
                     <small class="text-muted">Distribution by category</small>
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <canvas id="eventTypeChart" style="max-height: 280px;"></canvas>
+                    <div class="chart-container-donut">
+                        <canvas id="eventTypeChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Quick Actions & Recent Activity --}}
+    {{-- Role-Based Insights --}}
+    @if(!empty($insights['kpis'] ?? []))
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Completion Rate</p>
+                        <h3 class="mb-1">{{ number_format($insights['kpis']['completion_rate'] ?? 0, 1) }}%</h3>
+                        <small class="text-muted">Closed successfully</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Cancellation Rate</p>
+                        <h3 class="mb-1">{{ number_format($insights['kpis']['cancellation_rate'] ?? 0, 1) }}%</h3>
+                        <small class="text-muted">Cancelled bookings</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">Upcoming Events</p>
+                        <h3 class="mb-1">{{ $insights['kpis']['upcoming_events'] ?? 0 }}</h3>
+                        <small class="text-muted">Scheduled ahead</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1 fs-sm text-uppercase">
+                            {{ Auth::user()->role->role_key === 'master_admin' ? 'Revenue This Month' : 'Overdue Open' }}
+                        </p>
+                        <h3 class="mb-1">
+                            @if(Auth::user()->role->role_key === 'master_admin')
+                                ${{ number_format($insights['kpis']['revenue_this_month'] ?? 0, 0) }}
+                            @else
+                                {{ $insights['kpis']['overdue_open'] ?? 0 }}
+                            @endif
+                        </h3>
+                        <small class="text-muted">
+                            {{ Auth::user()->role->role_key === 'master_admin' ? 'Completed payments' : 'Past event date, still open' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i data-lucide="bar-chart-3" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Status Mix
+                        </h5>
+                        <small class="text-muted">Bookings by lifecycle status</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-line" style="height:280px;min-height:280px;">
+                            <canvas id="statusMixChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>6-Month Trend
+                        </h5>
+                        <small class="text-muted">Monthly booking volume</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-line" style="height:280px;min-height:280px;">
+                            <canvas id="monthlyInsightChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Quick Actions & Recent Activity (Master Admin only) --}}
+    @if(Auth::user()->role->role_key === 'master_admin')
     <div class="row g-3 mb-4">
         {{-- Quick Actions --}}
         <div class="col-lg-4">
@@ -269,12 +495,12 @@
         {{-- Activity Timeline --}}
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="activity" class="me-2 text-success" style="width: 20px; height: 20px;"></i>Recent Activity
                         </h5>
-                        <small class="text-muted">Latest updates and actions</small>
+                        <small class="text-muted">Meaningful updates only (latest 10)</small>
                     </div>
                     <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-light">
                         <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> View All
@@ -282,38 +508,48 @@
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline">
-                        @php
-                            $activities = [
-                                ['icon' => 'ti-calendar-check', 'color' => 'success', 'title' => 'New booking received', 'desc' => 'Wedding event for Sarah & John', 'time' => '2 hours ago'],
-                                ['icon' => 'ti-user-plus', 'color' => 'info', 'title' => 'New user registered', 'desc' => 'John Doe joined as customer', 'time' => '5 hours ago'],
-                                ['icon' => 'ti-edit', 'color' => 'warning', 'title' => 'Booking updated', 'desc' => 'Corporate event details changed', 'time' => '1 day ago'],
-                                ['icon' => 'ti-check', 'color' => 'primary', 'title' => 'Booking completed', 'desc' => 'Birthday party at Grand Hotel', 'time' => '2 days ago'],
-                            ];
-                        @endphp
-
-                        @foreach($activities as $activity)
+                        @forelse(($recentActivities ?? collect()) as $activity)
+                            @php
+                                $action = strtolower((string) ($activity->action ?? 'updated'));
+                                $activityMap = [
+                                    'created' => ['icon' => 'plus-circle', 'color' => 'success', 'title' => 'Record created'],
+                                    'updated' => ['icon' => 'edit', 'color' => 'warning', 'title' => 'Record updated'],
+                                    'deleted' => ['icon' => 'trash-2', 'color' => 'danger', 'title' => 'Record deleted'],
+                                    'login' => ['icon' => 'log-in', 'color' => 'info', 'title' => 'User login'],
+                                    'logout' => ['icon' => 'log-out', 'color' => 'secondary', 'title' => 'User logout'],
+                                ];
+                                $meta = $activityMap[$action] ?? ['icon' => 'activity', 'color' => 'primary', 'title' => ucfirst($action)];
+                            @endphp
                             <div class="timeline-item">
-                                <div class="timeline-icon bg-{{ $activity['color'] }}-subtle text-{{ $activity['color'] }}">
-                                    <i class="{{ $activity['icon'] }}"></i>
+                                <div class="timeline-icon bg-{{ $meta['color'] }}-subtle text-{{ $meta['color'] }}">
+                                    <i data-lucide="{{ $meta['icon'] }}" style="width: 18px; height: 18px;"></i>
                                 </div>
                                 <div class="timeline-content">
-                                    <h6 class="mb-1">{{ $activity['title'] }}</h6>
-                                    <p class="text-muted mb-1">{{ $activity['desc'] }}</p>
-                                    <small class="text-muted"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $activity['time'] }}</small>
+                                    <h6 class="mb-1">{{ $meta['title'] }}</h6>
+                                    <p class="text-muted mb-1">
+                                        {{ $activity->description ?: (($activity->user->name ?? 'System') . ' performed an action') }}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                        {{ $activity->created_at?->diffForHumans() }}
+                                    </small>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <p class="text-muted mb-0">No recent activity found.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Recent Bookings Table --}}
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
                         <h5 class="card-title mb-0 fw-semibold">
                             <i data-lucide="list" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>Recent Booking Requests
@@ -345,13 +581,13 @@
                                     @foreach ($recentBookings as $booking)
                                         <tr>
                                             <td class="px-3">
-                                                <strong class="text-primary">#{{ $booking->id }}</strong>
+                                                <strong class="text-primary">#{{ $booking->tracking_code ?? $booking->id }}</strong>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar-sm flex-shrink-0 me-2">
                                                         <span class="avatar-title rounded-circle bg-primary text-white fw-bold fs-xs">
-                                                            {{ substr($booking->name, 0, 1) }}{{ substr($booking->surname ?? '', 0, 1) }}
+                                                            {{ $booking->customer_initials }}
                                                         </span>
                                                     </div>
                                                     <div>
@@ -378,16 +614,16 @@
                                                 @php
                                                     $status = $booking->status ?? 'pending';
                                                     $statusConfig = [
-                                                        'pending' => ['color' => 'warning', 'icon' => 'ti-clock'],
-                                                        'confirmed' => ['color' => 'info', 'icon' => 'ti-check'],
-                                                        'completed' => ['color' => 'success', 'icon' => 'ti-circle-check'],
-                                                        'cancelled' => ['color' => 'danger', 'icon' => 'ti-x'],
-                                                        'rejected' => ['color' => 'danger', 'icon' => 'ti-ban']
+                                                        'pending' => ['color' => 'warning', 'icon' => 'clock'],
+                                                        'confirmed' => ['color' => 'info', 'icon' => 'check'],
+                                                        'completed' => ['color' => 'success', 'icon' => 'circle-check'],
+                                                        'cancelled' => ['color' => 'danger', 'icon' => 'x'],
+                                                        'rejected' => ['color' => 'danger', 'icon' => 'ban']
                                                     ];
-                                                    $config = $statusConfig[$status] ?? ['color' => 'secondary', 'icon' => 'ti-help'];
+                                                    $config = $statusConfig[$status] ?? ['color' => 'secondary', 'icon' => 'help-circle'];
                                                 @endphp
                                                 <span class="badge bg-{{ $config['color'] }}">
-                                                    <i class="{{ $config['icon'] }}"></i> {{ ucfirst($status) }}
+                                                    <i data-lucide="{{ $config['icon'] }}" style="width: 14px; height: 14px;"></i> {{ ucfirst($status) }}
                                                 </span>
                                             </td>
                                             <td>
@@ -588,6 +824,27 @@
             transition: width 1s ease-in-out;
         }
 
+        /* Fixed chart heights prevent Chart.js resize loops */
+        .chart-container-line {
+            position: relative;
+            height: 320px;
+            min-height: 320px;
+            width: 100%;
+        }
+
+        .chart-container-donut {
+            position: relative;
+            height: 280px;
+            min-height: 280px;
+            width: 100%;
+        }
+
+        .chart-container-line canvas,
+        .chart-container-donut canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         /* Card Headers */
         .card-header {
             padding: 1rem 1.5rem;
@@ -605,40 +862,101 @@
         .text-white-50 {
             color: rgba(255, 255, 255, 0.5) !important;
         }
+
+        @media (max-width: 767.98px) {
+            .page-title-head .dropdown,
+            .page-title-head .btn {
+                width: 100%;
+            }
+
+            .page-title-head .dropdown .btn {
+                width: 100%;
+            }
+
+            .chart-container-line {
+                height: 260px;
+                min-height: 260px;
+            }
+
+            .chart-container-donut {
+                height: 240px;
+                min-height: 240px;
+            }
+        }
     </style>
+
+    @php
+        $fallbackEventTypes = ['Wedding' => 45, 'Corporate' => 30, 'Birthday' => 25];
+        $dashboardChartData = [
+            'bookingCounts' => $bookingStats['counts'] ?? [12, 19, 15, 25, 22, 30, 28],
+            'bookingDates' => $bookingStats['dates'] ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'eventTypeLabels' => array_keys($eventTypeCounts ?? $fallbackEventTypes),
+            'eventTypeValues' => array_values($eventTypeCounts ?? $fallbackEventTypes),
+            'statusLabels' => $insights['status_labels'] ?? [],
+            'statusValues' => $insights['status_values'] ?? [],
+            'monthlyLabels' => $insights['monthly_labels'] ?? [],
+            'monthlyValues' => $insights['monthly_values'] ?? [],
+            'paymentLabels' => $paymentInsights['labels'] ?? [],
+            'paymentValues' => $paymentInsights['values'] ?? [],
+            'paymentStatusLabels' => $paymentInsights['status_labels'] ?? [],
+            'paymentStatusValues' => $paymentInsights['status_values'] ?? [],
+        ];
+    @endphp
+    <script id="dashboard-chart-data" type="application/json">@json($dashboardChartData)</script>
 
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            // Booking Trend Chart
+            (function() {
+                // Initialize Lucide icons for stats and timeline
+                var lib = window.lucide || window.Lucide;
+                if (lib && typeof lib.createIcons === 'function') {
+                    lib.createIcons();
+                    setTimeout(lib.createIcons, 150);
+                }
+            })();
+
+            var dashboardDataNode = document.getElementById('dashboard-chart-data');
+            var dashboardData = {};
+            try {
+                dashboardData = dashboardDataNode ? JSON.parse(dashboardDataNode.textContent || '{}') : {};
+            } catch (e) {
+                dashboardData = {};
+            }
+
+            // Booking Trend Chart - no animation, fixed Y-axis so it never "grows"
+            var bookingCounts = dashboardData.bookingCounts || [12, 19, 15, 25, 22, 30, 28];
+            var maxCount = Math.max.apply(null, bookingCounts.length ? bookingCounts : [0]);
+            var yMax = Math.max(10, Math.ceil((maxCount + 2) / 5) * 5);
+
             const ctxTrend = document.getElementById('bookingTrendChart');
             if (ctxTrend) {
                 new Chart(ctxTrend, {
                     type: 'line',
                     data: {
-                        labels: {!! json_encode($bookingStats['dates'] ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) !!},
+                        labels: dashboardData.bookingDates || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                         datasets: [{
                             label: 'Bookings',
-                            data: {!! json_encode($bookingStats['counts'] ?? [12, 19, 15, 25, 22, 30, 28]) !!},
+                            data: bookingCounts,
                             borderColor: '#667eea',
                             backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
+                            borderWidth: 2,
                             fill: true,
-                            tension: 0.4,
+                            tension: 0.3,
                             pointBackgroundColor: '#667eea',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: false,
+                        animations: {},
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 backgroundColor: '#fff',
                                 titleColor: '#000',
@@ -648,15 +966,18 @@
                                 padding: 12,
                                 displayColors: false,
                                 callbacks: {
-                                    label: (context) => `Bookings: ${context.parsed.y}`
+                                    label: (context) => 'Bookings: ' + context.parsed.y
                                 }
                             }
                         },
                         scales: {
                             y: {
+                                min: 0,
+                                max: yMax,
                                 beginAtZero: true,
                                 ticks: {
-                                    precision: 0
+                                    precision: 0,
+                                    stepSize: 1
                                 },
                                 grid: {
                                     drawBorder: false,
@@ -664,24 +985,22 @@
                                 }
                             },
                             x: {
-                                grid: {
-                                    display: false
-                                }
+                                grid: { display: false }
                             }
                         }
                     }
                 });
             }
 
-            // Event Types Doughnut Chart
+            // Event Types Doughnut Chart - no animation
             const ctxEvent = document.getElementById('eventTypeChart');
             if (ctxEvent) {
                 new Chart(ctxEvent, {
                     type: 'doughnut',
                     data: {
-                        labels: {!! json_encode(array_keys($eventTypeCounts ?? ['Wedding' => 45, 'Corporate' => 30, 'Birthday' => 25])) !!},
+                        labels: dashboardData.eventTypeLabels || ['Wedding', 'Corporate', 'Birthday'],
                         datasets: [{
-                            data: {!! json_encode(array_values($eventTypeCounts ?? [45, 30, 25])) !!},
+                            data: dashboardData.eventTypeValues || [45, 30, 25],
                             backgroundColor: [
                                 '#667eea',
                                 '#f093fb',
@@ -691,21 +1010,21 @@
                                 '#764ba2'
                             ],
                             borderWidth: 0,
-                            hoverOffset: 10
+                            hoverOffset: 8
                         }]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        animations: {},
                         plugins: {
                             legend: {
                                 position: 'bottom',
                                 labels: {
                                     padding: 15,
                                     usePointStyle: true,
-                                    font: {
-                                        size: 12
-                                    }
+                                    font: { size: 12 }
                                 }
                             },
                             tooltip: {
@@ -717,8 +1036,118 @@
                                 padding: 12,
                                 displayColors: true,
                                 callbacks: {
-                                    label: (context) => `${context.label}: ${context.parsed}`
+                                    label: (context) => context.label + ': ' + context.parsed
                                 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Role insight charts
+            const statusMixCtx = document.getElementById('statusMixChart');
+            if (statusMixCtx) {
+                new Chart(statusMixCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.statusLabels || [],
+                        datasets: [{
+                            label: 'Bookings',
+                            data: dashboardData.statusValues || [],
+                            backgroundColor: ['#f59f00', '#0dcaf0', '#6f42c1', '#198754', '#dc3545', '#6c757d'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const monthlyInsightCtx = document.getElementById('monthlyInsightChart');
+            if (monthlyInsightCtx) {
+                new Chart(monthlyInsightCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dashboardData.monthlyLabels || [],
+                        datasets: [{
+                            label: 'Bookings',
+                            data: dashboardData.monthlyValues || [],
+                            borderColor: '#20c997',
+                            backgroundColor: 'rgba(32, 201, 151, 0.12)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const paymentVolumeCtx = document.getElementById('paymentVolumeChart');
+            if (paymentVolumeCtx) {
+                new Chart(paymentVolumeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.paymentLabels || [],
+                        datasets: [{
+                            label: 'Amount',
+                            data: dashboardData.paymentValues || [],
+                            backgroundColor: 'rgba(13, 202, 240, 0.55)',
+                            borderColor: '#0dcaf0',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const paymentStatusCtx = document.getElementById('paymentStatusChart');
+            if (paymentStatusCtx) {
+                new Chart(paymentStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dashboardData.paymentStatusLabels || [],
+                        datasets: [{
+                            data: dashboardData.paymentStatusValues || [],
+                            backgroundColor: ['#f59f00', '#198754', '#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { usePointStyle: true, padding: 12 }
                             }
                         }
                     }

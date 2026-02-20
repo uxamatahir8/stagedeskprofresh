@@ -23,11 +23,11 @@
             <div class="d-flex align-items-center justify-content-between p-3 border rounded mb-2">
                 <div class="d-flex align-items-center">
                     <div class="avatar-lg me-3">
-                        @if($request->artist->profile_image)
-                            <img src="{{ Storage::url($request->artist->profile_image) }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                        @if($request->artist->image)
+                            <img src="{{ Storage::url($request->artist->image) }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
                         @else
                             <span class="avatar-title rounded-circle bg-primary">
-                                {{ substr($request->artist->stage_name ?? 'A', 0, 1) }}
+                                {{ $request->artist->initials }}
                             </span>
                         @endif
                     </div>
@@ -83,11 +83,11 @@
                                     <div class="card-body">
                                         <div class="d-flex align-items-start mb-3">
                                             <div class="avatar-lg me-3">
-                                                @if($artist->profile_image)
-                                                    <img src="{{ Storage::url($artist->profile_image) }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                                                @if($artist->image)
+                                                    <img src="{{ Storage::url($artist->image) }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                                                 @else
                                                     <span class="avatar-title rounded-circle bg-primary fs-3">
-                                                        {{ substr($artist->stage_name ?? 'A', 0, 1) }}
+                                                        {{ $artist->initials }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -182,11 +182,11 @@
                                     <div class="card-body">
                                         <div class="d-flex align-items-start mb-3">
                                             <div class="avatar-lg me-3">
-                                                @if($share->artist->profile_image)
-                                                    <img src="{{ Storage::url($share->artist->profile_image) }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                                                @if($share->artist->image)
+                                                    <img src="{{ Storage::url($share->artist->image) }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                                                 @else
                                                     <span class="avatar-title rounded-circle bg-info fs-3">
-                                                        {{ substr($share->artist->stage_name ?? 'A', 0, 1) }}
+                                                        {{ $share->artist->initials }}
                                                     </span>
                                                 @endif
                                             </div>

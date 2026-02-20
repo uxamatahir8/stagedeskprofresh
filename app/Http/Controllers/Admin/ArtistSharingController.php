@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Artist;
 use App\Models\Company;
 use App\Models\SharedArtist;
+use App\Models\BookingRequest;
 use App\Models\ActivityLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ArtistSharingController extends Controller
 {
@@ -23,7 +26,7 @@ class ArtistSharingController extends Controller
 
         // Artists I own and can share
         $myArtists = Artist::where('company_id', $companyId)
-            ->with(['user', 'sharedWith'])
+            ->with(['user', 'sharedWith.sharedWithCompany'])
             ->paginate(15, ['*'], 'my');
 
         // Artists shared with me
@@ -58,6 +61,7 @@ class ArtistSharingController extends Controller
      */
     public function shareArtist(Request $request)
     {
+        $this->authorize('share', SharedArtist::class);
         $companyId = Auth::user()->company_id;
 
         $request->validate([
@@ -76,16 +80,37 @@ class ArtistSharingController extends Controller
             return back()->with('error', 'Cannot share artist with your own company');
         }
 
+        $shared = SharedArtist::where('artist_id', $artist->id)
+            ->where('owner_company_id', $companyId)
+            ->where('shared_with_company_id', $request->company_id)
+            ->latest()
+            ->first();
+
+        if ($shared && in_array($shared->status, ['pending', 'accepted']) && $shared->revoked_at === null) {
+            return back()->with('error', 'This artist is already shared or awaiting response for that company.');
+        }
+
         DB::beginTransaction();
         try {
-            $shared = SharedArtist::create([
-                'artist_id' => $artist->id,
-                'owner_company_id' => $companyId,
-                'shared_with_company_id' => $request->company_id,
-                'status' => 'pending',
-                'notes' => $request->notes,
-                'shared_at' => now()
-            ]);
+
+            if ($shared) {
+                $shared->update([
+                    'status' => 'pending',
+                    'notes' => $request->notes,
+                    'shared_at' => now(),
+                    'accepted_at' => null,
+                    'revoked_at' => null,
+                ]);
+            } else {
+                $shared = SharedArtist::create([
+                    'artist_id' => $artist->id,
+                    'owner_company_id' => $companyId,
+                    'shared_with_company_id' => $request->company_id,
+                    'status' => 'pending',
+                    'notes' => $request->notes,
+                    'shared_at' => now()
+                ]);
+            }
 
             ActivityLog::log(
                 'created',
@@ -93,14 +118,20 @@ class ArtistSharingController extends Controller
                 'Artist shared with another company',
                 [
                     'artist_id' => $artist->id,
-                    'shared_with_company' => $request->company_id
+                    'shared_artist_id' => $shared->id,
+                    'owner_company_id' => $companyId,
+                    'shared_with_company_id' => $request->company_id
                 ]
             );
 
-            // Send email to recipient company
-            $recipientCompany = \App\Models\Company::find($request->company_id);
-            if ($recipientCompany && $recipientCompany->user && $recipientCompany->user->email) {
-                \Mail::to($recipientCompany->user->email)->send(
+            // Send email to recipient company admins
+            $recipientAdmins = User::where('company_id', $request->company_id)
+                ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+                ->whereNotNull('email')
+                ->get();
+
+            foreach ($recipientAdmins as $recipientAdmin) {
+                Mail::to($recipientAdmin->email)->send(
                     new \App\Mail\ArtistShareRequest($shared->fresh())
                 );
             }
@@ -119,6 +150,7 @@ class ArtistSharingController extends Controller
      */
     public function acceptShare(SharedArtist $sharedArtist)
     {
+        $this->authorize('accept', $sharedArtist);
         $companyId = Auth::user()->company_id;
 
         // Verify this company is the recipient
@@ -126,7 +158,7 @@ class ArtistSharingController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        if ($sharedArtist->status !== 'pending') {
+        if ($sharedArtist->revoked_at !== null || $sharedArtist->status !== 'pending') {
             return back()->with('error', 'This sharing request is no longer pending');
         }
 
@@ -141,7 +173,12 @@ class ArtistSharingController extends Controller
                 'updated',
                 $sharedArtist,
                 'Artist sharing request accepted',
-                ['shared_artist_id' => $sharedArtist->id]
+                [
+                    'shared_artist_id' => $sharedArtist->id,
+                    'artist_id' => $sharedArtist->artist_id,
+                    'owner_company_id' => $sharedArtist->owner_company_id,
+                    'shared_with_company_id' => $sharedArtist->shared_with_company_id
+                ]
             );
 
             DB::commit();
@@ -158,6 +195,7 @@ class ArtistSharingController extends Controller
      */
     public function rejectShare(SharedArtist $sharedArtist)
     {
+        $this->authorize('reject', $sharedArtist);
         $companyId = Auth::user()->company_id;
 
         // Verify this company is the recipient
@@ -165,7 +203,7 @@ class ArtistSharingController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        if ($sharedArtist->status !== 'pending') {
+        if ($sharedArtist->revoked_at !== null || $sharedArtist->status !== 'pending') {
             return back()->with('error', 'This sharing request is no longer pending');
         }
 
@@ -179,7 +217,12 @@ class ArtistSharingController extends Controller
                 'updated',
                 $sharedArtist,
                 'Artist sharing request rejected',
-                ['shared_artist_id' => $sharedArtist->id]
+                [
+                    'shared_artist_id' => $sharedArtist->id,
+                    'artist_id' => $sharedArtist->artist_id,
+                    'owner_company_id' => $sharedArtist->owner_company_id,
+                    'shared_with_company_id' => $sharedArtist->shared_with_company_id
+                ]
             );
 
             DB::commit();
@@ -196,6 +239,7 @@ class ArtistSharingController extends Controller
      */
     public function revokeShare(SharedArtist $sharedArtist)
     {
+        $this->authorize('revoke', $sharedArtist);
         $companyId = Auth::user()->company_id;
 
         // Verify this company is the owner
@@ -205,6 +249,16 @@ class ArtistSharingController extends Controller
 
         if ($sharedArtist->status === 'revoked') {
             return back()->with('error', 'This sharing has already been revoked');
+        }
+
+        $hasDependentFutureBookings = BookingRequest::where('assigned_artist_id', $sharedArtist->artist_id)
+            ->where('company_id', $sharedArtist->shared_with_company_id)
+            ->whereDate('event_date', '>=', today())
+            ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+            ->exists();
+
+        if ($hasDependentFutureBookings) {
+            return back()->with('error', 'This share cannot be revoked while upcoming active bookings are assigned to this artist.');
         }
 
         DB::beginTransaction();
@@ -218,7 +272,12 @@ class ArtistSharingController extends Controller
                 'updated',
                 $sharedArtist,
                 'Artist sharing revoked by owner',
-                ['shared_artist_id' => $sharedArtist->id]
+                [
+                    'shared_artist_id' => $sharedArtist->id,
+                    'artist_id' => $sharedArtist->artist_id,
+                    'owner_company_id' => $sharedArtist->owner_company_id,
+                    'shared_with_company_id' => $sharedArtist->shared_with_company_id
+                ]
             );
 
             DB::commit();

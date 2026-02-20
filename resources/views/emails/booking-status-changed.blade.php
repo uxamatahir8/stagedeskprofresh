@@ -3,7 +3,7 @@
 @section('content')
     <h2 style="color: #333; margin-bottom: 20px;">Booking Status Updated</h2>
 
-    <p>Hello {{ $booking->customer->name }},</p>
+    <p>Hello {{ $booking->user->name ?? ($booking->name . ' ' . $booking->surname) }},</p>
 
     <p>The status of your booking has been updated.</p>
 
@@ -41,7 +41,7 @@
     <table class="details-table">
         <tr>
             <th>Booking ID</th>
-            <td><strong>{{ $booking->booking_id }}</strong></td>
+            <td><strong>#{{ $booking->tracking_code ?? $booking->id }}</strong></td>
         </tr>
         <tr>
             <th>Event Type</th>
@@ -53,12 +53,18 @@
         </tr>
         <tr>
             <th>Event Time</th>
-            <td>{{ \Carbon\Carbon::parse($booking->event_time)->format('h:i A') }}</td>
+            <td>
+                @if($booking->start_time || $booking->wedding_time)
+                    {{ \Carbon\Carbon::parse($booking->start_time ?? $booking->wedding_time)->format('h:i A') }}
+                @else
+                    Not specified
+                @endif
+            </td>
         </tr>
-        @if($booking->artist)
+        @if($booking->assignedArtist)
         <tr>
             <th>Artist</th>
-            <td>{{ $booking->artist->user->name ?? 'N/A' }}</td>
+            <td>{{ $booking->assignedArtist->user->name ?? 'N/A' }}</td>
         </tr>
         @endif
     </table>
