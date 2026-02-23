@@ -22,7 +22,7 @@ class ViewServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        View::composer('*', function ($view) {
+        View::composer('dashboard.includes.topbar', function ($view) {
 
             if (! Auth::check()) {
                 return;

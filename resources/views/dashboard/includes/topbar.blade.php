@@ -221,12 +221,12 @@
 
                         <!-- My Profile -->
                         @php
-                            $roleKey = Auth::user()->role->role_key;
+                            $roleKey = Auth::user()->role->role_key ?? '';
                             $profileRoute = match($roleKey) {
                                 'customer' => route('customer.profile'),
                                 'artist' => route('artist.profile'),
                                 'affiliate' => route('affiliate.profile'),
-                                default => route('settings')
+                                default => route('profile')
                             };
                         @endphp
                         <a href="{{ $profileRoute }}" class="dropdown-item">

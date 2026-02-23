@@ -8,10 +8,14 @@
             color: #fff;
             border-color: #000;
         }
+        .about-welcome-section-area.about2.header-bg {
+            background-image: url("{{ asset('landing/images/background/header2-bg.png') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
     </style>
     <!--===== WELCOME STARTS =======-->
-    <div class="about-welcome-section-area about2"
-        style="background-image: url({{ asset('landing/images/background/header2-bg.png') }}); background-repeat: no-repeat; background-size: cover;">
+    <div class="about-welcome-section-area about2 header-bg">
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 m-auto">
@@ -110,7 +114,7 @@
                                                     <div class="text-muted small">
                                                         <i class="fa-solid fa-eye"></i> {{ $blog->views_count ?? 0 }} views
                                                         <span class="mx-2">|</span>
-                                                        <i class="fa-solid fa-comment"></i> {{ $blog->approvedComments->count() }} comments
+                                                        <i class="fa-solid fa-comment"></i> {{ $blog->approved_comments_count ?? 0 }} comments
                                                     </div>
                                                     <small class="text-muted">
                                                         <i class="fa-solid fa-calendar"></i>
@@ -135,63 +139,92 @@
                                     </div>
                                 @endforeach
                                 <div class="col-lg-12">
+                                    @if ($blogs->hasPages())
                                     <div class="space20"></div>
                                     <div class="pagination-area">
-                                        <nav aria-label="Page navigation example">
-                                            <ul class="pagination justify-content-center">
+                                        <nav aria-label="Blog list pagination">
+                                            @php
+                                                $lastPage = $blogs->lastPage();
+                                                $current = $blogs->currentPage();
+                                                $delta = 2;
+                                                $elements = [1];
+                                                if ($lastPage <= 7) {
+                                                    for ($i = 2; $i <= $lastPage; $i++) {
+                                                        $elements[] = $i;
+                                                    }
+                                                } else {
+                                                    $left = max(2, $current - $delta);
+                                                    $right = min($lastPage - 1, $current + $delta);
+                                                    if ($left > 2) {
+                                                        $elements[] = '...';
+                                                    }
+                                                    for ($i = $left; $i <= $right; $i++) {
+                                                        $elements[] = $i;
+                                                    }
+                                                    if ($right < $lastPage - 1) {
+                                                        $elements[] = '...';
+                                                    }
+                                                    if ($lastPage > 1) {
+                                                        $elements[] = $lastPage;
+                                                    }
+                                                }
+                                            @endphp
+                                            <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
 
-                                                {{-- Previous Page Link --}}
+                                                {{-- First --}}
+                                                <li class="page-item {{ $blogs->onFirstPage() ? 'disabled' : '' }}">
+                                                    <a class="page-link" href="{{ $blogs->onFirstPage() ? '#' : $blogs->url(1) }}" aria-label="First">
+                                                        <span aria-hidden="true">First</span>
+                                                    </a>
+                                                </li>
+
+                                                {{-- Previous --}}
                                                 @if ($blogs->onFirstPage())
                                                     <li class="page-item disabled">
-                                                        <a class="page-link" href="#" aria-label="Previous">
-                                                            <span aria-hidden="true"><i
-                                                                    class="fa-solid fa-angle-left"></i></span>
-                                                        </a>
+                                                        <a class="page-link" href="#" aria-label="Previous"><i class="fa-solid fa-angle-left"></i></a>
                                                     </li>
                                                 @else
                                                     <li class="page-item">
-                                                        <a class="page-link" href="{{ $blogs->previousPageUrl() }}"
-                                                            aria-label="Previous">
-                                                            <span aria-hidden="true"><i
-                                                                    class="fa-solid fa-angle-left"></i></span>
-                                                        </a>
+                                                        <a class="page-link" href="{{ $blogs->previousPageUrl() }}" aria-label="Previous"><i class="fa-solid fa-angle-left"></i></a>
                                                     </li>
                                                 @endif
 
-                                                {{-- Pagination Elements --}}
-                                                @foreach ($blogs->getUrlRange(1, $blogs->lastPage()) as $page => $url)
-                                                    @if ($page == $blogs->currentPage())
-                                                        <li class="page-item"><a class="page-link active"
-                                                                href="#">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a>
-                                                        </li>
+                                                {{-- Page numbers (1 2 3 ... 5800) --}}
+                                                @foreach ($elements as $page)
+                                                    @if ($page === '...')
+                                                        <li class="page-item disabled"><span class="page-link">…</span></li>
                                                     @else
-                                                        <li class="page-item"><a class="page-link"
-                                                                href="{{ $url }}">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a>
+                                                        <li class="page-item {{ (int) $page === $current ? 'active' : '' }}">
+                                                            <a class="page-link" href="{{ (int) $page === $current ? '#' : $blogs->url($page) }}">{{ $page }}</a>
                                                         </li>
                                                     @endif
                                                 @endforeach
 
-                                                {{-- Next Page Link --}}
+                                                {{-- Next --}}
                                                 @if ($blogs->hasMorePages())
                                                     <li class="page-item">
-                                                        <a class="page-link" href="{{ $blogs->nextPageUrl() }}"
-                                                            aria-label="Next">
-                                                            <span aria-hidden="true"><i
-                                                                    class="fa-solid fa-angle-right"></i></span>
-                                                        </a>
+                                                        <a class="page-link" href="{{ $blogs->nextPageUrl() }}" aria-label="Next"><i class="fa-solid fa-angle-right"></i></a>
                                                     </li>
                                                 @else
                                                     <li class="page-item disabled">
-                                                        <a class="page-link" href="#" aria-label="Next">
-                                                            <span aria-hidden="true"><i
-                                                                    class="fa-solid fa-angle-right"></i></span>
-                                                        </a>
+                                                        <a class="page-link" href="#" aria-label="Next"><i class="fa-solid fa-angle-right"></i></a>
                                                     </li>
                                                 @endif
 
+                                                {{-- Last --}}
+                                                <li class="page-item {{ !$blogs->hasMorePages() ? 'disabled' : '' }}">
+                                                    <a class="page-link" href="{{ !$blogs->hasMorePages() ? '#' : $blogs->url($lastPage) }}" aria-label="Last">
+                                                        <span aria-hidden="true">Last</span>
+                                                    </a>
+                                                </li>
+
                                             </ul>
+                                            <p class="text-center text-muted small mt-2 mb-0">
+                                                Page {{ $current }} of {{ $lastPage }} ({{ $blogs->total() }} articles)
+                                            </p>
                                         </nav>
                                     </div>
+                                    @endif
                                 </div>
                             @else
                                 <div class="text-center mb-4">
@@ -200,7 +233,7 @@
                                         <a href="{{ route('blogs') }}" class="header-btn7 mt-3">View All
                                             Blogs</a>
                                     @else
-                                        <h4>No blogs found</strong></h4>
+                                        <h4>No blogs found</h4>
                                         <a href="{{ route('home') }}" class="header-btn7 mt-3">Home</a>
                                     @endif
                                 </div>
