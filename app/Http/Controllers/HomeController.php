@@ -98,7 +98,7 @@ class HomeController extends Controller
     public function blogs($categorySlug = null)
     {
         $title = 'Insights & Updates';
-        $query = Blog::with('category');
+        $query = Blog::with('category')->withCount('approvedComments')->where('status', 'published');
 
         $category = null;
 
