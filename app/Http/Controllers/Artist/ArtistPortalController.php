@@ -8,6 +8,8 @@ use App\Models\BookingRequest;
 use App\Models\ArtistRequest;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\ArtistEarning;
+use App\Models\ArtistWithdrawalRequest;
 use App\Models\ActivityLog;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -516,47 +518,92 @@ class ArtistPortalController extends Controller
     }
 
     /**
-     * My Earnings
+     * My Earnings & Withdrawals
      */
     public function earnings(Request $request)
     {
         $title = 'My Earnings';
         $artist = Auth::user()->artist;
-
-        $query = Payment::whereHas('bookingRequest', fn($q) =>
-                $q->where('assigned_artist_id', $artist->id)
-            )
-            ->with('bookingRequest');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (!$artist) {
+            return redirect()->route('artist.dashboard');
         }
 
-        $payments = $query->orderBy('created_at', 'desc')->paginate(20);
+        $artistEarnings = ArtistEarning::where('artist_id', $artist->id)
+            ->with(['bookingRequest', 'payment'])
+            ->orderByDesc('created_at')
+            ->paginate(15, ['*'], 'earnings_page');
 
-        // Earnings summary
+        $availableBalance = ArtistEarning::getAvailableBalanceForArtist($artist->id);
+        $totalEarned = (float) ArtistEarning::where('artist_id', $artist->id)->sum('amount');
+        $totalWithdrawn = (float) ArtistWithdrawalRequest::where('artist_id', $artist->id)->where('status', 'paid')->sum('amount');
+
+        $withdrawalRequests = ArtistWithdrawalRequest::where('artist_id', $artist->id)
+            ->orderByDesc('created_at')
+            ->get();
+
         $summary = [
-            'total_earnings' => Payment::whereHas('bookingRequest', fn($q) =>
-                    $q->where('assigned_artist_id', $artist->id)
-                )
-                ->where('status', 'completed')
-                ->sum('amount'),
-            'pending_earnings' => Payment::whereHas('bookingRequest', fn($q) =>
-                    $q->where('assigned_artist_id', $artist->id)
-                )
-                ->where('status', 'pending')
-                ->sum('amount'),
-            'monthly_earnings' => Payment::whereHas('bookingRequest', fn($q) =>
-                    $q->where('assigned_artist_id', $artist->id)
-                )
-                ->where('status', 'completed')
-                ->whereMonth('created_at', now()->month)
-                ->sum('amount'),
+            'available_balance' => $availableBalance,
+            'total_earned' => $totalEarned,
+            'total_withdrawn' => $totalWithdrawn,
+            'pending_withdrawals' => (float) $withdrawalRequests->whereIn('status', ['pending', 'approved'])->sum('amount'),
         ];
 
         $monthlyEarnings = $this->getMonthlyEarnings($artist->id);
 
-        return view('dashboard.pages.artist.earnings', compact('title', 'payments', 'summary', 'monthlyEarnings'));
+        return view('dashboard.pages.artist.earnings', compact('title', 'artistEarnings', 'summary', 'monthlyEarnings', 'withdrawalRequests'));
+    }
+
+    /**
+     * Request withdrawal (artist)
+     */
+    public function storeWithdrawal(Request $request)
+    {
+        $artist = Auth::user()->artist;
+        if (!$artist) {
+            return back()->with('error', 'Artist profile required.');
+        }
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'artist_notes' => 'nullable|string|max:500',
+        ]);
+
+        $available = ArtistEarning::getAvailableBalanceForArtist($artist->id);
+        if ($available < (float) $validated['amount']) {
+            return back()->with('error', 'Insufficient balance. Available: ' . number_format($available, 2));
+        }
+
+        $pending = ArtistWithdrawalRequest::where('artist_id', $artist->id)->whereIn('status', ['pending', 'approved'])->sum('amount');
+        if ($pending + (float) $validated['amount'] > $available) {
+            return back()->with('error', 'You already have pending withdrawal requests. Total requested cannot exceed available balance.');
+        }
+
+        $withdrawal = ArtistWithdrawalRequest::create([
+            'artist_id' => $artist->id,
+            'company_id' => $artist->company_id,
+            'amount' => $validated['amount'],
+            'artist_notes' => $validated['artist_notes'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        $companyAdmins = \App\Models\User::where('company_id', $artist->company_id)
+            ->whereHas('role', fn($q) => $q->where('role_key', 'company_admin'))
+            ->get();
+        foreach ($companyAdmins as $admin) {
+            $this->notificationService->createForUser(
+                $admin->id,
+                'Artist Withdrawal Request',
+                $artist->user->name . ' requested a withdrawal of ' . number_format($withdrawal->amount, 2),
+                'artist_withdrawal_request',
+                'financial',
+                route('artist-withdrawals.index'),
+                3,
+                $admin->company_id,
+                ['withdrawal_id' => $withdrawal->id]
+            );
+        }
+
+        return redirect()->route('artist.earnings')->with('success', 'Withdrawal request submitted. The company will process it shortly.');
     }
 
     /**
@@ -628,11 +675,7 @@ class ArtistPortalController extends Controller
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $months[] = $date->format('M');
-
-            $earnings[] = Payment::whereHas('bookingRequest', fn($q) =>
-                    $q->where('assigned_artist_id', $artistId)
-                )
-                ->where('status', 'completed')
+            $earnings[] = (float) ArtistEarning::where('artist_id', $artistId)
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->sum('amount');

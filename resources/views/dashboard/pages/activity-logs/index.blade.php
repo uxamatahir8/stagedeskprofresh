@@ -1,5 +1,20 @@
 @extends('dashboard.layouts.dashboard')
 
+@push('styles')
+    <style>
+        .activity-logs-pagination svg {
+            width: 14px !important;
+            height: 14px !important;
+            max-width: 14px !important;
+            vertical-align: middle;
+        }
+
+        .activity-logs-pagination .pagination {
+            margin-bottom: 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-title-head d-flex align-items-center">
         <div class="flex-grow-1">
@@ -119,7 +134,7 @@
             </form>
 
             <div class="table-responsive">
-                <table data-tables="export-data-dropdown" class="table table-striped align-middle mb-0">
+                <table class="table table-striped align-middle mb-0">
                     <thead class="thead-sm text-uppercase fs-xxs">
                         <tr>
                             <th>#</th>
@@ -189,7 +204,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-3">
+            <div class="mt-3 activity-logs-pagination">
                 {{ $logs->links() }}
             </div>
         </div>

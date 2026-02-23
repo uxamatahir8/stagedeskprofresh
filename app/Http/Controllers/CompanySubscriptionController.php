@@ -13,6 +13,78 @@ use Illuminate\Support\Facades\DB;
 class CompanySubscriptionController extends Controller
 {
     /**
+     * Show package selection for company admin (no verified subscription yet).
+     */
+    public function choosePackage()
+    {
+        $user = Auth::user();
+        if ($user->role->role_key !== 'company_admin' || !$user->company_id) {
+            return redirect()->route('dashboard')->with('error', 'Invalid access.');
+        }
+
+        $packages = Package::where('status', 'active')->orderBy('price')->get();
+        $title = 'Choose a Package';
+
+        return view('dashboard.pages.packages.choose', compact('title', 'packages'));
+    }
+
+    /**
+     * Create subscription for chosen package and redirect to payment.
+     */
+    public function storeChoosePackage(Request $request)
+    {
+        $user = Auth::user();
+        if ($user->role->role_key !== 'company_admin' || !$user->company_id) {
+            return redirect()->route('dashboard')->with('error', 'Invalid access.');
+        }
+
+        $request->validate(['package_id' => 'required|exists:packages,id']);
+        $package = Package::findOrFail($request->package_id);
+        if ($package->status !== 'active') {
+            return back()->with('error', 'Selected package is not available.');
+        }
+
+        $companyId = (int) $user->company_id;
+
+        $subscription = DB::transaction(function () use ($request, $package, $companyId) {
+            CompanySubscription::where('company_id', $companyId)
+                ->where('status', 'active')
+                ->update(['status' => 'canceled']);
+
+            $startDate = Carbon::now();
+            $durationType = strtolower((string) ($package->duration_type ?? 'monthly'));
+            switch ($durationType) {
+                case 'weekly':
+                    $endDate = $startDate->copy()->addWeek();
+                    break;
+                case 'monthly':
+                    $endDate = $startDate->copy()->addMonth();
+                    break;
+                case 'yearly':
+                    $endDate = $startDate->copy()->addYear();
+                    break;
+                default:
+                    $endDate = $startDate->copy()->addMonth();
+            }
+
+            return CompanySubscription::create([
+                'company_id' => $companyId,
+                'package_id' => $package->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'auto_renew' => false,
+                'status' => 'active',
+            ]);
+        });
+
+        return redirect()->route('payments.create', [
+            'subscription_id' => $subscription->id,
+            'type' => 'subscription',
+            'amount' => $package->price,
+        ])->with('success', 'Package selected. Please submit your subscription payment using one of the payment methods below.');
+    }
+
+    /**
      * Scope query for company_admin: only their company's subscriptions.
      */
     private function scopeSubscriptions()

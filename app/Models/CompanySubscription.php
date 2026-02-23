@@ -25,4 +25,9 @@ class CompanySubscription extends Model
     {
         return $this->belongsTo(Package::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'subscription_id');
+    }
 }

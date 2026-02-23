@@ -14,6 +14,7 @@ class BookingRequest extends Model
         'company_id',
         'assigned_artist_id',
         'status',
+        'payment_status',
         'event_type_id',
         'name',
         'surname',
