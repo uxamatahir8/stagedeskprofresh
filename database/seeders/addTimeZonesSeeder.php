@@ -437,7 +437,7 @@ class addTimeZonesSeeder extends Seeder
         );
 
         foreach ($timezones as $key => $value) {
-            DB::table('timezones')->insert([
+            DB::table('timezone')->insert([
                 'timezone' => $key,
                 'offset' => $value,
             ]);

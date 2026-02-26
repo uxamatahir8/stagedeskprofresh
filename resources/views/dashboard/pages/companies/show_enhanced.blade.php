@@ -83,7 +83,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted d-block">Location</small>
-                                <p class="mb-0 fw-semibold">{{ $company->city }}, {{ $company->state }}</p>
+                                <p class="mb-0 fw-semibold">{{ $company->city ?? 'N/A' }}, {{ $company->state ?? 'N/A' }}</p>
                                 <small class="text-muted">{{ $company->address ?? 'Address not provided' }}</small>
                             </div>
                         </div>
@@ -504,7 +504,7 @@
                             <h5 class="card-title mb-0 fw-semibold"><i data-lucide="line-chart" class="me-2" style="width: 20px; height: 20px;"></i>Booking Trends</h5>
                         </div>
                         <div class="card-body">
-                            <canvas id="bookingChart" height="100"></canvas>
+                            <canvas id="bookingChart" height="100" data-labels="{{ e(json_encode($analytics['booking_trend_labels'] ?? [])) }}" data-values="{{ e(json_encode($analytics['booking_trend_data'] ?? [])) }}"></canvas>
                         </div>
                     </div>
                 </div>
@@ -516,44 +516,55 @@
                             <h5 class="card-title mb-0 fw-semibold"><i data-lucide="pie-chart" class="me-2" style="width: 20px; height: 20px;"></i>Performance</h5>
                         </div>
                         <div class="card-body">
+                            @php
+                                $analytics = $analytics ?? [];
+                                $bookingRate = min(100, (int) ($analytics['booking_rate'] ?? 0));
+                                $satisfaction = min(100, (int) ($analytics['customer_satisfaction'] ?? 0));
+                                $artistAvail = min(100, (int) ($analytics['artist_availability'] ?? 0));
+                                $completionRate = min(100, (int) ($analytics['completion_rate'] ?? 0));
+                            @endphp
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Booking Rate</span>
-                                    <span class="fw-bold">78%</span>
+                                    <span class="fw-bold">{{ $analytics['booking_rate'] ?? 0 }}%</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" style="width: 78%"></div>
+                                    <div class="progress-bar bg-success" data-width="{{ $bookingRate ?? 0 }}" data-width-unit="%"></div>
                                 </div>
+                                <small class="text-muted">Confirmed + completed / total bookings</small>
                             </div>
 
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Customer Satisfaction</span>
-                                    <span class="fw-bold">92%</span>
+                                    <span class="fw-bold">{{ $analytics['customer_satisfaction'] ?? 0 }}%</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" style="width: 92%"></div>
+                                    <div class="progress-bar bg-primary" data-width="{{ $satisfaction ?? 0 }}" data-width-unit="%"></div>
                                 </div>
+                                <small class="text-muted">From approved reviews (avg rating ÷ 5)</small>
                             </div>
 
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Artist Availability</span>
-                                    <span class="fw-bold">85%</span>
+                                    <span class="text-muted">Artist Assignment</span>
+                                    <span class="fw-bold">{{ $analytics['artist_availability'] ?? 0 }}%</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-info" style="width: 85%"></div>
+                                    <div class="progress-bar bg-info" data-width="{{ $artistAvail ?? 0 }}" data-width-unit="%"></div>
                                 </div>
+                                <small class="text-muted">Bookings with an artist assigned</small>
                             </div>
 
                             <div>
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Response Time</span>
-                                    <span class="fw-bold">95%</span>
+                                    <span class="text-muted">Completion Rate</span>
+                                    <span class="fw-bold">{{ $analytics['completion_rate'] ?? 0 }}%</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-warning" style="width: 95%"></div>
+                                    <div class="progress-bar bg-warning" data-width="{{ $completionRate ?? 0 }}" data-width-unit="%"></div>
                                 </div>
+                                <small class="text-muted">Completed bookings / total</small>
                             </div>
                         </div>
                     </div>
@@ -569,7 +580,7 @@
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline">
-                        @forelse($activityLogs ?? [] as $log)
+                        @forelse(($activityLogs ?? []) as $log)
                             @php
                                 $actionColor = match($log->action) {
                                     'created' => 'success',
@@ -587,7 +598,7 @@
                                     <p class="text-muted mb-1">{{ $log->description ?? 'No description available' }}</p>
                                     <small class="text-muted d-block">
                                         <i data-lucide="user" style="width: 14px; height: 14px;"></i>
-                                        {{ $log->user->name ?? 'System' }}
+                                        {{ $log->user?->name ?? 'System' }}
                                     </small>
                                     <small class="text-muted">
                                         <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
@@ -732,35 +743,45 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            // Booking Trend Chart
-            const ctx = document.getElementById('bookingChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        datasets: [{
-                            label: 'Bookings',
-                            data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 38, 40, 42],
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true }
-                        }
-                    }
+            (function () {
+                // Progress bars: set width from data-width
+                document.querySelectorAll('[data-width][data-width-unit]').forEach(function (el) {
+                    var w = el.getAttribute('data-width');
+                    var u = el.getAttribute('data-width-unit') || '%';
+                    if (w !== null && w !== '') { el.style.width = w + u; }
                 });
-            }
+                // Booking Trend Chart – last 12 months for this company
+                var canvas = document.getElementById('bookingChart');
+                if (canvas) {
+                    var labels = [];
+                    var data = [];
+                    try {
+                        labels = JSON.parse(canvas.getAttribute('data-labels') || '[]');
+                        data = JSON.parse(canvas.getAttribute('data-values') || '[]');
+                    } catch (e) {}
+                    new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Bookings',
+                                data: data,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        }
+                    });
+                }
+            })();
         </script>
     @endpush
 @endsection

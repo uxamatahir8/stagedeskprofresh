@@ -54,6 +54,38 @@
         </div>
     </div>
 
+    {{-- Key metrics infographic strip --}}
+    <div class="row g-2 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm overflow-hidden metrics-strip" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.06);">
+                <div class="card-body py-3 px-4">
+                    <div class="d-flex flex-wrap justify-content-around align-items-center gap-3 gap-md-4">
+                        <div class="metrics-strip-item text-center">
+                            <i data-lucide="calendar-check" class="text-primary mb-1" style="width: 22px; height: 22px;"></i>
+                            <div class="fw-bold fs-5">{{ $stats['total_bookings'] ?? 0 }}</div>
+                            <small class="text-muted">Total Bookings</small>
+                        </div>
+                        <div class="metrics-strip-item text-center">
+                            <i data-lucide="check-circle" class="text-success mb-1" style="width: 22px; height: 22px;"></i>
+                            <div class="fw-bold fs-5">{{ $stats['completed_bookings'] ?? 0 }}</div>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                        <div class="metrics-strip-item text-center">
+                            <i data-lucide="clock" class="text-warning mb-1" style="width: 22px; height: 22px;"></i>
+                            <div class="fw-bold fs-5">{{ $stats['pending_bookings'] ?? 0 }}</div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                        <div class="metrics-strip-item text-center">
+                            <i data-lucide="bell" class="text-info mb-1" style="width: 22px; height: 22px;"></i>
+                            <div class="fw-bold fs-5">{{ $unreadNotifications ?? 0 }}</div>
+                            <small class="text-muted">Unread Alerts</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Important Alerts --}}
     @if(!empty($dashboardAlerts ?? []))
         <div class="row g-3 mb-4">
@@ -247,6 +279,164 @@
             </div>
         </div>
     </div>
+
+    {{-- Bookings by Day of Week + Revenue Breakdown + Upcoming Events --}}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm dashboard-card-advanced h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="calendar-days" class="me-2 text-primary" style="width:20px;height:20px;"></i>Bookings by Day of Week
+                    </h5>
+                    <small class="text-muted">Last 3 months</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container-line" style="height: 260px;">
+                        <canvas id="dayOfWeekChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if(Auth::user()->role->role_key === 'master_admin' && !empty($revenueBreakdown['values'] ?? []))
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm dashboard-card-advanced h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="circle-dollar-sign" class="me-2 text-success" style="width:20px;height:20px;"></i>Revenue Mix
+                    </h5>
+                    <small class="text-muted">Last 12 months</small>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="chart-container-donut" style="height: 220px;">
+                        <canvas id="revenueBreakdownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+        <div class="col-lg-{{ Auth::user()->role->role_key === 'master_admin' && !empty($revenueBreakdown['values'] ?? []) ? '4' : '7' }}">
+            <div class="card border-0 shadow-sm dashboard-card-advanced h-100">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i data-lucide="calendar-clock" class="me-2 text-info" style="width:20px;height:20px;"></i>Upcoming Events
+                        </h5>
+                        <small class="text-muted">Next events by date</small>
+                    </div>
+                    <a href="{{ route('bookings.index') }}" class="btn btn-sm btn-light">View all</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($upcomingEventsList ?? [] as $evt)
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ $evt->tracking_code ?? $evt->id }}</strong>
+                                            <br><small class="text-muted">{{ $evt->name ?? $evt->user->name ?? '—' }}</small>
+                                        </td>
+                                        <td><span class="badge bg-primary-subtle text-primary">{{ $evt->eventType->event_type ?? 'N/A' }}</span></td>
+                                        <td>{{ \Carbon\Carbon::parse($evt->event_date)->format('M d, Y') }}</td>
+                                        <td><span class="badge bg-{{ ($evt->status ?? 'pending') === 'confirmed' ? 'info' : 'warning' }}">{{ ucfirst($evt->status ?? 'pending') }}</span></td>
+                                        <td class="text-end">
+                                            <a href="{{ route('bookings.show', $evt) }}" class="btn btn-sm btn-light"><i data-lucide="eye" style="width:14px;height:14px;"></i></a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No upcoming events</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Top Companies & Top Artists Tables --}}
+    @if(in_array(Auth::user()->role->role_key, ['master_admin', 'company_admin']))
+    <div class="row g-3 mb-4">
+        @if(Auth::user()->role->role_key === 'master_admin' && isset($topCompaniesByBookings) && $topCompaniesByBookings->isNotEmpty())
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm dashboard-card-advanced h-100">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="building-2" class="me-2 text-primary" style="width:20px;height:20px;"></i>Top Companies by Bookings
+                    </h5>
+                    <a href="{{ route('companies') }}" class="btn btn-sm btn-light">All companies</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Company</th>
+                                    <th class="text-end">Bookings (6m)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($topCompaniesByBookings as $idx => $comp)
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ $idx + 1 }}</span></td>
+                                        <td><strong>{{ $comp->name }}</strong></td>
+                                        <td class="text-end">{{ $comp->bookings_count ?? 0 }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+        @if(isset($topArtistsByBookings) && $topArtistsByBookings->isNotEmpty())
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm dashboard-card-advanced h-100">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i data-lucide="mic" class="me-2 text-success" style="width:20px;height:20px;"></i>Top Artists by Bookings
+                    </h5>
+                    <a href="{{ route('artists.index') }}" class="btn btn-sm btn-light">All artists</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Artist</th>
+                                    <th class="text-end">Bookings (6m)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($topArtistsByBookings as $idx => $artist)
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ $idx + 1 }}</span></td>
+                                        <td><strong>{{ $artist->stage_name ?? $artist->user->name ?? 'Artist #' . $artist->id }}</strong></td>
+                                        <td class="text-end">{{ $artist->bookings_count ?? 0 }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
 
     <div class="row g-3 mb-4">
         <div class="col-lg-6">
@@ -663,6 +853,25 @@
 
     {{-- Enhanced Styles --}}
     <style>
+        /* Key metrics strip */
+        .metrics-strip {
+            background: linear-gradient(135deg, #f8f9fc 0%, #f1f3f9 100%);
+        }
+        .metrics-strip-item {
+            min-width: 80px;
+        }
+
+        /* Advanced dashboard cards */
+        .dashboard-card-advanced {
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        .dashboard-card-advanced:hover {
+            box-shadow: 0 14px 44px rgba(102, 126, 234, 0.12);
+            border-color: rgba(102, 126, 234, 0.15);
+        }
+
         /* Card Animations */
         @keyframes slideUp {
             from {
@@ -680,6 +889,8 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .stats-card::before {
@@ -900,6 +1111,10 @@
             'paymentValues' => $paymentInsights['values'] ?? [],
             'paymentStatusLabels' => $paymentInsights['status_labels'] ?? [],
             'paymentStatusValues' => $paymentInsights['status_values'] ?? [],
+            'dayOfWeekLabels' => $bookingsByDayOfWeek['labels'] ?? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            'dayOfWeekValues' => $bookingsByDayOfWeek['values'] ?? [0, 0, 0, 0, 0, 0, 0],
+            'revenueBreakdownLabels' => $revenueBreakdown['labels'] ?? [],
+            'revenueBreakdownValues' => $revenueBreakdown['values'] ?? [],
         ];
     @endphp
     <script id="dashboard-chart-data" type="application/json">@json($dashboardChartData)</script>
@@ -1137,6 +1352,62 @@
                         datasets: [{
                             data: dashboardData.paymentStatusValues || [],
                             backgroundColor: ['#f59f00', '#198754', '#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { usePointStyle: true, padding: 12 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Bookings by Day of Week
+            const dayOfWeekCtx = document.getElementById('dayOfWeekChart');
+            if (dayOfWeekCtx) {
+                new Chart(dayOfWeekCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.dayOfWeekLabels || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                        datasets: [{
+                            label: 'Bookings',
+                            data: dashboardData.dayOfWeekValues || [],
+                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                            borderColor: '#667eea',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // Revenue breakdown (master_admin)
+            const revenueBreakdownCtx = document.getElementById('revenueBreakdownChart');
+            if (revenueBreakdownCtx) {
+                new Chart(revenueBreakdownCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dashboardData.revenueBreakdownLabels || [],
+                        datasets: [{
+                            data: dashboardData.revenueBreakdownValues || [],
+                            backgroundColor: ['#667eea', '#43e97b'],
                             borderWidth: 0
                         }]
                     },
