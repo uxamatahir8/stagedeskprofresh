@@ -19,14 +19,18 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
         $title = 'Users';
         $user  = Auth::user();
-        $users = $user->role->role_key === 'master_admin'
-            ? User::all()
-            : User::companyUsers()->get();
+
+        $query = $user->role->role_key === 'master_admin'
+            ? User::query()
+            : User::companyUsers();
+
+        $query->with('role')->orderBy('name');
+
+        $users = $query->paginate(15)->withQueryString();
 
         return view('dashboard.pages.users.index', compact('title', 'users'));
     }
@@ -161,7 +165,7 @@ class UserController extends Controller
                 'total_bookings' => $user->bookingRequests()->count(),
                 'completed_bookings' => $user->bookingRequests()->where('status', 'completed')->count(),
                 'pending_bookings' => $user->bookingRequests()->where('status', 'pending')->count(),
-                'total_spent' => \DB::table('payments')
+                'total_spent' => DB::table('payments')
                     ->whereIn('booking_requests_id', $user->bookingRequests()->pluck('id'))
                     ->where('status', 'completed')
                     ->sum('amount'),
@@ -173,7 +177,7 @@ class UserController extends Controller
                 'total_bookings' => $user->artist->assignedBookings()->count(),
                 'completed_bookings' => $user->artist->assignedBookings()->where('status', 'completed')->count(),
                 'avg_rating' => $user->artist->reviews()->avg('rating') ?? 0,
-                'total_earnings' => \DB::table('payments')
+                'total_earnings' => DB::table('payments')
                     ->whereIn('booking_requests_id', $user->artist->assignedBookings()->pluck('id'))
                     ->where('status', 'completed')
                     ->sum('amount'),
