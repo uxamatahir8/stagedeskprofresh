@@ -2,11 +2,14 @@
 namespace App\Http\Controllers;
 
 use App\Mail\UserCredentials;
+use App\Models\BookingRequest;
 use App\Models\Company;
 use App\Models\Countries;
+use App\Models\Review;
 use App\Models\SocialLink;
 use App\Models\User;
 use App\Models\UserProfile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -164,13 +167,47 @@ class CompanyController extends Controller
         $title = $company->name;
 
         // Fetch company stats
+        $totalBookings = BookingRequest::where('company_id', $company->id)->count();
         $stats = [
             'total_artists' => $company->artists()->count(),
-            'total_bookings' => \App\Models\BookingRequest::where('company_id', $company->id)->count(),
+            'total_bookings' => $totalBookings,
             'avg_rating' => round($company->artists()->avg('rating') ?? 0, 1),
-            'total_revenue' => \App\Models\Payment::whereHas('bookingRequest', function($q) use ($company) {
+            'total_revenue' => (float) \App\Models\Payment::whereHas('bookingRequest', function ($q) use ($company) {
                 $q->where('company_id', $company->id);
-            })->where('status', 'completed')->sum('amount'),
+            })->where('type', 'booking')->where('status', 'completed')->sum('amount'),
+        ];
+
+        // Analytics: booking trends (last 12 months) and performance metrics
+        $bookingsLast12 = BookingRequest::where('company_id', $company->id)
+            ->where('created_at', '>=', Carbon::now()->subMonths(12)->startOfMonth())
+            ->get(['id', 'created_at']);
+        $byMonth = $bookingsLast12->groupBy(fn ($b) => Carbon::parse($b->created_at)->format('Y-m'));
+        $last12Months = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $key = $date->format('Y-m');
+            $last12Months->push([
+                'label' => $date->format('M Y'),
+                'key' => $key,
+                'count' => $byMonth->get($key, collect())->count(),
+            ]);
+        }
+
+        $confirmedOrCompleted = BookingRequest::where('company_id', $company->id)
+            ->whereIn('status', ['confirmed', 'completed'])->count();
+        $completedCount = BookingRequest::where('company_id', $company->id)->where('status', 'completed')->count();
+        $withArtist = BookingRequest::where('company_id', $company->id)->whereNotNull('assigned_artist_id')->count();
+
+        $reviewsAvg = Review::where('company_id', $company->id)->approved()->avg('rating');
+        $satisfactionPct = $reviewsAvg !== null ? round((float) $reviewsAvg / 5 * 100, 1) : null;
+
+        $analytics = [
+            'booking_trend_labels' => $last12Months->pluck('label')->toArray(),
+            'booking_trend_data' => $last12Months->pluck('count')->toArray(),
+            'booking_rate' => $totalBookings > 0 ? round($confirmedOrCompleted / $totalBookings * 100, 1) : 0,
+            'customer_satisfaction' => $satisfactionPct !== null ? $satisfactionPct : 0,
+            'artist_availability' => $totalBookings > 0 ? round($withArtist / $totalBookings * 100, 1) : 0,
+            'completion_rate' => $totalBookings > 0 ? round($completedCount / $totalBookings * 100, 1) : 0,
         ];
 
         // Fetch artists with booking counts
@@ -216,7 +253,8 @@ class CompanyController extends Controller
             'artists',
             'bookings',
             'subscription',
-            'activityLogs'
+            'activityLogs',
+            'analytics'
         ));
     }
 

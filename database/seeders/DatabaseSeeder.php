@@ -2,18 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * Run base seeders first (roles, countries, states, timezones, settings), then FullSystemSeeder.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        $this->call([
+            UserRolesSeeder::class,
+            CountriesTableSeeder::class,
+            StatesTableSeeder::class,
+            addTimeZonesSeeder::class,
+            CreateAdminSettingsSeeder::class,
+            FullSystemSeeder::class,
+        ]);
     }
 }
