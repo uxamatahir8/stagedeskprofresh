@@ -49,7 +49,7 @@ class ActivityLog extends Model
     /**
      * Log an activity
      */
-    public static function log(string $action, $model = null, string $description = null, array $properties = [])
+    public static function log(string $action, $model = null, ?string $description = null, array $properties = [])
     {
         return ActivityLogger::fromLegacy($action, $model, $description, $properties);
     }

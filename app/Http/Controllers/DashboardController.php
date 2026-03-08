@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Artist;
 use App\Models\BookingRequest;
 use App\Models\User;
 use App\Models\Company;
@@ -62,6 +63,12 @@ class DashboardController extends Controller
         $dashboardAlerts = $this->getDashboardAlerts($roleKey, $insights);
         $paymentInsights = $this->getPaymentInsights($roleKey);
 
+        $topCompaniesByBookings = $this->getTopCompaniesByBookings($roleKey);
+        $topArtistsByBookings = $this->getTopArtistsByBookings($roleKey);
+        $bookingsByDayOfWeek = $this->getBookingsByDayOfWeek($roleKey);
+        $upcomingEventsList = $this->getUpcomingEventsList($roleKey, 8);
+        $revenueBreakdown = $this->getRevenueBreakdown($roleKey);
+
         return view('dashboard.pages.index_enhanced', compact(
             'title',
             'stats',
@@ -75,7 +82,12 @@ class DashboardController extends Controller
             'dashboardAlerts',
             'paymentInsights',
             'filter',
-            'dateRange'
+            'dateRange',
+            'topCompaniesByBookings',
+            'topArtistsByBookings',
+            'bookingsByDayOfWeek',
+            'upcomingEventsList',
+            'revenueBreakdown'
         ));
     }
 
@@ -546,6 +558,112 @@ class DashboardController extends Controller
                 (int) ($status['completed'] ?? 0),
                 (int) ($status['failed'] ?? 0),
             ],
+        ];
+    }
+
+    private function getTopCompaniesByBookings(string $roleKey)
+    {
+        if ($roleKey !== 'master_admin') {
+            return collect();
+        }
+        return Company::query()
+            ->withCount(['bookingRequests as bookings_count' => function ($q) {
+                $q->where('created_at', '>=', now()->subMonths(6));
+            }])
+            ->orderByDesc('bookings_count')
+            ->limit(10)
+            ->get();
+    }
+
+    private function getTopArtistsByBookings(string $roleKey)
+    {
+        $query = Artist::query()
+            ->withCount(['bookings as bookings_count' => function ($q) {
+                $q->where('created_at', '>=', now()->subMonths(6));
+            }])
+            ->with('user:id,name')
+            ->having('bookings_count', '>', 0)
+            ->orderByDesc('bookings_count')
+            ->limit(10);
+
+        if ($roleKey === 'company_admin' && Auth::user()->company_id) {
+            $query->where('company_id', Auth::user()->company_id);
+        } elseif ($roleKey !== 'master_admin') {
+            return collect();
+        }
+
+        return $query->get();
+    }
+
+    private function getBookingsByDayOfWeek(string $roleKey): array
+    {
+        $query = BookingRequest::query()
+            ->selectRaw('DAYOFWEEK(created_at) as day_num, COUNT(*) as total')
+            ->where('created_at', '>=', now()->subMonths(3))
+            ->groupBy('day_num');
+
+        if ($roleKey === 'company_admin') {
+            $query->where('company_id', Auth::user()->company_id);
+        } elseif ($roleKey === 'customer') {
+            $query->where('user_id', Auth::id());
+        } elseif ($roleKey === 'artist') {
+            $artist = Artist::where('user_id', Auth::id())->first();
+            $query->where('assigned_artist_id', $artist?->id ?? 0);
+        } elseif ($roleKey === 'affiliate') {
+            return [
+                'labels' => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                'values' => [0, 0, 0, 0, 0, 0, 0],
+            ];
+        }
+
+        $rows = $query->get()->keyBy('day_num');
+        $labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        $values = [];
+        for ($d = 1; $d <= 7; $d++) {
+            $values[] = (int) ($rows->get($d)->total ?? 0);
+        }
+        return ['labels' => $labels, 'values' => $values];
+    }
+
+    private function getUpcomingEventsList(string $roleKey, int $limit = 8)
+    {
+        $query = BookingRequest::query()
+            ->with(['user:id,name', 'eventType:id,event_type', 'company:id,name'])
+            ->whereDate('event_date', '>=', today())
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->orderBy('event_date')
+            ->limit($limit);
+
+        if ($roleKey === 'company_admin') {
+            $query->where('company_id', Auth::user()->company_id);
+        } elseif ($roleKey === 'customer') {
+            $query->where('user_id', Auth::id());
+        } elseif ($roleKey === 'artist') {
+            $artist = Artist::where('user_id', Auth::id())->first();
+            $query->where('assigned_artist_id', $artist?->id ?? 0);
+        } elseif ($roleKey === 'affiliate') {
+            return collect();
+        }
+
+        return $query->get();
+    }
+
+    private function getRevenueBreakdown(string $roleKey): array
+    {
+        if ($roleKey !== 'master_admin') {
+            return ['labels' => [], 'values' => []];
+        }
+        $subscription = Payment::where('status', 'completed')
+            ->where('type', 'subscription')
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->sum('amount');
+        $booking = Payment::where('status', 'completed')
+            ->where('type', 'booking')
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->sum('amount');
+        return [
+            'labels' => ['Subscriptions', 'Bookings'],
+            'values' => [(float) $subscription, (float) $booking],
         ];
     }
 }

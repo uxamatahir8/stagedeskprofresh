@@ -32,7 +32,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table data-tables="export-data-dropdown" class="table table-striped align-middle mb-0">
+                <table class="table table-striped align-middle mb-0">
                     <thead class="thead-sm text-uppercase fs-xxs">
                         <tr>
                             <th>#</th>
@@ -44,18 +44,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $c = 1;
-                        @endphp
-                        @foreach ($users as $user)
+                        @forelse ($users as $index => $user)
                             <tr>
-                                <td>{{ $c++ }}</td>
+                                <td>{{ $users->firstItem() + $index }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>{{ $user->role->name }}</td>
                                 <td>
                                     <span
-                                        class="badge badge-label badge-soft-{{ config('arrays.status_colors')[$user->status]  }}">
+                                        class="badge badge-label badge-soft-{{ config('arrays.status_colors')[$user->status] }}">
                                         {{ ucfirst($user->status) }}
                                     </span>
                                 </td>
@@ -81,11 +78,29 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i data-lucide="inbox" style="width: 32px; height: 32px;" class="text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No users found</p>
+                                    <a href="{{ route('user.create') }}" class="btn btn-primary btn-sm mt-2">
+                                        <i data-lucide="plus" style="width: 14px; height: 14px;" class="me-1"></i> Add User
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+        @if($users->hasPages())
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }}
+                </div>
+                {{ $users->links() }}
+            </div>
+        @endif
     </div>
 
     @push('scripts')

@@ -11747,7 +11747,7 @@ a.header-btn9 i {
     width: 25px;
     background-color: #ffffff;
     top: 4px;
-    left: 5px;
+    left: 43px;
     border-radius: 50%;
     transition: 300ms all;
 }
@@ -11775,7 +11775,7 @@ a.header-btn9 i {
     opacity: 1;
 }
 .pricing-paln-section-area .pricing-plans .toggle-inner input:checked + span {
-    left: 43px;
+    left: 5px;
 }
 .pricing-paln-section-area .tab-content .price-box {
     margin-bottom: 30px;
