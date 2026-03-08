@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class addTimeZonesSeeder extends Seeder
 {
@@ -436,11 +437,18 @@ class addTimeZonesSeeder extends Seeder
             'Pacific/Kiritimati' => '(UTC+14:00) Kiritimati',
         );
 
-        foreach ($timezones as $key => $value) {
-            DB::table('timezones')->insert([
-                'timezone' => $key,
-                'offset' => $value,
-            ]);
+        $now = Carbon::now();
+
+        $rows = [];
+        foreach ($timezones as $timezone => $offset) {
+            $rows[] = [
+                'timezone' => $timezone,
+                'offset' => $offset,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
+
+        DB::table('timezones')->insert($rows);
     }
 }

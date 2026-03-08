@@ -12,11 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_profiles', function (Blueprint $table) {
-            //
-            $table->bigInteger('country_id')->nullable()->change();
-            $table->bigInteger('state_id')->nullable()->change();
-            $table->bigInteger('city_id')->nullable()->change();
+            $table->dropForeign(['country_id']);
+            $table->dropForeign(['state_id']);
+            $table->dropForeign(['city_id']);
+        });
+
+        Schema::table('user_profiles', function (Blueprint $table) {
+            $table->unsignedBigInteger('country_id')->nullable()->change();
+            $table->unsignedBigInteger('state_id')->nullable()->change();
+            $table->unsignedBigInteger('city_id')->nullable()->change();
             $table->string('address')->nullable()->change();
+        });
+
+        Schema::table('user_profiles', function (Blueprint $table) {
+            $table->foreign('country_id')->references('id')->on('countries');
+            $table->foreign('state_id')->references('id')->on('states');
+            $table->foreign('city_id')->references('id')->on('cities');
         });
     }
 
@@ -26,12 +37,22 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_profiles', function (Blueprint $table) {
-            //
-            $table->bigInteger('country_id')->change();
-            $table->bigInteger('state_id')->change();
-            $table->bigInteger('city_id')->change();
-            $table->bigInteger('address')->change();
+            $table->dropForeign(['country_id']);
+            $table->dropForeign(['state_id']);
+            $table->dropForeign(['city_id']);
+        });
 
+        Schema::table('user_profiles', function (Blueprint $table) {
+            $table->unsignedBigInteger('country_id')->change();
+            $table->unsignedBigInteger('state_id')->change();
+            $table->unsignedBigInteger('city_id')->change();
+            $table->string('address')->change();
+        });
+
+        Schema::table('user_profiles', function (Blueprint $table) {
+            $table->foreign('country_id')->references('id')->on('countries');
+            $table->foreign('state_id')->references('id')->on('states');
+            $table->foreign('city_id')->references('id')->on('cities');
         });
     }
 };
