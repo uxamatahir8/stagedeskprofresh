@@ -231,6 +231,7 @@
     }
 
     .sd-status-neutral { color: #475569; background: #f1f5f9; border-color: #e2e8f0; }
+    .sd-status-warning { color: #92400e; background: #fef3c7; border-color: #fde68a; }
     .sd-status-pending { color: #92400e; background: #fef3c7; border-color: #fde68a; }
     .sd-status-confirmed,
     .sd-status-info { color: #075985; background: #e0f2fe; border-color: #bae6fd; }
@@ -262,6 +263,57 @@
         font-size: 0.8125rem;
         font-weight: 650;
         color: var(--color-text-secondary);
+    }
+
+    .sd-rich-content {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: var(--color-text-secondary);
+    }
+
+    .sd-rich-content > * + * {
+        margin-top: 1rem;
+    }
+
+    .sd-rich-content h1,
+    .sd-rich-content h2,
+    .sd-rich-content h3,
+    .sd-rich-content h4 {
+        margin-top: 1.75rem;
+        color: var(--color-text-primary);
+        font-weight: 760;
+        line-height: 1.2;
+    }
+
+    .sd-rich-content h2 { font-size: 1.5rem; }
+    .sd-rich-content h3 { font-size: 1.25rem; }
+    .sd-rich-content h4 { font-size: 1.125rem; }
+
+    .sd-rich-content a {
+        color: var(--color-primary);
+        font-weight: 650;
+        text-decoration: underline;
+        text-underline-offset: 0.18em;
+    }
+
+    .sd-rich-content ul,
+    .sd-rich-content ol {
+        padding-left: 1.25rem;
+    }
+
+    .sd-rich-content ul { list-style: disc; }
+    .sd-rich-content ol { list-style: decimal; }
+
+    .sd-rich-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--radius-card);
+    }
+
+    .sd-rich-content blockquote {
+        border-left: 3px solid var(--color-primary);
+        padding-left: 1rem;
+        color: var(--color-text-primary);
     }
 }
 

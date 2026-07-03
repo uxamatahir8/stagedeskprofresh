@@ -10,6 +10,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="@yield('meta_description', $siteName . ' helps event-service companies manage subscriptions, artists, booking requests, payments, and affiliate growth.')">
     <title>{{ $pageTitle }}</title>
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -70,6 +71,9 @@
     </aside>
 
     <main>
+        <div class="sd-container pt-6">
+            <x-tw.flash-messages />
+        </div>
         @yield('content')
     </main>
 
