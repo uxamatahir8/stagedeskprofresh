@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class UserRolesSeeder extends Seeder
@@ -23,6 +23,26 @@ class UserRolesSeeder extends Seeder
 
         foreach ($roles_data as $role) {
             Role::create($role);
+        }
+
+        // create master admin user if not exists
+        $this->command->info('Creating Master Admin user...');
+        $masterAdmin = User::firstOrCreate(
+            ['email' => 'info@stagedeskpro.com'],
+            [
+                'role_id' => $roles_data[0]['id'] ?? 1,
+                'company_id' => null,
+                'name' => 'StageDesk Pro Admin',
+                'password' => 'password123',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        if ($masterAdmin->wasRecentlyCreated) {
+            $this->command->info('Master Admin user created successfully.');
+        } else {
+            $this->command->info('Master Admin user already exists.');
         }
     }
 }

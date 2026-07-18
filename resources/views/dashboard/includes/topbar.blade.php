@@ -10,7 +10,7 @@
                         <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="logo">
                     </span>
                     <span class="logo-sm">
-                        <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="small logo">
+                        <img src="{{ asset('images/logo-sm.png') }}" alt="small logo" style="height: 38px; vertical-align: middle;">
                     </span>
                 </a>
 
@@ -20,7 +20,7 @@
                         <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="dark logo">
                     </span>
                     <span class="logo-sm">
-                        <img src="{{ asset('images/stagedeskpro_logo.png') }}" alt="small logo">
+                        <img src="{{ asset('images/logo-sm.png') }}" alt="small logo" style="height: 38px; vertical-align: middle;">
                     </span>
                 </a>
             </div>

@@ -32,6 +32,11 @@
             border-bottom: 1px solid #e4e4e4 !important;
         }
 
+        /* Hide logo from sidebar when collapsed */
+        html[data-sidenav-size=condensed] .sidenav-menu .logo {
+            display: none !important;
+        }
+
         /* Fix z-index hierarchy to prevent sidebar overlap */
         .app-topbar {
             z-index: 999 !important;

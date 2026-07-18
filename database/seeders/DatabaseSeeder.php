@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             StatesTableSeeder::class,
             addTimeZonesSeeder::class,
             CreateAdminSettingsSeeder::class,
-            FullSystemSeeder::class,
         ]);
     }
 }
