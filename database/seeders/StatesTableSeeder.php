@@ -14,7 +14,9 @@ class StatesTableSeeder extends Seeder
     public function run(): void
     {
         //
-        DB::table('states')->delete();
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        DB::table('states')->truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
         $states = array(
             array('name' => "Andaman and Nicobar Islands", 'country_id' => 101),
             array('name' => "Andhra Pradesh", 'country_id' => 101),

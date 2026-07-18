@@ -14,7 +14,9 @@ class CountriesTableSeeder extends Seeder
     public function run(): void
     {
         //
-        DB::table('countries')->delete();
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        DB::table('countries')->truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
         $countries = array(
             array('code' => 'AF', 'name' => "Afghanistan", 'phonecode' => 93),
             array('code' => 'AL', 'name' => "Albania", 'phonecode' => 355),
