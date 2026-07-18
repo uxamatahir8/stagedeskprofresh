@@ -5,7 +5,7 @@ const validateRequiredInput = (element) => {
     let required = false;
 
     // Skip validation if element or its parent container is hidden
-    if (element.classList.contains("d-none") || element.closest('.d-none')) {
+    if (element.classList.contains("d-none") || element.closest('.d-none') || (element.offsetWidth === 0 && element.offsetHeight === 0)) {
         return true;
     }
 
@@ -307,17 +307,21 @@ form?.addEventListener("submit", (e) => {
     );
 
     allInputs.forEach((element) => {
-        // Only validate visible fields (not hidden by d-none on parent)
-        if (!element.closest('.d-none')) {
+        // Only validate visible fields (not hidden by d-none or display: none)
+        if (!element.closest('.d-none') && !(element.offsetWidth === 0 && element.offsetHeight === 0)) {
             validateRequiredInput(element);
         }
     });
 
-    const invalidInputs = document.querySelectorAll(".is-invalid");
-    if (invalidInputs.length === 0) {
+    // Filter to only include visible invalid inputs
+    const visibleInvalidInputs = Array.from(document.querySelectorAll(".is-invalid")).filter(element => {
+        return element.offsetWidth > 0 || element.offsetHeight > 0;
+    });
+
+    if (visibleInvalidInputs.length === 0) {
         form.submit();
     } else {
-        invalidInputs[0].focus();
+        visibleInvalidInputs[0].focus();
     }
 });
 

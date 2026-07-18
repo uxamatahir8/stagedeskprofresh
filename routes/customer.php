@@ -14,10 +14,11 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
 
     // My Bookings
     Route::get('/bookings', [CustomerPortalController::class, 'myBookings'])->name('bookings');
-    Route::get('/bookings/{booking}', [CustomerPortalController::class, 'bookingDetails'])->name('bookings.details');
 
     // Create Booking
     Route::get('/bookings/create', [CustomerPortalController::class, 'createBooking'])->name('bookings.create');
+
+    Route::get('/bookings/{booking}', [CustomerPortalController::class, 'bookingDetails'])->name('bookings.details');
 
     // Cancel Booking
     Route::post('/bookings/{booking}/cancel', [CustomerPortalController::class, 'cancelBooking'])->name('bookings.cancel');

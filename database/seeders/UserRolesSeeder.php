@@ -22,7 +22,7 @@ class UserRolesSeeder extends Seeder
         ];
 
         foreach ($roles_data as $role) {
-            Role::create($role);
+            Role::firstOrCreate($role);
         }
 
         // create master admin user if not exists

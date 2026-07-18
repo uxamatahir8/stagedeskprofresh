@@ -374,7 +374,13 @@
                     initializeFlatpickr();
                 } else {
                     weddingFields.style.display = 'none';
-                    weddingInputs.forEach(input => input.classList.remove('required'));
+                    weddingInputs.forEach(input => {
+                        input.classList.remove('required', 'is-invalid', 'is-valid');
+                        const validationMsg = input.parentNode.querySelector('.validation-message');
+                        if (validationMsg) {
+                            validationMsg.classList.add('d-none');
+                        }
+                    });
                     weddingLabels.forEach(label => {
                         const span = label.querySelector('.text-danger');
                         if (span) span.remove();

@@ -37,6 +37,11 @@
             display: none !important;
         }
 
+        /* Ensure collapsed sidebar remains sticky (fixed) */
+        html[data-sidenav-size=condensed] .sidenav-menu {
+            position: fixed !important;
+        }
+
         /* Fix z-index hierarchy to prevent sidebar overlap */
         .app-topbar {
             z-index: 999 !important;
